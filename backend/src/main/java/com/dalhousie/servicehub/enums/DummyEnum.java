@@ -1,4 +1,4 @@
-package com.dalhousie.ServiceHub.enums;
+package com.dalhousie.servicehub.enums;
 
 // [TODO]: Delete this file once we have first enum for the application
 // Note: The purpose of this file is to only define project file structure as we
