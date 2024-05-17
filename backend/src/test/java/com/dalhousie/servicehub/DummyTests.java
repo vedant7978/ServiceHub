@@ -1,4 +1,4 @@
-package com.dalhousie.ServiceHub;
+package com.dalhousie.servicehub;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

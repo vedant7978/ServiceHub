@@ -1,4 +1,4 @@
-package com.dalhousie.ServiceHub.controller;
+package com.dalhousie.servicehub.controller;
 
 // [TODO]: Delete this file once we have first controller for the application
 // Note: The purpose of this file is to only define project file structure as we

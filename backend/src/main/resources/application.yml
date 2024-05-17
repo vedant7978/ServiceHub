@@ -1,10 +1,13 @@
 spring:
   application:
     name: ServiceHub
-
-  # [TODO]: Need to update configuration later on
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/service_hub
-    username: test
-    password: test
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  profiles:
+    active: DEV # DEV/TEST/PROD, Change as per the need
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format:_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
