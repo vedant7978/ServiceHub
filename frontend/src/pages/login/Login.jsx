@@ -1,6 +1,5 @@
 import React from 'react';
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './LoginPage.css';
 import loginPageImg from '../../assets/loginPage.jpg'; 
 
