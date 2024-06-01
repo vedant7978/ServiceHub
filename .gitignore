@@ -1,3 +1,5 @@
 # IntelliJ auto generated files
 .idea
 .idea/*
+
+# Test commit to trigger CI/CD on merge request
