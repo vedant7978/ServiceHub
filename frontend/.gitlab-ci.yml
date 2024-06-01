@@ -8,6 +8,7 @@ build:
   stage: build
   script:
     - echo "Frontend build started..."
+    - unset CI
     - cd frontend
     - npm install
     - npm run build
