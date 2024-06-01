@@ -21,7 +21,7 @@ frontend_build:
   image: node:latest
   stage: build
   tags:
-    - elderlink
+    - serviceHub
   script:
     - echo "Building Frontend Application..."
     - cd frontend
