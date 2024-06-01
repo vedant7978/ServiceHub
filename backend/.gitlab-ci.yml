@@ -1,0 +1,85 @@
+stages:
+  - build
+  - test
+  - quality
+  - publish
+  - deploy
+
+build:
+  stage: build
+  image: maven:latest
+  script:
+    - echo "Backend build started..."
+    - cd backend/
+    - mvn clean package
+    - echo "Backend build completed"
+  artifacts:
+    paths:
+      - backend/target/backend-0.1-SNAPSHOT.jar
+      - smells/
+
+test:
+  stage: test
+  image: maven:latest
+  cache:
+    key: ${CI_PROJECT_NAME}
+    paths:
+      - .m2/repository
+  script:
+    - echo "Testing Backend"
+    - cd backend/
+    - mvn test
+    - echo "Done Testing Backend"
+  only:
+    - develop
+  allow_failure: false
+
+quality:
+  stage: quality
+  image: openjdk:11
+  script:
+    - echo "Code smells identification started..."
+    - cd backend
+    - rm -rf smells || true
+    - mkdir smells/
+    - java -jar DesigniteJava.jar -i . -o smells || true
+  artifacts:
+    paths:
+      - backend/code_smells/*.csv
+
+publish:
+  image: docker:latest
+  stage: publish
+  tags:
+    - deployment-group08
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+  services:
+    - docker:dind
+  script:
+    - pwd
+    - echo $SERVER_IP
+    - docker --version
+    - sudo docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
+    - sudo docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
+    - sudo docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
+  only:
+    - main
+
+deploy:
+  image: alpine:latest
+  stage: deploy
+  tags:
+    - deployment-group08
+  script:
+    - chmod og= $SSH_KEY
+    - apk update && apk add openssh-client
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@csci5308-vm8.research.cs.dal.ca" "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@csci5308-vm8.research.cs.dal.ca" "docker pull docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@csci5308-vm8.research.cs.dal.ca" "docker container rm -f backend || true"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@csci5308-vm8.research.cs.dal.ca" "docker run -d -p 8080:8080 --name backend docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA"
+  environment:
+    name: production_backend
+    url: http://172.17.1.12:8080
+  only:
+    - main

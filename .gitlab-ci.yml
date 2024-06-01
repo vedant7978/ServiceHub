@@ -1,55 +1,16 @@
+workflow:
+  rules:
+    - if: '($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main") && $CI_PIPELINE_SOURCE == "merge_request_event"'
+
 stages:
-  - build
-  - test
-  - deploy
+  - trigger
 
-backend_build:
-  image: maven:latest
-  stage: build
-  tags:
-    - serviceHub
-  script:
-    - cd backend
-    - echo "Starting the backend Application..."
-    - ./mvnw clean package
-    - echo "Backend Build Completed"
-  artifacts:
-    paths:
-      - backend/target
+backend-trigger:
+  stage: trigger
+  trigger:
+    include: backend/.gitlab-ci.yml
 
-frontend_build:
-  image: node:latest
-  stage: build
-  tags:
-    - serviceHub
-  script:
-    - echo "Building Frontend Application..."
-    - cd frontend
-    - npm install
-    - npm install bootstrap
-    - npm install react-bootstrap
-    - npm install react-icons
-    - npm run build
-    - ls -a
-    - echo "Frontend Build Completed"
-  artifacts:
-    paths:
-      - frontend/build
-
-test-job1:
-  stage: test
-  script:
-    - echo "Running Test Job 1..."
-    # TODO more commands
-
-test-job2:
-  stage: test
-  script:
-    - echo "Running Test Job 2..."
-    # TODO more commands
-
-deploy-prod:
-  stage: deploy
-  script:
-    - echo "Deploying to production..."
-    # TODO more commands
+frontend-trigger:
+  stage: trigger
+  trigger:
+    include: frontend/.gitlab-ci.yml
