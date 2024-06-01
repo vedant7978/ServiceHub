@@ -15,7 +15,7 @@ build:
     - echo "Backend build completed"
   artifacts:
     paths:
-      - backend/target/backend-0.1-SNAPSHOT.jar
+      - backend/target/ServiceHub-0.0.1-SNAPSHOT.jar
 
 test:
   stage: test
@@ -50,7 +50,7 @@ publish:
   image: docker:latest
   stage: publish
   tags:
-    - deployment-group08
+    - dalfcs_docker_autoscale
   variables:
     DOCKER_HOST: "tcp://docker:2375"
   services:
@@ -69,7 +69,7 @@ deploy:
   image: alpine:latest
   stage: deploy
   tags:
-    - deployment-group08
+    - dalfcs_docker_autoscale
   script:
     - chmod og= $SSH_KEY
     - apk update && apk add openssh-client
