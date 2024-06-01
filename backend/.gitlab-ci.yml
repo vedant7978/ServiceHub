@@ -16,7 +16,6 @@ build:
   artifacts:
     paths:
       - backend/target/backend-0.1-SNAPSHOT.jar
-      - smells/
 
 test:
   stage: test
@@ -45,7 +44,7 @@ quality:
     - java -jar DesigniteJava.jar -i . -o smells || true
   artifacts:
     paths:
-      - backend/code_smells/*.csv
+      - backend/smells/*.csv
 
 publish:
   image: docker:latest
