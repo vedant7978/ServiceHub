@@ -41,10 +41,10 @@ quality:
     - cd backend
     - rm -rf smells || true
     - mkdir smells/
-    - java -jar DesigniteJava.jar -i . -o smells || true
+    - java -jar $CI_PROJECT_DIR/backend/.gitlab/DesigniteJava.jar -i $CI_PROJECT_DIR/backend/ -o $CI_PROJECT_DIR/smells/ -d
   artifacts:
     paths:
-      - backend/smells/*.csv
+      - smells/*.csv
 
 publish:
   image: docker:latest
@@ -59,9 +59,9 @@ publish:
     - pwd
     - echo $SERVER_IP
     - docker --version
-    - sudo docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
-    - sudo docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
-    - sudo docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
+    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
+    - docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
+    - docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
   only:
     - main
 
