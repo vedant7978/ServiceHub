@@ -1,0 +1,56 @@
+stages:
+  - build
+  - publish
+  - deploy
+
+build:
+  image: node:latest
+  stage: build
+  script:
+    - echo "Frontend build started..."
+    - unset CI
+    - cd frontend
+    - npm install
+    - npm run build
+    - ls -a
+    - echo "Frontend build completed"
+  artifacts:
+    paths:
+      - frontend/build
+
+publish:
+  image: docker:latest
+  stage: publish
+  tags:
+    - deployment-group08
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+  services:
+    - docker:dind
+  script:
+    - pwd
+    - echo $SERVER_IP
+    - docker --version
+    - sudo docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
+    - sudo docker build -t docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/frontend/
+    - sudo docker push docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA
+  only:
+    - main
+
+deploy:
+  image: alpine:latest
+  stage: deploy
+  tags:
+    - deployment-group08
+  script:
+    - chmod og= $SSH_KEY
+    - apk update && apk add openssh-client
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker pull docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker container rm -f frontend || true"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker run -d -p 3000:3000 --name frontend docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
+  environment:
+    name: production_backend
+    url: http://172.17.1.12:3000
+  only:
+    - main

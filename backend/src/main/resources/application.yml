@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: ServiceHub
+  profiles:
+    active: DEV # DEV/TEST/PROD, Change as per the need
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format:_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
