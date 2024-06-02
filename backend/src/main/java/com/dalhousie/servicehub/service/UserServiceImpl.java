@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(UserModel request) {
+    public AuthenticationResponse registerUser(UserModel request) {
         var user = UserModel.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -31,13 +31,13 @@ public class UserServiceImpl implements UserService {
                 .image(request.getImage())
                 .build();
         repository.save(user);
-        var jwtToken = jwtService.generateToken((UserDetails) user);
+        var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticateUser(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),

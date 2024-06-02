@@ -32,13 +32,13 @@ public class AuthController {
     private ModelMapper modelMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<Object> registerUser(@Valid @RequestBody RegisterRequest regReq) {
+    public ResponseEntity<Object> userRegisterHandler(@Valid @RequestBody RegisterRequest regReq) {
         try {
             if (userRepository.findByEmail(regReq.getEmail()).isPresent()) {
                 throw new UserAlreadyExistException("User with this email already exists.");
             }
             UserModel userModel = modelMapper.map(regReq, UserModel.class);
-            AuthenticationResponse authRes = userService.register(userModel);
+            AuthenticationResponse authRes = userService.registerUser(userModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(authRes);
         } catch (UserAlreadyExistException e) {
             System.out.println(e);
@@ -50,12 +50,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> authenticateUser(@Valid @RequestBody AuthenticationRequest authReq) {
+    public ResponseEntity<Object> userLoginHandler(@Valid @RequestBody AuthenticationRequest authReq) {
         try {
             if (userRepository.findByEmail(authReq.getEmail()).isEmpty()) {
                 throw new UsernameNotFoundException("User with this email doesn't exists.");
             }
-            AuthenticationResponse authRes = userService.authenticate(authReq);
+            AuthenticationResponse authRes = userService.authenticateUser(authReq);
             return ResponseEntity.status(HttpStatus.OK).body(authRes);
         } catch (Exception e) {
             System.out.println(e);

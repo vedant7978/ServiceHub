@@ -54,6 +54,21 @@ class AuthControllerTest {
 
         authRequest = new AuthenticationRequest("jems007patel@gmail.com", "Jems@007");
     }
+
+    @Test
+    @DisplayName("Registration Successfully Completed")
+    void UserRegisterHandlerTest() {
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded-pass");
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
+
+        AuthenticationResponse response = userService.registerUser(userModel);
+        assertNotNull(response);
+        assertEquals("jwt-token", response.getToken());
+        verify(userRepository, times(1)).save(any(UserModel.class));
+        verify(jwtService, times(1)).generateToken(any(UserDetails.class));
+    }
+
     @Test
     @DisplayName("Successfully login")
     void userLoginHandlerTest() {
@@ -68,6 +83,7 @@ class AuthControllerTest {
         verify(userRepository, times(1)).findByEmail(anyString());
         verify(jwtService, times(1)).generateToken(any(UserDetails.class));
     }
+
     @Test
     @DisplayName("Login with Invalid Credentials")
     void userLoginHandlerTest_WithInvalidCredentials() {
@@ -84,6 +100,7 @@ class AuthControllerTest {
         verify(userRepository, times(0)).findByEmail(anyString());
         verify(jwtService, times(0)).generateToken(any(UserDetails.class));
     }
+
     @Test
     @DisplayName("Login with Non-existing User")
     void userLoginHandlerTest_WithNonExistingUser() {
