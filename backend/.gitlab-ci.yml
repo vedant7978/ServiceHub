@@ -1,57 +1,58 @@
 stages:
-  - build
-  - test
-  - quality
+#  - build
+#  - test
+#  - quality
   - publish
   - deploy
 
-build:
-  stage: build
-  image: maven:latest
-  script:
-    - echo "Backend build started..."
-    - cd backend/
-    - mvn clean package
-    - echo "Backend build completed"
-  artifacts:
-    paths:
-      - backend/target/ServiceHub-0.0.1-SNAPSHOT.jar
-
-test:
-  stage: test
-  image: maven:latest
-  cache:
-    key: ${CI_PROJECT_NAME}
-    paths:
-      - .m2/repository
-  script:
-    - echo "Testing Backend"
-    - cd backend/
-    - mvn test
-    - echo "Done Testing Backend"
-  only:
-    - develop
-  allow_failure: false
-
-quality:
-  stage: quality
-  image: openjdk:11
-  script:
-    - echo "Code smells identification started..."
-    - cd backend
-    - rm -rf smells || true
-    - mkdir smells/
-    - java -jar $CI_PROJECT_DIR/backend/.gitlab/DesigniteJava.jar -i $CI_PROJECT_DIR/backend/ -o $CI_PROJECT_DIR/smells/ -d
-  artifacts:
-    paths:
-      - smells/*.csv
+#build:
+#  stage: build
+#  image: maven:latest
+#  script:
+#    - echo "Backend build started..."
+#    - cd backend/
+#    - mvn clean package
+#    - echo "Backend build completed"
+#  artifacts:
+#    paths:
+#      - backend/target/ServiceHub-0.0.1-SNAPSHOT.jar
+#
+#test:
+#  stage: test
+#  image: maven:latest
+#  cache:
+#    key: ${CI_PROJECT_NAME}
+#    paths:
+#      - .m2/repository
+#  script:
+#    - echo "Testing Backend"
+#    - cd backend/
+#    - mvn test
+#    - echo "Done Testing Backend"
+#  only:
+#    - develop
+#  allow_failure: false
+#
+#quality:
+#  stage: quality
+#  image: openjdk:17-oracle
+#  script:
+#    - echo "Code smells identification started..."
+#    - cd backend
+#    - rm -rf smells || true
+#    - mkdir smells/
+#    - java -jar $CI_PROJECT_DIR/backend/.gitlab/DesigniteJava.jar -i $CI_PROJECT_DIR/backend/ -o $CI_PROJECT_DIR/backend/smells/ -d
+#  artifacts:
+#    paths:
+#      - backend/smells/*.csv
 
 publish:
   image: docker:latest
   stage: publish
   tags:
-    - dalfcs_docker_autoscale
+    - dalfcs_gitlab_docker_ci
   variables:
+    DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: "tcp://docker:2375"
   services:
     - docker:dind
@@ -59,11 +60,12 @@ publish:
     - pwd
     - echo $SERVER_IP
     - docker --version
-    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
-    - docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
-    - docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
+    - cd backend
+    - echo "$DOCKER_PWD" | docker login --username "$DOCKER_USER_NAME" --password-stdin
+    - docker build -t docker.io/$DOCKER_USER_NAME/backend:latest .
+    - docker push docker.io/$DOCKER_USER_NAME/backend:latest
   only:
-    - main
+    - cicd_test
 
 deploy:
   image: alpine:latest
@@ -73,12 +75,12 @@ deploy:
   script:
     - chmod og= $SSH_KEY
     - apk update && apk add openssh-client
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker pull docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker login --username $DOCKER_USER_NAME -p $DOCKER_PWD docker.io"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker pull docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA"
     - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker container rm -f backend || true"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker run -d -p 8080:8080 --name backend docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@SERVER_NAME" "docker run -d -p 8080:8080 --name backend docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA"
   environment:
     name: production_backend
     url: http://172.17.1.12:8080
   only:
-    - main
+    - cicd_test

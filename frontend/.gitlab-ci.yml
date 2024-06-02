@@ -31,11 +31,11 @@ publish:
     - pwd
     - echo $SERVER_IP
     - docker --version
-    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
-    - docker build -t docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/frontend/
-    - docker push docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA
+    - echo "$DOCKER_PWD" | docker login --username "$DOCKER_USER_NAME" --password-stdin
+    - docker build -t docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/frontend/
+    - docker push docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA
   only:
-    - main
+    - cicd_test
 
 deploy:
   image: alpine:latest
@@ -45,12 +45,12 @@ deploy:
   script:
     - chmod og= $SSH_KEY
     - apk update && apk add openssh-client
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker pull docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker login --username $DOCKER_USER_NAME -p $DOCKER_PWD docker.io"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker pull docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA"
     - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker container rm -f frontend || true"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker run -d -p 3000:3000 --name frontend docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker run -d -p 3000:3000 --name frontend docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA"
   environment:
     name: production_backend
     url: http://172.17.1.12:3000
   only:
-    - main
+    - cicd_test
