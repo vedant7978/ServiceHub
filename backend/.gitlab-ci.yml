@@ -35,7 +35,7 @@ test:
 
 quality:
   stage: quality
-  image: openjdk:11
+  image: openjdk:17
   script:
     - echo "Code smells identification started..."
     - cd backend
