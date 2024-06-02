@@ -65,6 +65,7 @@ public class JwtAuthenticationFilterTest {
         when(userDetailsService.loadUserByUsername("validUser")).thenReturn(null);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
         verify(jwtService, times(1)).extractUsername("validToken");
         verify(filterChain, times(1)).doFilter(request, response);
     }
@@ -75,6 +76,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("InvalidHeader");
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
         verify(jwtService, times(0)).extractUsername(anyString());
         verify(filterChain, times(1)).doFilter(request, response);
     }
