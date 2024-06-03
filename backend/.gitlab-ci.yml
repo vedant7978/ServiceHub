@@ -56,9 +56,11 @@ publish:
 #    DOCKER_TLS_CERTDIR: ""
 #    DOCKER_DRIVER: overlay2
   services:
-    - docker:dind
-#      alias: docker
-#      command: [ "--tls=false" ]
+    - name: docker:dind
+      alias: docker
+      command: [ "--experimental" ]
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
   script:
     - pwd
     - echo $SERVER_IP
