@@ -61,8 +61,8 @@ publish:
     - echo $SERVER_IP
     - docker --version
     - docker login -u $DOCKER_USER_NAME -p $DOCKER_PWD docker.io
-    - docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
-    - docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
+    - docker build -t docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
+    - docker push docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA
 #  only:
 #    - main
 
