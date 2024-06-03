@@ -47,7 +47,7 @@ build:
 #      - smells/*.csv
 
 publish:
-  image: docker:latest
+  image: docker:24.0.6
   stage: publish
   tags:
     - dalfcs_docker_autoscale
@@ -56,11 +56,7 @@ publish:
 #    DOCKER_TLS_CERTDIR: ""
 #    DOCKER_DRIVER: overlay2
   services:
-    - name: docker:dind
-      alias: docker
-      command: [ "--experimental" ]
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
+    - docker:24.0.6-dind
   script:
     - pwd
     - echo $SERVER_IP
