@@ -54,7 +54,8 @@ publish:
   variables:
     DOCKER_HOST: tcp://localhost:2375
   services:
-    - docker:dind
+    - name: docker:dind
+      command: [ "--tls=false" ]
   script:
     - pwd
     - echo $SERVER_IP
