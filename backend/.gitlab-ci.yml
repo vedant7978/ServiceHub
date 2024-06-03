@@ -57,6 +57,7 @@ publish:
   services:
     - name: docker:24.0.6-dind
       alias: docker
+      command: ["--tls=false"]
   before_script:
     - docker info
   script:
