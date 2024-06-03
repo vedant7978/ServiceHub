@@ -66,6 +66,7 @@ publish:
     - echo $DOCKER_USER_NAME
 #    - unset $DOCKER_HOST
     - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER_NAME" --password-stdin
+    - docker images
     - docker build -t docker.io/$DOCKER_USER_NAME/backend:latest .
     - docker push docker.io/$DOCKER_USER_NAME/backend:latest
 
