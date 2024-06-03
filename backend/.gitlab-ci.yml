@@ -47,16 +47,16 @@ build:
 #      - smells/*.csv
 
 publish:
-  image: docker:24.0.6-dind
+  image: docker:latest
   stage: publish
   tags:
     - dalfcs_docker_autoscale
   variables:
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   services:
-    - name: docker:24.0.6-dind
+    - name: docker:dind
       alias: docker
       command: [ "--tls=false" ]
   script:
