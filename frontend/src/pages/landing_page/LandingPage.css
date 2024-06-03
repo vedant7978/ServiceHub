@@ -1,0 +1,66 @@
+.landing-page {
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.landing-box {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: auto;
+    max-width: 900px;
+    padding: 30px; 
+}
+
+.app-logo {
+    width: 60px;
+}
+
+.app-information-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: black;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.app-information-description {
+    font-size: 14px;
+    font-weight: 500;
+    color: #00000099;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.outline-primary {
+    border-radius: 8px !important;
+    border: 1px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+    font-size: 16px;
+}
+
+.outline-primary:hover {
+    background-color: transparent;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.colored-primary {
+    border-radius: 8px !important;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+}
+
+.colored-primary:hover {
+    color: white;
+    background-color: #007bff;
+    border-color: transparent;
+}
+
+.landing-image {
+    max-width: 420px;
+    max-height: 420px;
+}
