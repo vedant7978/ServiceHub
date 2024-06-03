@@ -9,7 +9,7 @@ WORKDIR /app
 RUN pwd && ls
 
 # Copy the compiled JAR file from your target directory into the container
-COPY target/backend-0.1-SNAPSHOT.jar /app/app.jar
+COPY target/ServiceHub-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Exposing the port on which banckend application will run
 EXPOSE 8080
