@@ -57,7 +57,7 @@ publish:
       command: [ "--tls=false" ]
   variables:
     DOCKER_TLS_CERTDIR: ""
-    DOCKER_HOST: tcp://docker:2375/
+#    DOCKER_HOST: tcp://docker:2375/
   before_script:
     - docker info
   script:
