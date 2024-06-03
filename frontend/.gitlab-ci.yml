@@ -21,19 +21,27 @@ build:
 publish:
   image: docker:latest
   stage: publish
-  tags:
-    - dalfcs_docker_autoscale
-  variables:
-    DOCKER_HOST: "tcp://docker:2375"
   services:
-    - docker:dind
+    - name: docker:20-dind
+      alias: docker
+      command: [ "--tls=false" ]
+  tags:
+    - dalfcs_docker_kvm
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER_NAME" --password-stdin
+    - docker info
   script:
     - pwd
-    - echo $SERVER_IP
+    - echo "Checking Docker version"
     - docker --version
-    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
-    - docker build -t docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/frontend/
-    - docker push docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA
+    - echo "Checking Docker info"
+    - docker info
+    - docker build -t docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/frontend/
+    - docker push docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA
   only:
     - main
 
@@ -41,16 +49,24 @@ deploy:
   image: alpine:latest
   stage: deploy
   tags:
-    - dalfcs_docker_autoscale
+    - dalfcs_docker_kvm
   script:
-    - chmod og= $SSH_KEY
-    - apk update && apk add openssh-client
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker pull docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker container rm -f frontend || true"
-    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no "student@$SERVER_NAME" "docker run -d -p 3000:3000 --name frontend docker.io/$DOCKER_HUB_USER/frontend:$CI_COMMIT_SHORT_SHA"
+    - cd frontend/
+    - echo "Deploying frontend..."
+    - apk update && apk add openssh-client sshpass
+    - sudo apt-get install sshpass || true
+    - which ssh || true
+    - which sshpass || true
+
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker login -u $DOCKER_USER_NAME -p $DOCKER_PWD docker.io"
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker pull docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA"
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker container rm -f frontend || true"
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker run -d -p 3000:3000 --name frontend docker.io/$DOCKER_USER_NAME/frontend:$CI_COMMIT_SHORT_SHA"
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker images -a"
+    - sshpass -p $VM_PWD ssh -o StrictHostKeyChecking=no student@$SERVER_NAME "docker container ls -a"
   environment:
-    name: production_backend
+    name: production_frontend
     url: http://172.17.1.12:3000
   only:
     - main
+
