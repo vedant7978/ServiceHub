@@ -47,14 +47,15 @@ build:
 #      - smells/*.csv
 
 publish:
-  image: docker:latest
+  image: docker:20-dind
   stage: publish
   tags:
     - dalfcs_docker_autoscale
   variables:
-    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   services:
-    - name: docker:dind
+    - name: docker:20-dind
       command: [ "--tls=false" ]
   script:
     - pwd
