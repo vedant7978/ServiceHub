@@ -29,8 +29,8 @@ test:
     - cd backend/
     - mvn test
     - echo "Done Testing Backend"
-  only:
-    - develop
+#  only:
+#    - develop
   allow_failure: false
 
 quality:
