@@ -51,12 +51,12 @@ publish:
   stage: publish
   tags:
     - dalfcs_docker_autoscale
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
+#  variables:
+#    DOCKER_HOST: tcp://docker:2375
+#    DOCKER_TLS_CERTDIR: ""
 #    DOCKER_DRIVER: overlay2
   services:
-    - name: docker:dind
+    - docker:dind
 #      alias: docker
 #      command: [ "--tls=false" ]
   script:
