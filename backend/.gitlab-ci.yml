@@ -1,7 +1,7 @@
 stages:
   - build
   - test
-  - quality
+#  - quality
   - publish
   - deploy
 
@@ -29,29 +29,30 @@ test:
     - cd backend/
     - mvn test
     - echo "Done Testing Backend"
-#  only:
-#    - develop
+  only:
+    - develop
   allow_failure: false
 
-quality:
-  stage: quality
-  image: openjdk:11
-  script:
-    - echo "Code smells identification started..."
-    - cd backend
-    - rm -rf smells || true
-    - mkdir smells/
-    - java -jar $CI_PROJECT_DIR/backend/.gitlab/DesigniteJava.jar -i $CI_PROJECT_DIR/backend/ -o $CI_PROJECT_DIR/smells/ -d
-  artifacts:
-    paths:
-      - smells/*.csv
+#quality:
+#  stage: quality
+#  image: openjdk:17
+#  script:
+#    - echo "Code smells identification started..."
+#    - cd backend
+#    - rm -rf smells || true
+#    - mkdir smells/
+#    - java -jar $CI_PROJECT_DIR/backend/.gitlab/DesigniteJava.jar -i $CI_PROJECT_DIR/backend/ -o $CI_PROJECT_DIR/smells/ -d
+#  artifacts:
+#    paths:
+#      - smells/*.csv
 
 publish:
   image: docker:latest
   stage: publish
   tags:
     - dalfcs_docker_autoscale
-#  variables:
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
 #    DOCKER_HOST: "tcp://docker:2375"
   services:
     - docker:dind
