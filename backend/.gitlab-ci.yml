@@ -53,6 +53,7 @@ publish:
     - dalfcs_docker_autoscale
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_HOST: tcp://localhost:2375
   services:
     - docker:24.0.6-dind
   before_script:
