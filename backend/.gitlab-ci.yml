@@ -57,12 +57,12 @@ publish:
     - docker:dind
   script:
     - pwd
-        - echo $SERVER_IP
-        - docker --version
-        - echo $DOCKER_HUB_USER
-        - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-        - docker build -t docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
-        - docker push docker.io/$DOCKER_HUB_USER/backend:$CI_COMMIT_SHORT_SHA
+    - echo $SERVER_IP
+    - docker --version
+    - echo $DOCKER_USER_NAME
+    - echo $DOCKER_HUB_PWD | docker login -u $DOCKER_USER_NAME -p $DOCKER_HUB_PWD
+    - docker build -t docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA $CI_PROJECT_DIR/backend/
+    - docker push docker.io/$DOCKER_USER_NAME/backend:$CI_COMMIT_SHORT_SHA
 
 deploy:
   image: alpine:latest
