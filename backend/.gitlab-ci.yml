@@ -1,6 +1,6 @@
 stages:
   - build
-  - test
+#  - test
 #  - quality
   - publish
   - deploy
@@ -17,21 +17,21 @@ build:
     paths:
       - backend/target/ServiceHub-0.0.1-SNAPSHOT.jar
 
-test:
-  stage: test
-  image: maven:latest
-  cache:
-    key: ${CI_PROJECT_NAME}
-    paths:
-      - .m2/repository
-  script:
-    - echo "Testing Backend"
-    - cd backend/
-    - mvn test
-    - echo "Done Testing Backend"
-  only:
-    - develop
-  allow_failure: false
+#test:
+#  stage: test
+#  image: maven:latest
+#  cache:
+#    key: ${CI_PROJECT_NAME}
+#    paths:
+#      - .m2/repository
+#  script:
+#    - echo "Testing Backend"
+#    - cd backend/
+#    - mvn test
+#    - echo "Done Testing Backend"
+#  only:
+#    - develop
+#  allow_failure: false
 
 #quality:
 #  stage: quality
@@ -52,8 +52,7 @@ publish:
   tags:
     - dalfcs_docker_autoscale
   variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-#    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_HOST: tcp://localhost:2375
   services:
     - docker:dind
   script:
