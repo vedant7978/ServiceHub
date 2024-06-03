@@ -53,7 +53,7 @@ publish:
     - dalfcs_docker_autoscale
   services:
     - name: docker:24.0.6-dind
-      alias: docker
+#      alias: docker
       command: [ "--tls=false" ]
   variables:
     DOCKER_TLS_CERTDIR: ""
