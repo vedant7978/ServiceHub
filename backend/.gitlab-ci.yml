@@ -53,11 +53,11 @@ publish:
     - dalfcs_docker_autoscale
   services:
     - name: docker:24.0.6-dind
-#      alias: docker
+      alias: docker
       command: [ "--tls=false" ]
   variables:
     DOCKER_TLS_CERTDIR: ""
-#    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_HOST: tcp://docker:2375/
   script:
     - pwd
     - echo $SERVER_IP
