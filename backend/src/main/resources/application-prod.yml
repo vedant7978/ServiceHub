@@ -1,9 +1,0 @@
-environment:
-  name: PROD
-
-spring:
-  datasource:
-    url: jdbc:mysql://db-5308.cs.dal.ca/CSCI5308_8_PRODUCTION?useSSL=false&allowPublicKeyRetrieval=true
-    username: CSCI5308_8_PRODUCTION_USER
-    password: Aneisiru6b
-    driver-class-name: com.mysql.cj.jdbc.Driver

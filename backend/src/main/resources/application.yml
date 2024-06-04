@@ -1,8 +1,21 @@
+# Datasource URL's for different environment
+# DEV - jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_8_DEVINT?useSSL=false&allowPublicKeyRetrieval=true
+# TEST - jdbc:mysql://db-5308.cs.dal.ca/CSCI5308_8_TEST?useSSL=false&allowPublicKeyRetrieval=true
+# PROD - jdbc:mysql://db-5308.cs.dal.ca/CSCI5308_8_PRODUCTION?useSSL=false&allowPublicKeyRetrieval=true
+
+# Datasource username's for different environment
+# DEV - CSCI5308_8_DEVINT_USER
+# TEST - CSCI5308_8_TEST_USER
+# PROD - CSCI5308_8_PRODUCTION_USER
+
 spring:
+  datasource:
+    url: jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_8_DEVINT?useSSL=false&allowPublicKeyRetrieval=true
+    username: CSCI5308_8_DEVINT_USER
+    password: Aneisiru6b
+    driver-class-name: com.mysql.cj.jdbc.Driver
   application:
     name: ServiceHub
-  profiles:
-    active: DEV # DEV/TEST/PROD, Change as per the need
   jpa:
     show-sql: true
     hibernate:
