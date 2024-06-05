@@ -5,10 +5,13 @@ import './LoginPage.css';
 import { useNavigate } from "react-router-dom";
 import loginPageImg from '../../assets/loginPage.jpg';
 import { LANDING } from '../../utils/Routes';
+import { loginUser } from '../../api_service/AuthModule';
+import Constants from '../../utils/Constants';
+import HttpStatusCodes from '../../utils/HttpStatusCodes';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(null);
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -27,30 +30,33 @@ const Login = () => {
     return errors;
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
 
-  const handleSubmit = (event) => {
-      event.preventDefault();
-      const validationErrors = validate();
-      setErrors(validationErrors);
-  
-      if (Object.keys(validationErrors).length === 0) {
-        const req = {
-          email: email,
-          password: password,
-        };
-        axios.post("http://csci5308-vm8.research.cs.dal.ca:8080", req).then((response) => {
+    if (Object.keys(validationErrors).length === 0) {
+      const req = {
+        email: email,
+        password: password,
+      };
+      await loginUser(req)
+        .then((response) => {
           const token = response.data.token;
-          localStorage.setItem('jwtToken', token);
+          localStorage.setItem(Constants.AUTH_TOKEN_KEY, token);
+          // [TODO]: naviagte to home page when it is ready
           navigate(LANDING);
-        }).catch((error) => {
-          if (error.response && error.response.status === 400) {
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
             setError("Invalid login credentials.");
           } else {
             setError("An error occurred during login.");
           }
         });
-      }
-    };
+    }
+  };
+    
     return (
       <Container fluid className="login-page d-flex align-items-center justify-content-center">
         <Row className="login-box p-4">
