@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
 import './LoginPage.css';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import loginPageImg from '../../assets/loginPage.jpg';
 import { LANDING } from '../../utils/Routes';
+import { REGISTER } from '../../utils/Routes';
 import { loginUser } from '../../api_service/AuthModule';
 import Constants from '../../utils/Constants';
 import HttpStatusCodes from '../../utils/HttpStatusCodes';
@@ -110,7 +110,7 @@ const Login = () => {
               </Button>
               <Form.Group className="text-center mt-2">
                 <Form.Text>
-                  <a href="#" className="text-muted">Don't have an account? Sign Up</a>
+                  <Link to={REGISTER} className="text-muted">Don't have an account? Sign Up</Link>
                 </Form.Text>
               </Form.Group>
             </Form>
