@@ -1,9 +1,9 @@
 import axios from "axios";
 import Constants from "../utils/Constants";
 
-// [TODO]: uncomment csci vm8 base url and remove localhost url once CORS policy issue fix is deployed
-// const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
-const BASE_URL = "http://127.0.0.1:8080"; // Currently running locally as CORS policy fix is not yet deployed
+const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
+// Comment above URL and uncomment this when running backend locally
+// const BASE_URL = "http://127.0.0.1:8080";
 
 // Define endpoints
 export const ENDPOINTS = {
