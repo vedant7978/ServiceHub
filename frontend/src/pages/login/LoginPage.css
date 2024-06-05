@@ -1,9 +1,6 @@
 .login-page {
     background-color: #f0f2f5;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   
   .login-box {
@@ -18,7 +15,6 @@
   
   .login-box .form-control {
     border-radius: 6px;
-    margin-bottom: 1rem;
   }
   
   .login-box .btn-primary {
