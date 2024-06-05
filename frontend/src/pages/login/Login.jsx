@@ -28,7 +28,7 @@ const Login = () => {
   };
 
 
-  const handlePress = (event) => {
+  const handleSubmit = (event) => {
       event.preventDefault();
       const validationErrors = validate();
       setErrors(validationErrors);
@@ -58,7 +58,7 @@ const Login = () => {
             <div className="text-left mb-4">
               <h1 className="h4 mt-3">Log In</h1>
             </div>
-            <Form onSubmit={handlePress}>
+            <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email Id</Form.Label>
                 <Form.Control
