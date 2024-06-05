@@ -47,10 +47,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(authRes);
         } catch (UserAlreadyExistException e) {
             logger.error("User registration failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error during user registration: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
