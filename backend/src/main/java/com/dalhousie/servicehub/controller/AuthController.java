@@ -17,10 +17,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LogManager.getLogger(AuthController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -39,12 +43,13 @@ public class AuthController {
             }
             UserModel userModel = modelMapper.map(regReq, UserModel.class);
             AuthenticationResponse authRes = userService.registerUser(userModel);
+            logger.info("User registered successfully with email: {}", regReq.getEmail());
             return ResponseEntity.status(HttpStatus.CREATED).body(authRes);
         } catch (UserAlreadyExistException e) {
-            System.out.println(e);
+            logger.error("User registration failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch(Exception e){
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error during user registration: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
@@ -56,9 +61,13 @@ public class AuthController {
                 throw new UsernameNotFoundException("User with this email doesn't exists.");
             }
             AuthenticationResponse authRes = userService.authenticateUser(authReq);
+            logger.info("User login successful for email: {}", authReq.getEmail());
             return ResponseEntity.status(HttpStatus.OK).body(authRes);
+        } catch (UsernameNotFoundException e) {
+            logger.error("User login failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            System.out.println(e);
+            logger.error("Unexpected error during user login: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
