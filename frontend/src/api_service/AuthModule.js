@@ -10,3 +10,7 @@ export const loginUser = async (userData) => {
 export const registerUser = async (userData) => {
   return await postRequest(ENDPOINTS.REGISTER, false, userData);
 };
+
+export const resetPassword = async (userData) => {
+  return await postRequest(ENDPOINTS.RESET_PASSWORD, false, userData);
+};

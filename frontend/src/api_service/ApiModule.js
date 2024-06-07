@@ -9,6 +9,7 @@ const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
 export const ENDPOINTS = {
   LOGIN: "/api/auth/login",
   REGISTER: "/api/auth/register",
+  RESET_PASSWORD:"/api/auth/reset-password"
   // Add other endpoints here
 };
 
@@ -62,7 +63,7 @@ export const getRequest = async (
 export const postRequest = async (endpoint, useAuthToken = false, data) => {
   try {
     const instance = useAuthToken ? apiInstanceWithAuthToken : apiInstance;
-    return await apiInstance.post(endpoint, data);
+    return await instance.post(endpoint, data);
   } catch (error) {
     console.error(`Error in POST request to ${endpoint}:`, error);
     throw error;
