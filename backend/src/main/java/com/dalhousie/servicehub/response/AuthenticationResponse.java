@@ -1,4 +1,4 @@
-package com.dalhousie.servicehub.util;
+package com.dalhousie.servicehub.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
