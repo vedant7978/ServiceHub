@@ -49,8 +49,12 @@ public class JwtAuthenticationFilterTest {
     @DisplayName("When no Authorization header, continue the filter chain")
     void whenNoAuthHeader_thenContinueChain() throws IOException, ServletException {
         logger.info("Starting test: When no Authorization header, continue the filter chain");
+
         jwtAuthenticationFilter.doFilter(request, response, filterChain);
+
+        logger.info("No Authorization header present in request");
         verify(filterChain, times(1)).doFilter(request, response);
+
         logger.info("Test completed: When no Authorization header, continue the filter chain");
     }
 
@@ -58,9 +62,16 @@ public class JwtAuthenticationFilterTest {
     @DisplayName("When invalid Authorization header, continue the filter chain")
     void whenInvalidAuthHeader_thenContinueChain() throws IOException, ServletException {
         logger.info("Starting test: When invalid Authorization header, continue the filter chain");
+
+        String invalidHeader = "Invalid Bearer token";
         when(request.getHeader("Authorization")).thenReturn("Invalid Bearer token");
+        logger.info("Authorization header: {}", invalidHeader);
+
         jwtAuthenticationFilter.doFilter(request, response, filterChain);
+
+        logger.info("Invalid Authorization header detected");
         verify(filterChain, times(1)).doFilter(request, response);
+
         logger.info("Test completed: When invalid Authorization header, continue the filter chain");
     }
 
@@ -68,14 +79,20 @@ public class JwtAuthenticationFilterTest {
     @DisplayName("Should extract username from JWT when header is valid")
     public void shouldExtractUsernameFromJwtWhenHeaderIsValid() throws Exception {
         logger.info("Starting test: Should extract username from JWT when header is valid");
-        when(request.getHeader("Authorization")).thenReturn("Bearer validToken");
+
+        String validToken = "validToken";
+        String validUser = "validUser";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
         when(jwtService.extractUsername("validToken")).thenReturn("validUser");
         when(userDetailsService.loadUserByUsername("validUser")).thenReturn(null);
 
+        logger.info("Authorization header: Bearer {}", validToken);
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
+        logger.info("Extracted username from JWT: {}", validUser);
         verify(jwtService, times(1)).extractUsername("validToken");
         verify(filterChain, times(1)).doFilter(request, response);
+
         logger.info("Test completed: Should extract username from JWT when header is valid");
     }
 
@@ -83,12 +100,17 @@ public class JwtAuthenticationFilterTest {
     @DisplayName("Should not extract username from JWT when header is invalid")
     public void shouldNotExtractUsernameFromJwtWhenHeaderIsInvalid() throws Exception {
         logger.info("Starting test: Should not extract username from JWT when header is invalid");
-        when(request.getHeader("Authorization")).thenReturn("InvalidHeader");
+
+        String invalidHeader = "InvalidHeader";
+        when(request.getHeader("Authorization")).thenReturn(invalidHeader);
+        logger.info("Authorization header: {}", invalidHeader);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
+        logger.info("Invalid Authorization header detected, no username extraction performed");
         verify(jwtService, times(0)).extractUsername(anyString());
         verify(filterChain, times(1)).doFilter(request, response);
+
         logger.info("Test completed: Should not extract username from JWT when header is invalid");
     }
 }
