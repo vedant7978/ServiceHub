@@ -1,11 +1,17 @@
 import React, {useState} from "react";
 import {Button, Container, Form} from "react-bootstrap";
-import {Link} from "react-router-dom";
-import {LOGIN, REGISTER} from "../../utils/Routes";
+import {Link, useLocation, useNavigate} from "react-router-dom";
+import {LOGIN} from "../../utils/Routes";
 import './resetPassword.css'
+import {resetPassword} from "../../api_service/AuthModule";
+import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 const ResetPassword = () => {
 
+    const {state} = useLocation();
+    const email = state.email;
+    const navigateTo = state.navigateTo;
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         password: "",
         confirmPassword: ""
@@ -13,7 +19,7 @@ const ResetPassword = () => {
     const [error, setError] = useState("");
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData({
             ...formData,
             [name]: value
@@ -21,21 +27,33 @@ const ResetPassword = () => {
         setError("");
     };
 
-    const handleResetPassword = () => {
-        const { password, confirmPassword } = formData;
+    const handleResetPassword = async () => {
+        const {password, confirmPassword} = formData;
 
         if (password !== confirmPassword) {
             setError("Passwords do not match");
             return;
         }
-
         if (password.length < 8) {
             setError("Password must be at least 8 characters");
             return;
         }
 
         setError("");
-        // Proceed with resetting password
+        try {
+            const userData = {email: email, password: formData.password}
+            const response = await resetPassword(userData);
+            const message = response.data.message;
+
+            if (response.status === HttpStatusCodes.OK) {
+               navigate(navigateTo)
+            } else {
+                setError(message);
+            }
+        } catch (error) {
+            setError(error);
+            console.error("Reset failed:", error);
+        }
     };
 
     return (
@@ -58,7 +76,7 @@ const ResetPassword = () => {
                             <Form.Label>Confirm Password</Form.Label>
                             <Form.Control
                                 type="password"
-                                name="confirmpassword"
+                                name="confirmPassword"
                                 placeholder="Please enter confirm Password"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
@@ -73,7 +91,7 @@ const ResetPassword = () => {
                         </Button>
                         <Form.Group className="text-center mt-2">
                             <Form.Text>
-                                <Link to={LOGIN} className="text-muted" >Back to login</Link>
+                                <Link to={LOGIN} className="text-muted">Back to login</Link>
                             </Form.Text>
                         </Form.Group>
                     </Form>
