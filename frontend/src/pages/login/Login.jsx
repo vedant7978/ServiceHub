@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
 import './LoginPage.css';
 import { Link, useNavigate } from "react-router-dom";
 import loginPageImg from '../../assets/loginPage.jpg';
-import { LANDING } from '../../utils/Routes';
+import {FORGOT_PASSWORD, LANDING} from '../../utils/Routes';
 import { REGISTER } from '../../utils/Routes';
 import { loginUser } from '../../api_service/AuthModule';
 import Constants from '../../utils/Constants';
@@ -95,12 +95,12 @@ const Login = () => {
   
               <Form.Group className="text-end mt-2">
                 <Form.Text>
-                  <a href="#" className="text-muted">Forgot Password?</a>
+                  <a href="" className="text-muted" onClick={() => navigate(FORGOT_PASSWORD)}>Forgot Password?</a>
                 </Form.Text>
               </Form.Group>
-  
+
               {error && (
-                <div className="alert alert-danger" role="alert">
+                  <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
