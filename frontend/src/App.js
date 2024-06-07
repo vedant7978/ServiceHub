@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LANDING, LOGIN, REGISTER } from "./utils/Routes";
+import { RESETPASSWORD,LANDING, LOGIN, REGISTER } from "./utils/Routes";
 import { Suspense, lazy } from "react";
 import Loader from "./components/Loader";
+import ResetPassword from "./pages/reset_password/resetPassword";
 
 // Keep adding all screens here for lazy loading
 const LandingPage = lazy(() => import("./pages/landing_page/LandingPage"));
@@ -16,6 +17,7 @@ export default function App() {
                     <Route path={LANDING} element={<LandingPage />} />
                     <Route path={LOGIN} element={<Login />} />
                     <Route path={REGISTER} element={<Register />} />
+                    <Route path={RESETPASSWORD} element={<ResetPassword />} />
                 </Routes>
             </Suspense>
         </BrowserRouter>
