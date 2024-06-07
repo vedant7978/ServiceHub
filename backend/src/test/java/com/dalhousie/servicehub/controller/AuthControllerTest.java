@@ -7,6 +7,8 @@ import com.dalhousie.servicehub.service.UserServiceImpl;
 import com.dalhousie.servicehub.util.AuthenticationRequest;
 import com.dalhousie.servicehub.util.AuthenticationResponse;
 import com.dalhousie.servicehub.service.JwtService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
+    private static final Logger logger = LogManager.getLogger(AuthControllerTest.class);
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -58,6 +61,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Registration Successfully Completed")
     void UserRegisterHandlerTest() {
+        logger.info("Starting test: Registration Successfully Completed");
         when(passwordEncoder.encode(anyString())).thenReturn("encoded-pass");
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
@@ -67,11 +71,13 @@ class AuthControllerTest {
         assertEquals("jwt-token", response.getToken());
         verify(userRepository, times(1)).save(any(UserModel.class));
         verify(jwtService, times(1)).generateToken(any(UserDetails.class));
+        logger.info("Test completed: Registration Successfully Completed");
     }
 
     @Test
     @DisplayName("Successfully login")
     void userLoginHandlerTest() {
+        logger.info("Starting test: Successfully login");
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userModel));
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
@@ -82,11 +88,14 @@ class AuthControllerTest {
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, times(1)).findByEmail(anyString());
         verify(jwtService, times(1)).generateToken(any(UserDetails.class));
+        logger.info("Test completed: Successfully login");
+
     }
 
     @Test
     @DisplayName("Login with Invalid Credentials")
     void userLoginHandlerTest_WithInvalidCredentials() {
+        logger.info("Starting test: Login with Invalid Credentials");
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new RuntimeException("Bad credentials"));
 
@@ -99,11 +108,13 @@ class AuthControllerTest {
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, times(0)).findByEmail(anyString());
         verify(jwtService, times(0)).generateToken(any(UserDetails.class));
+        logger.info("Test completed: Login with Invalid Credentials");
     }
 
     @Test
     @DisplayName("Login with Non-existing User")
     void userLoginHandlerTest_WithNonExistingUser() {
+        logger.info("Starting test: Login with Non-existing User");
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -114,5 +125,6 @@ class AuthControllerTest {
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, times(1)).findByEmail(anyString());
         verify(jwtService, times(0)).generateToken(any(UserDetails.class));
+        logger.info("Test completed: Login with Non-existing User");
     }
 }
