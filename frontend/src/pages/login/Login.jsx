@@ -95,12 +95,12 @@ const Login = () => {
   
               <Form.Group className="text-end mt-2">
                 <Form.Text>
-                  <a href="#" className="text-muted">Forgot Password?</a>
+                  <a href="" className="text-muted" onClick={() => navigate('/forgot-password')}>Forgot Password?</a>
                 </Form.Text>
               </Form.Group>
-  
+
               {error && (
-                <div className="alert alert-danger" role="alert">
+                  <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
