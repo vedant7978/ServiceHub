@@ -14,5 +14,8 @@ COPY target/ServiceHub-0.0.1-SNAPSHOT.jar /app/app.jar
 # Exposing the port on which banckend application will run
 EXPOSE 8080
 
+# Set the active Spring Boot profile to "production"
+ENV SPRING_PROFILES_ACTIVE=production
+
 # Command to run your Spring Boot application when the container starts
 ENTRYPOINT ["java", "-jar", "app.jar"]

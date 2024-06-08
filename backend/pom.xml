@@ -110,10 +110,19 @@
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency><!-- Add Log4j2 Dependency -->
+        </dependency>
+
+        <!-- Add Log4j2 Dependency -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+
+        <!-- Swagger UI by open-api only for development -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
         </dependency>
 
     </dependencies>

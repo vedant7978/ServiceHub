@@ -24,3 +24,8 @@ spring:
       hibernate:
         format:_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    enabled: true
