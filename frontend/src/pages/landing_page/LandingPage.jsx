@@ -1,10 +1,10 @@
 import React from "react";
 import "./LandingPage.css";
-import LandingImage from "../../assets/LandingPageImage.png";
+import {Button, Container, Stack} from "react-bootstrap";
+import {useNavigate} from "react-router-dom";
 import AppLogo from "../../assets/AppLogo.png";
-import { Button, Container, Stack } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { LOGIN, REGISTER } from "../../utils/Routes";
+import LandingImage from "../../assets/LandingPageImage.png";
+import {AppRoutes} from "../../utils/AppRoutes";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -41,13 +41,13 @@ export default function LandingPage() {
             <Stack gap={3}>
               <Button
                 className="outline-primary"
-                onClick={() => navigate(LOGIN)}
+                onClick={() => navigate(AppRoutes.Login)}
               >
                 Login
               </Button>
               <Button
                 className="colored-primary"
-                onClick={() => navigate(REGISTER)}
+                onClick={() => navigate(AppRoutes.Register)}
               >
                 Register
               </Button>

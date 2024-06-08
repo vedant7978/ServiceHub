@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
+import React, {useState} from 'react';
+import {Button, Col, Container, Form, Image, Row} from 'react-bootstrap';
 import './LoginPage.css';
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import {loginUser} from '../../api_service/AuthModule';
 import loginPageImg from '../../assets/loginPage.jpg';
-import {FORGOT_PASSWORD, LANDING} from '../../utils/Routes';
-import { REGISTER } from '../../utils/Routes';
-import { loginUser } from '../../api_service/AuthModule';
+import {AppRoutes} from '../../utils/AppRoutes';
 import Constants from '../../utils/Constants';
 import HttpStatusCodes from '../../utils/HttpStatusCodes';
 
@@ -44,8 +43,8 @@ const Login = () => {
         .then((response) => {
           const token = response.data.token;
           localStorage.setItem(Constants.AUTH_TOKEN_KEY, token);
-          // [TODO]: naviagte to home page when it is ready
-          navigate(LANDING);
+          // [TODO]: navigate to home page when it is ready
+          navigate(AppRoutes.Landing);
         })
         .catch((error) => {
           if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
@@ -95,7 +94,7 @@ const Login = () => {
   
               <Form.Group className="text-end mt-2">
                 <Form.Text>
-                  <a href="" className="text-muted" onClick={() => navigate(FORGOT_PASSWORD)}>Forgot Password?</a>
+                  <a href="" className="text-muted" onClick={() => navigate(AppRoutes.ForgotPassword)}>Forgot Password?</a>
                 </Form.Text>
               </Form.Group>
 
@@ -110,7 +109,7 @@ const Login = () => {
               </Button>
               <Form.Group className="text-center mt-2">
                 <Form.Text>
-                  <Link to={REGISTER} className="text-muted">Don't have an account? Sign Up</Link>
+                  <Link to={AppRoutes.Register} className="text-muted">Don't have an account? Sign Up</Link>
                 </Form.Text>
               </Form.Group>
             </Form>

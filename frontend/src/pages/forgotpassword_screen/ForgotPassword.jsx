@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { Button, Container, Form } from "react-bootstrap";
+import React, {useState} from "react";
+import {Button, Container, Form} from "react-bootstrap";
 import "./ForgotPassword.css";
-import { Link } from "react-router-dom";
-import { LOGIN } from "../../utils/Routes";
-import { validateEmail } from "../../utils/helper";
+import {Link} from "react-router-dom";
+import {AppRoutes} from "../../utils/AppRoutes";
+import {validateEmail} from "../../utils/helper";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('')
@@ -54,7 +54,7 @@ const ForgotPassword = () => {
                         <Form>
                             <Form.Group className="text-center mt-2">
                                 <Form.Text>
-                                    <Link to={LOGIN} className="text-muted" >Back to login</Link>
+                                    <Link to={AppRoutes.Login} className="text-muted" >Back to login</Link>
                                 </Form.Text>
                             </Form.Group>
                         </Form>

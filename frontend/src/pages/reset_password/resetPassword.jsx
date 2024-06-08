@@ -1,10 +1,10 @@
 import React, {useState} from "react";
 import {Button, Container, Form} from "react-bootstrap";
 import {Link, useLocation, useNavigate} from "react-router-dom";
-import {LOGIN} from "../../utils/Routes";
-import './resetPassword.css'
 import {resetPassword} from "../../api_service/AuthModule";
+import {AppRoutes} from "../../utils/AppRoutes";
 import HttpStatusCodes from "../../utils/HttpStatusCodes";
+import './resetPassword.css'
 
 const ResetPassword = () => {
 
@@ -91,7 +91,7 @@ const ResetPassword = () => {
                         </Button>
                         <Form.Group className="text-center mt-2">
                             <Form.Text>
-                                <Link to={LOGIN} className="text-muted">Back to login</Link>
+                                <Link to={AppRoutes.Login} className="text-muted">Back to login</Link>
                             </Form.Text>
                         </Form.Group>
                     </Form>

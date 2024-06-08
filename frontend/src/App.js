@@ -1,27 +1,50 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { RESET_PASSWORD,LANDING, LOGIN, REGISTER , FORGOT_PASSWORD} from "./utils/Routes";
-import { Suspense, lazy } from "react";
+import {lazy, Suspense} from "react";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Loader from "./components/Loader";
-import ForgotPasswordScreen from "./pages/forgotpassword_screen/ForgotPassword";
-import ResetPassword from "./pages/reset_password/resetPassword";
+import {AppRoutes} from "./utils/AppRoutes";
+import {WithNavBar} from "./utils/WithNavBar";
 
 // Keep adding all screens here for lazy loading
 const LandingPage = lazy(() => import("./pages/landing_page/LandingPage"));
 const Login = lazy(() => import("./pages/login/Login"));
 const Register = lazy(() => import("./pages/register/Register"));
+const ForgotPassword = lazy(() => import("./pages/forgotpassword_screen/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/reset_password/resetPassword"));
+const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"))
+const ManageServices = lazy(() => import("./pages/manage_services/ManageServices"))
+const ManageContracts = lazy(() => import("./pages/manage_contracts/ManageContracts"))
+const Wishlist = lazy(() => import("./pages/wishlist/Wishlist"))
+const Profile = lazy(() => import("./pages/profile/Profile"))
 
 export default function App() {
-    return (
-        <BrowserRouter>
-            <Suspense fallback={<Loader />}>
-                <Routes>
-                    <Route path={LANDING} element={<LandingPage />} />
-                    <Route path={LOGIN} element={<Login />} />
-                    <Route path={REGISTER} element={<Register />} />
-                    <Route path={FORGOT_PASSWORD} element={<ForgotPasswordScreen />} />
-                    <Route path={RESET_PASSWORD} element={<ResetPassword />} />
-                </Routes>
-            </Suspense>
-        </BrowserRouter>
-    );
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path={AppRoutes.Landing} element={withoutNavBar(LandingPage)}/>
+        <Route path={AppRoutes.Login} element={withoutNavBar(Login)}/>
+        <Route path={AppRoutes.Register} element={withoutNavBar(Register)}/>
+        <Route path={AppRoutes.ForgotPassword} element={withoutNavBar(ForgotPassword)}/>
+        <Route path={AppRoutes.ResetPassword} element={withoutNavBar(ResetPassword)}/>
+        <Route path={AppRoutes.Dashboard} element={withNavBar(Dashboard)}/>
+        <Route path={AppRoutes.ManageServices} element={withNavBar(ManageServices)}/>
+        <Route path={AppRoutes.ManageContracts} element={withNavBar(ManageContracts)}/>
+        <Route path={AppRoutes.Wishlist} element={withNavBar(Wishlist)}/>
+        <Route path={AppRoutes.Profile} element={withNavBar(Profile)}/>
+      </Routes>
+    </BrowserRouter>
+  );
 }
+
+const withNavBar = (Component) => (
+  <WithNavBar>
+    <Suspense fallback={<Loader/>}>
+      <Component/>
+    </Suspense>
+  </WithNavBar>
+);
+
+const withoutNavBar = (Component) => (
+  <Suspense fallback={<Loader/>}>
+    <Component/>
+  </Suspense>
+);
