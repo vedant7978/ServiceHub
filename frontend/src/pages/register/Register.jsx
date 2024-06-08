@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Container, Stack, Button, Form, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import React, {useState} from "react";
+import {Alert, Button, Container, Form, Stack} from "react-bootstrap";
+import {useNavigate} from "react-router-dom";
 import "./Register.css";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import { LOGIN } from "../../utils/Routes";
-import Constants from "../../utils/Constants";
-import { registerUser } from "../../api_service/AuthModule";
+import {registerUser} from "../../api_service/AuthModule";
 import Loader from "../../components/Loader";
+import {AppRoutes} from "../../utils/AppRoutes";
+import Constants from "../../utils/Constants";
+import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ export default function RegisterPage() {
 
       if (response.status === HttpStatusCodes.CREATED) {
         localStorage.setItem(Constants.AUTH_TOKEN_KEY, result.token);
-        navigate(LOGIN);
+        navigate(AppRoutes.Login);
       } else {
         setApiError(
           message === null
