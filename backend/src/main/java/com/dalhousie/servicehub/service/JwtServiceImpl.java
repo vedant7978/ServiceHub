@@ -23,13 +23,13 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
-    @Override
-    public String buildToken(Map<String, Object> extraClaims, String subject) {
-        return null;
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails);
     }
 
     public String generateToken(
@@ -48,7 +48,16 @@ public class JwtServiceImpl implements JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                // For now setting token expiration to 10 days
+                // [TODO]: Setup refresh token concept for updating expired tokens
+                .setExpiration(new Date(
+                        System.currentTimeMillis() +
+                                1000L/*Milli seconds*/ *
+                                        60/*Seconds*/ *
+                                        60/*Minutes*/ *
+                                        24/*Hours*/ *
+                                        10/*Days*/
+                ))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -66,16 +75,6 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    @Override
-    public Key getSigningKey() {
-        return null;
-    }
-
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
@@ -85,10 +84,8 @@ public class JwtServiceImpl implements JwtService {
                 .getBody();
     }
 
-    public Key getSignInKey() {
+    private Key getSignInKey() {
         byte[] KeyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(KeyBytes);
     }
-
-
 }
