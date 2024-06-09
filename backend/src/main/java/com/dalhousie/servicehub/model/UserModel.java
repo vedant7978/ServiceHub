@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -38,6 +39,11 @@ public class UserModel implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private String resetPasswordToken;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date resetPasswordTokenExpiration;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -47,6 +53,7 @@ public class UserModel implements UserDetails {
     public String getUsername() {
         return email;
     }
+
 
     @Override
     public boolean isAccountNonExpired() {
@@ -67,4 +74,6 @@ public class UserModel implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }

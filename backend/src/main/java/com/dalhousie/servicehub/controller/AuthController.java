@@ -7,20 +7,23 @@ import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
 import com.dalhousie.servicehub.service.UserService;
 import com.dalhousie.servicehub.util.Constants;
+import com.dalhousie.servicehub.util.forgotPasswordRequest;
+import jakarta.mail.MessagingException;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     private static final Logger logger = LogManager.getLogger(AuthController.class);
@@ -75,4 +78,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> processForgotPassword(@Valid @RequestBody forgotPasswordRequest request, HttpServletRequest servletRequest) {
+        try {
+            String resetUrl = userService.getURL(servletRequest) + "/reset-password";
+            userService.forgotPassword(request.getEmail(), resetUrl);
+            return ResponseEntity.ok("Reset link is sent to your email");
+        } catch (Exception e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+
+
+
 }
