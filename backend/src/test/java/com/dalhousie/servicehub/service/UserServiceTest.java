@@ -2,11 +2,14 @@ package com.dalhousie.servicehub.service;
 
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.model.RefreshTokenModel;
 import com.dalhousie.servicehub.model.UserModel;
+import com.dalhousie.servicehub.repository.RefreshTokenRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import jakarta.mail.internet.MimeMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +20,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -44,6 +49,15 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private JavaMailSender mailSender;
 
     @InjectMocks
     @Autowired
@@ -217,5 +231,34 @@ class UserServiceTest {
         verify(passwordEncoder).encode(password);
         verify(userRepository).updatePassword(email, encodedPassword);
         logger.info("Test completed: Reset password with user registered");
+    }
+
+    @Test
+    @DisplayName("Throw exception when user not found")
+    void forgotPassword_shouldThrowException_whenUserNotFound() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class, () -> userService.forgotPassword("jems007patel@gmail.com", "http://forgotPassword.com/reset"));
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verify(refreshTokenService, times(0)).createRefreshToken(any(UserModel.class));
+        verify(mailSender, times(0)).send(any(MimeMessage.class));
+    }
+
+    @Test
+    @DisplayName("Handle exception during email sending")
+    void forgotPassword_shouldHandleEmailException() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userModel));
+        when(refreshTokenService.createRefreshToken(any(UserModel.class))).thenReturn(new RefreshTokenModel());
+
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+        doThrow(new RuntimeException("Email sending failed")).when(mailSender).send(mimeMessage);
+
+        assertThrows(RuntimeException.class, () -> userService.forgotPassword("jems007patel@gmail.com", "http://forgotPassword.com/reset"));
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verify(refreshTokenService, times(1)).createRefreshToken(any(UserModel.class));
+        verify(mailSender, times(1)).send(mimeMessage);
     }
 }
