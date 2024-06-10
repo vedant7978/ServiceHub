@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService {
     /**
@@ -25,4 +26,9 @@ public interface UserService {
      * @param password New password to update
      */
     void resetPassword(String email, String password);
+
+    void forgotPassword(String email, String resetUrl);
+
+    String getURL(HttpServletRequest request);
+
 }

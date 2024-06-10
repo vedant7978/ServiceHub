@@ -7,6 +7,8 @@ import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
 import com.dalhousie.servicehub.service.UserService;
 import com.dalhousie.servicehub.util.Constants;
+import com.dalhousie.servicehub.util.forgotPasswordRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,6 +75,18 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("Unexpected error during resetting password for {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> processForgotPassword(@Valid @RequestBody forgotPasswordRequest request, HttpServletRequest servletRequest) {
+        try {
+            String resetUrl = userService.getURL(servletRequest) + "/reset-password";
+            userService.forgotPassword(request.getEmail(), resetUrl);
+            return ResponseEntity.ok("Reset link is sent to your email");
+        } catch (Exception e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
