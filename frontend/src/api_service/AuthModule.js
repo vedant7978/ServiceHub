@@ -14,3 +14,7 @@ export const registerUser = async (userData) => {
 export const resetPassword = async (userData) => {
   return await postRequest(ENDPOINTS.RESET_PASSWORD, false, userData);
 };
+
+export const forgotPassword = async (userData) => {
+  return await postRequest(ENDPOINTS.FORGOT_PASSWORD, false, userData);
+};

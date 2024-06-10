@@ -1,15 +1,16 @@
 import axios from "axios";
 import Constants from "../utils/Constants";
 
-const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
+// const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
 // Comment above URL and uncomment this when running backend locally
-// const BASE_URL = "http://127.0.0.1:8080";
+const BASE_URL = "http://127.0.0.1:8080";
 
 // Define endpoints
 export const ENDPOINTS = {
   LOGIN: "/api/auth/login",
   REGISTER: "/api/auth/register",
-  RESET_PASSWORD:"/api/auth/reset-password"
+  RESET_PASSWORD:"/api/auth/reset-password",
+  FORGOT_PASSWORD:"/api/auth/forgot-password"
   // Add other endpoints here
 };
 
