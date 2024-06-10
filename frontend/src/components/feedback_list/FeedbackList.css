@@ -1,0 +1,13 @@
+.feedback-list h3 {
+    margin-bottom: 20px;
+}
+.feedback-list {
+    background: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-y: auto;
+}
+.feedback-container {
+    height: 400px;
+    overflow-y: auto;
+}

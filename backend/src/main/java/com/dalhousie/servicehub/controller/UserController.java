@@ -40,7 +40,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/get-feedbacks/")
+    @GetMapping("/get-feedbacks")
     public ResponseEntity<ResponseBody<GetFeedbackResponse>> getFeedbacks(@Valid @RequestParam long userId) {
         try {
             logger.info("Get feedbacks request received for {}", userId);

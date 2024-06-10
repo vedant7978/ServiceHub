@@ -14,7 +14,7 @@ const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"))
 const ManageServices = lazy(() => import("./pages/manage_services/ManageServices"))
 const ManageContracts = lazy(() => import("./pages/manage_contracts/ManageContracts"))
 const Wishlist = lazy(() => import("./pages/wishlist/Wishlist"))
-const Profile = lazy(() => import("./pages/profile/Profile"))
+const Profile = lazy(() => import("./pages/profile_page/ProfilePage"))
 
 export default function App() {
   return (
