@@ -1,0 +1,59 @@
+.profile {
+    display: flex;
+    flex-direction: column;
+    background-color: #007bff;
+}
+
+.profile-image {
+    position: relative;
+}
+
+.image-placeholder {
+    width: 150px;
+    height: 150px;
+    background-color: #d4a1f9;
+    border-radius: 10px;
+    position: relative;
+}
+
+.upload-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.profile-details {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.change-password {
+    background: none;
+    border: none;
+    color: blue;
+    cursor: pointer;
+}
+
+.save {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}

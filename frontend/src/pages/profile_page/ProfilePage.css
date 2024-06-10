@@ -4,4 +4,5 @@
   display: flex;
   padding-left: 20rem;
   padding-right: 20rem;
+  align-items: start;
 }
