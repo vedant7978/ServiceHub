@@ -1,4 +1,4 @@
-package com.dalhousie.servicehub.service;
+package com.dalhousie.servicehub.service.user;
 
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
@@ -25,7 +25,7 @@ public interface UserService {
      * @param email Email address to update password
      * @param password New password to update
      */
-    void resetPassword(String email, String password);
+    void resetPassword(String email, String password, String token);
 
     void forgotPassword(String email, String resetUrl);
 

@@ -39,7 +39,6 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 email:
   frontend-port: ${FRONTEND_PORT:3000}
-  ip-address: ${IP_ADDRESS:localhost}
 
 springdoc:
   swagger-ui:

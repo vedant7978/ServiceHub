@@ -1,6 +1,6 @@
 package com.dalhousie.servicehub.config;
 
-import com.dalhousie.servicehub.service.JwtService;
+import com.dalhousie.servicehub.service.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;

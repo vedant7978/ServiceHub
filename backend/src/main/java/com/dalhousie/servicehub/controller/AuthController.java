@@ -1,11 +1,12 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
-import com.dalhousie.servicehub.service.UserService;
+import com.dalhousie.servicehub.service.user.UserService;
 import com.dalhousie.servicehub.util.Constants;
 import com.dalhousie.servicehub.util.forgotPasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,12 +66,16 @@ public class AuthController {
         try {
             userService.resetPassword(
                     resetPasswordRequest.getEmail(),
-                    resetPasswordRequest.getPassword()
+                    resetPasswordRequest.getPassword(),
+                    resetPasswordRequest.getToken()
             );
             logger.info("Successfully resetted password for {}", resetPasswordRequest.getEmail());
             return ResponseEntity.status(HttpStatus.OK).body(Constants.RESET_PASSWORD_SUCCESS_MESSAGE);
         } catch (UsernameNotFoundException e) {
-            logger.error("Field to reset password for {}", e.getMessage());
+            logger.error("Field to reset password due to user not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (InvalidTokenException e) {
+            logger.error("Field to reset password due to invalid token: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error during resetting password for {}", e.getMessage());

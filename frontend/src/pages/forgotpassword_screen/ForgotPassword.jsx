@@ -2,11 +2,11 @@ import React, {useState} from "react";
 import {Button, Container, Form} from "react-bootstrap";
 import "./ForgotPassword.css";
 import {Link} from "react-router-dom";
+import {forgotPassword} from "../../api_service/AuthModule";
+import AppToast from "../../components/app_toast/AppToast";
 import {AppRoutes} from "../../utils/AppRoutes";
 import {validateEmail} from "../../utils/helper";
-import AppToast from "../../components/app_toast/AppToast";
 import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import {forgotPassword} from "../../api_service/AuthModule";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
@@ -25,7 +25,7 @@ const ForgotPassword = () => {
     try {
       const userData = {email: email}
       const response = await forgotPassword(userData);
-      const message = response.data.message;
+      const message = response.message;
 
       if (response.status === HttpStatusCodes.OK) {
         setForgotPasswordSuccessMessage(message);

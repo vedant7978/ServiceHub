@@ -13,15 +13,20 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "refreshTokens")
-public class RefreshTokenModel {
+@Table(name = "reset_password_token")
+public class ResetPasswordTokenModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @Column(name = "token")
     private String token;
+
+    @Column(name = "expiry_date")
     private Instant expiryDate;
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserModel userInfo;
+
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 }

@@ -1,6 +1,6 @@
 package com.dalhousie.servicehub.config;
 
-import com.dalhousie.servicehub.service.JwtService;
+import com.dalhousie.servicehub.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
