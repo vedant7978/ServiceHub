@@ -1,4 +1,4 @@
-package com.dalhousie.servicehub.service;
+package com.dalhousie.servicehub.service.jwt;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.userdetails.UserDetails;

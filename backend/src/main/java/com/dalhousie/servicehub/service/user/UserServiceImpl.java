@@ -1,24 +1,28 @@
-package com.dalhousie.servicehub.service;
+package com.dalhousie.servicehub.service.user;
 
+import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.model.ResetPasswordTokenModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
-import jakarta.mail.internet.MimeMessage;
+import com.dalhousie.servicehub.service.jwt.JwtService;
+import com.dalhousie.servicehub.service.reset_password.ResetPasswordTokenService;
+import com.dalhousie.servicehub.util.EmailSender;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,18 +31,14 @@ public class UserServiceImpl implements UserService {
     @Value("${email.frontend-port}")
     private int frontendPort;
 
-    @Value("${email.ip-address}")
-    private String ipAddress;
-
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JavaMailSender mailSender;
-    private final RefreshTokenService refreshTokenService;
+    private final ResetPasswordTokenService resetPasswordTokenService;
     private final AuthenticationManager authenticationManager;
 
-
-@Override
+    @Override
     public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
         if (repository.findByEmail(registerRequest.getEmail()).isPresent())
             throw new UserAlreadyExistException("User with this email already exists.");
@@ -75,40 +75,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void resetPassword(String email, String password) {
-        if (!repository.existsByEmail(email))
-            throw new UserNotFoundException("User not found with email: " + email);
+    public void resetPassword(String email, String password, String token) {
+        UserModel user = repository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        ResetPasswordTokenModel resetPasswordTokenModel = resetPasswordTokenService.findByUserId(user.getId())
+                .orElseThrow(() -> new UserNotFoundException("User did not initiated reset password request."));
+
+        if (!Objects.equals(token, resetPasswordTokenModel.getToken()))
+            throw new InvalidTokenException("Failed to authenticate token. Please re-request to reset password.");
+
+        if (!resetPasswordTokenService.isTokenValid(resetPasswordTokenModel))
+            throw new InvalidTokenException("Token expired. Please re-request to reset password");
+
         String newPassword = passwordEncoder.encode(password);
         repository.updatePassword(email, newPassword);
+        resetPasswordTokenService.deleteResetPasswordToken(resetPasswordTokenModel);
     }
 
+    @Override
     public void forgotPassword(String email, String resetUrl) {
         UserModel user = repository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-
-        var refreshToken = refreshTokenService.createRefreshToken(user).getToken();
-
-        repository.save(user);
-
-        String resetLink = resetUrl + "?token=" + refreshToken;
-        String subject = "Reset your password";
-        String content = "<p>You have requested to reset your password.</p>"
-                + "<p>Click the link to reset your password:</p>"
-                + "<p><a href=\"" + resetLink + "\">Reset my password</a></p>";
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
-
-            helper.setTo(user.getEmail());
-            helper.setSubject(subject);
-            helper.setText(content, true);
-
-            mailSender.send(message);
-        } catch (Exception ex) {
-            throw new RuntimeException("An error occurred while processing forgot password request", ex);
-        }
+        String refreshToken = resetPasswordTokenService.createResetPasswordToken(user.getId()).getToken();
+        String resetPasswordLink = resetUrl + "?token=" + refreshToken + "&email=" + email;
+        sendMail(resetPasswordLink, email);
     }
 
+    @Override
     public String getURL(HttpServletRequest request) {
         String siteURL = request.getRequestURL().toString().replace(request.getServletPath(), "");
         try {
@@ -120,6 +114,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private void sendMail(String resetPasswordLink, String email) {
+        EmailSender emailSender = new EmailSender(mailSender);
+        String subject = "Reset your password";
+        String content = "<p>You have requested to reset your password. Password link only valid for 10 minutes.</p>"
+                + "<p>Click the link to reset your password:</p>"
+                + "<p><a href=\"" + resetPasswordLink + "\">Reset my password</a></p>";
+        try {
+            emailSender.sendEmail(email, subject, content);
+        } catch (Exception exception) {
+            throw new RuntimeException(exception.getMessage());
+        }
+    }
 }
-
-

@@ -1,15 +1,19 @@
 package com.dalhousie.servicehub.service;
 
+import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
-import com.dalhousie.servicehub.model.RefreshTokenModel;
+import com.dalhousie.servicehub.model.ResetPasswordTokenModel;
 import com.dalhousie.servicehub.model.UserModel;
-import com.dalhousie.servicehub.repository.RefreshTokenRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import com.dalhousie.servicehub.service.jwt.JwtService;
+import com.dalhousie.servicehub.service.reset_password.ResetPasswordTokenService;
+import com.dalhousie.servicehub.service.user.UserServiceImpl;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +30,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -33,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -51,14 +57,12 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Mock
-    private RefreshTokenService refreshTokenService;
+    private ResetPasswordTokenService resetPasswordTokenService;
 
     @Mock
     private JavaMailSender mailSender;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
     @Autowired
     private UserServiceImpl userService;
@@ -86,6 +90,7 @@ class UserServiceTest {
                 .address("1881 Brunswick Street")
                 .image("image.jpg")
                 .build();
+        ReflectionTestUtils.setField(userService, "frontendPort", 3000);
     }
 
     @Test
@@ -156,9 +161,7 @@ class UserServiceTest {
         AuthenticationRequest invalidAuthRequest = new AuthenticationRequest("jems007patel@gmail.com", "wrongpassword");
 
         logger.info("Authenticating user with invalid request: {}", invalidAuthRequest);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.authenticateUser(invalidAuthRequest);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.authenticateUser(invalidAuthRequest));
 
         logger.info("Exception thrown: {}", exception.getMessage());
         assertEquals("Bad credentials", exception.getMessage());
@@ -176,9 +179,7 @@ class UserServiceTest {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
         logger.info("Authenticating user with request: {}", authRequest);
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
-            userService.authenticateUser(authRequest);
-        });
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.authenticateUser(authRequest));
 
         logger.info("Exception thrown: {}", exception.getMessage());
         assertEquals("User not found with email: jems007patel@gmail.com", exception.getMessage());
@@ -196,12 +197,13 @@ class UserServiceTest {
         logger.info("Starting test: Reset password without registering");
         String email = "dummy@gmail.com";
         String password = "12345678";
-        logger.info("Will return false when trying to check if any email exists");
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        String token = "someRandomToken";
+        logger.info("Will return no user when trying to get user by email");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         // When
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
-                userService.resetPassword(email, password)
+                userService.resetPassword(email, password, token)
         );
 
         // Then
@@ -209,28 +211,137 @@ class UserServiceTest {
         assertEquals(exception.getMessage(), "User not found with email: " + email);
         verify(passwordEncoder, never()).encode(password);
         verify(userRepository, never()).updatePassword(email, password);
+        verify(resetPasswordTokenService, never()).deleteResetPasswordToken(any());
         logger.info("Test completed: Reset password without registering");
     }
 
     @Test
-    void shouldUpdatePassword_WhenUserIsRegistered() {
+    void shouldThrowException_WhenUserNotRequestedResetPassword_AndResetPasswordCalled() {
         // Given
-        logger.info("Starting test: Reset password with user registered");
+        logger.info("Starting test: Reset password without requesting for reset password");
+        Long userId = 10L;
         String email = "dummy@gmail.com";
         String password = "12345678";
+        String token = "someRandomToken";
+        UserModel dummyUserModel = UserModel.builder().id(userId).build();
+
+        logger.info("Will return dummy user model when finding by email: {}", dummyUserModel);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(dummyUserModel));
+
+        logger.info("Will return null user when trying to get reset password model from user id.");
+        when(resetPasswordTokenService.findByUserId(dummyUserModel.getId())).thenReturn(Optional.empty());
+
+        // When
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
+                userService.resetPassword(email, password, token)
+        );
+
+        // Then
+        logger.info("Caught user not found exception while reset password without requesting for reset password for {}", email);
+        assertEquals(exception.getMessage(), "User did not initiated reset password request.");
+        verify(passwordEncoder, never()).encode(password);
+        verify(userRepository, never()).updatePassword(email, password);
+        verify(resetPasswordTokenService, never()).deleteResetPasswordToken(any());
+        logger.info("Test completed: Reset password without requesting for reset password");
+    }
+
+    @Test
+    void shouldThrowException_WhenInvalidTokenPassed_AndResetPasswordCalled() {
+        // Given
+        logger.info("Starting test: Reset password with invalid token");
+        Long userId = 10L;
+        String email = "dummy@gmail.com";
+        String password = "12345678";
+        String token = "someRandomToken";
+        UserModel dummyUserModel = UserModel.builder().id(userId).build();
+        ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder().token("differentToken").build();
+
+        logger.info("Will return dummy user model when finding by email: {}", dummyUserModel);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(dummyUserModel));
+
+        logger.info("Will return dummy reset password model when finding by user id: {}", resetPasswordTokenModel);
+        when(resetPasswordTokenService.findByUserId(dummyUserModel.getId())).thenReturn(Optional.of(resetPasswordTokenModel));
+
+        // When
+        InvalidTokenException exception = assertThrows(InvalidTokenException.class, () ->
+                userService.resetPassword(email, password, token)
+        );
+
+        // Then
+        logger.info("Caught invalid token exception for invalid token by email: {}", email);
+        assertEquals(exception.getMessage(), "Failed to authenticate token. Please re-request to reset password.");
+        verify(passwordEncoder, never()).encode(password);
+        verify(userRepository, never()).updatePassword(email, password);
+        verify(resetPasswordTokenService, never()).deleteResetPasswordToken(any());
+        logger.info("Test completed: Reset password with invalid token");
+    }
+
+    @Test
+    void shouldThrowException_WhenExpiredTokenPassed_AndResetPasswordCalled() {
+        // Given
+        logger.info("Starting test: Reset password with expired token");
+        Long userId = 10L;
+        String email = "dummy@gmail.com";
+        String password = "12345678";
+        String token = "someRandomToken";
+        UserModel dummyUserModel = UserModel.builder().id(userId).build();
+        ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder().token(token).build();
+
+        logger.info("Will return dummy user model when finding by email: {}", dummyUserModel);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(dummyUserModel));
+
+        logger.info("Will return dummy reset password model when finding by user id: {}", resetPasswordTokenModel);
+        when(resetPasswordTokenService.findByUserId(dummyUserModel.getId())).thenReturn(Optional.of(resetPasswordTokenModel));
+
+        logger.info("Will return false when is token valid function called for {}", resetPasswordTokenModel);
+        when(resetPasswordTokenService.isTokenValid(resetPasswordTokenModel)).thenReturn(false);
+
+        // When
+        InvalidTokenException exception = assertThrows(InvalidTokenException.class, () ->
+                userService.resetPassword(email, password, token)
+        );
+
+        // Then
+        logger.info("Caught invalid token exception for expired token by email: {}", email);
+        assertEquals(exception.getMessage(), "Token expired. Please re-request to reset password");
+        verify(passwordEncoder, never()).encode(password);
+        verify(userRepository, never()).updatePassword(email, password);
+        verify(resetPasswordTokenService, never()).deleteResetPasswordToken(any());
+        logger.info("Test completed: Reset password with expired token");
+    }
+
+    @Test
+    void shouldUpdatePassword_WhenUserIsRegistered_AndTokenIsValid() {
+        // Given
+        logger.info("Starting test: Reset password with user registered and valid token");
+        Long userId = 10L;
+        String email = "dummy@gmail.com";
+        String password = "12345678";
+        String token = "someRandomToken";
         String encodedPassword = "axbyhugjdigjalnge";
-        logger.info("Will return true when trying to check if any email exists");
-        when(userRepository.existsByEmail(anyString())).thenReturn(true);
+        UserModel dummyUserModel = UserModel.builder().id(userId).build();
+        ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder().token(token).build();
+
+        logger.info("Will return dummy user model when finding by email: {}", dummyUserModel);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(dummyUserModel));
+
+        logger.info("Will return dummy reset password model when finding by user id: {}", resetPasswordTokenModel);
+        when(resetPasswordTokenService.findByUserId(dummyUserModel.getId())).thenReturn(Optional.of(resetPasswordTokenModel));
+
+        logger.info("Will return true when is token valid function called for {}", resetPasswordTokenModel);
+        when(resetPasswordTokenService.isTokenValid(resetPasswordTokenModel)).thenReturn(true);
+
         logger.info("Will return encoded password ({}) when trying to encode password", encodedPassword);
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
 
         // When
-        userService.resetPassword(email, password);
+        userService.resetPassword(email, password, token);
 
         // Then
         verify(passwordEncoder).encode(password);
         verify(userRepository).updatePassword(email, encodedPassword);
-        logger.info("Test completed: Reset password with user registered");
+        verify(resetPasswordTokenService).deleteResetPasswordToken(resetPasswordTokenModel);
+        logger.info("Test completed: Reset password with user registered and valid token");
     }
 
     @Test
@@ -241,24 +352,73 @@ class UserServiceTest {
         assertThrows(UsernameNotFoundException.class, () -> userService.forgotPassword("jems007patel@gmail.com", "http://forgotPassword.com/reset"));
 
         verify(userRepository, times(1)).findByEmail(anyString());
-        verify(refreshTokenService, times(0)).createRefreshToken(any(UserModel.class));
-        verify(mailSender, times(0)).send(any(MimeMessage.class));
     }
 
     @Test
-    @DisplayName("Handle exception during email sending")
-    void forgotPassword_shouldHandleEmailException() {
+    @DisplayName("Throw some exception occurred while sending mail")
+    void forgotPassword_shouldThrowException_whenSomeExceptionOccurred() {
+        // Given
+        String email = "jems007patel@gmail.com";
+        String resetUrl = "http://127.0.0.1:8080/reset-password";
+        ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder().token("someToken").build();
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userModel));
-        when(refreshTokenService.createRefreshToken(any(UserModel.class))).thenReturn(new RefreshTokenModel());
+        when(resetPasswordTokenService.createResetPasswordToken(userModel.getId())).thenReturn(resetPasswordTokenModel);
+        when(mailSender.createMimeMessage()).thenThrow(new RuntimeException("Exception occurred while sending mail"));
 
-        MimeMessage mimeMessage = mock(MimeMessage.class);
-        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
-        doThrow(new RuntimeException("Email sending failed")).when(mailSender).send(mimeMessage);
+        // When
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> userService.forgotPassword(email, resetUrl)
+        );
 
-        assertThrows(RuntimeException.class, () -> userService.forgotPassword("jems007patel@gmail.com", "http://forgotPassword.com/reset"));
-
+        // Then
         verify(userRepository, times(1)).findByEmail(anyString());
-        verify(refreshTokenService, times(1)).createRefreshToken(any(UserModel.class));
-        verify(mailSender, times(1)).send(mimeMessage);
+        assertEquals(exception.getMessage(), "Exception occurred while sending mail");
+    }
+
+    @Test
+    @DisplayName("Should send mail when user is registered")
+    void forgotPassword_shouldSendEmail_whenUserIsRegistered() {
+        // Given
+        String email = "jems007patel@gmail.com";
+        String resetUrl = "http://127.0.0.1:8080/reset-password";
+        ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder().token("someToken").build();
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userModel));
+        when(resetPasswordTokenService.createResetPasswordToken(userModel.getId())).thenReturn(resetPasswordTokenModel);
+        when(mailSender.createMimeMessage()).thenReturn(mock(MimeMessage.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> userService.forgotPassword(email, resetUrl));
+    }
+
+    @Test
+    void shouldThrowException_whenPortCannotBeChanged() {
+        // Given
+        HttpServletRequest mockHttpServletRequest = mock(HttpServletRequest.class);
+        when(mockHttpServletRequest.getRequestURL()).thenReturn(new StringBuffer());
+        when(mockHttpServletRequest.getServletPath()).thenReturn("");
+
+        // When
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> userService.getURL(mockHttpServletRequest)
+        );
+
+        // Then
+        assertEquals(exception.getMessage(), "Failed to change URL port");
+    }
+
+    @Test
+    void shouldProvideProperURLWithPortChanged_whenGetURLCalled() {
+        // Given
+        String requestUrl = "http://127.0.0.1:8080/reset-password";
+        String resultUrl = "http://127.0.0.1:3000/reset-password";
+        HttpServletRequest mockHttpServletRequest = mock(HttpServletRequest.class);
+        when(mockHttpServletRequest.getRequestURL()).thenReturn(new StringBuffer(requestUrl));
+        when(mockHttpServletRequest.getServletPath()).thenReturn("");
+
+        // When
+        String result = userService.getURL(mockHttpServletRequest);
+
+        // Then
+        assertEquals(resultUrl, result);
     }
 }
