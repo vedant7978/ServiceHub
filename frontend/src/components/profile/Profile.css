@@ -8,13 +8,7 @@
     position: relative;
 }
 
-.image-placeholder {
-    width: 150px;
-    height: 150px;
-    background-color: #d4a1f9;
-    border-radius: 10px;
-    position: relative;
-}
+
 
 .upload-button {
     position: absolute;
@@ -56,4 +50,19 @@
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
+}
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 150px;
+    background-color: #d4a1f9;
+    border-radius: 50%;
+}
+
+.btn-upload {
+    background: none;
+    border: none;
+    cursor: pointer;
 }

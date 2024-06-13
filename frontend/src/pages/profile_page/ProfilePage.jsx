@@ -1,8 +1,8 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './ProfilePage.css';
-import FeedbackList from "../../components/feedback_list/FeedbackList";
 import Profile from "../../components/profile/Profile";
-import {Container} from "react-bootstrap";
+import FeedbackList from "../../components/feedback_list/FeedbackList"; // Additional custom styles if needed
 
 const ProfilePage = () => {
   const feedbacks = [
@@ -11,10 +11,16 @@ const ProfilePage = () => {
   ];
 
   return (
-    <Container fluid className="profile">
-      <Profile />
-      <FeedbackList feedbacks={feedbacks} />
-    </Container>
+    <div className="container mt-5">
+      <div className="row">
+        <div className="col-md-6">
+          <Profile />
+        </div>
+        <div className="col-md-6">
+          <FeedbackList feedbacks={feedbacks} />
+        </div>
+      </div>
+    </div>
   );
 };
 
