@@ -10,7 +10,10 @@ export const ENDPOINTS = {
   LOGIN: "/api/auth/login",
   REGISTER: "/api/auth/register",
   RESET_PASSWORD:"/api/auth/reset-password",
-  FORGOT_PASSWORD:"/api/auth/forgot-password"
+  FORGOT_PASSWORD:"/api/auth/forgot-password",
+  GET_USER_DATA : "/api/user-profile/get-user-details",
+  UPDATE_INTO_PROFILE : "/api/user-profile/update-user-details",
+  GET_FEEDBACK : "/api/user/get-feedbacks"
   // Add other endpoints here
 };
 
@@ -67,6 +70,17 @@ export const postRequest = async (endpoint, useAuthToken = false, data) => {
     return await instance.post(endpoint, data);
   } catch (error) {
     console.error(`Error in POST request to ${endpoint}:`, error);
+    throw error;
+  }
+};
+
+// Generic function to handle POST requests
+export const putRequest = async (endpoint, useAuthToken = false, data) => {
+  try {
+    const instance = useAuthToken ? apiInstanceWithAuthToken : apiInstance;
+    return await instance.put(endpoint, data);
+  } catch (error) {
+    console.error(`Error in PUT request to ${endpoint}:`, error);
     throw error;
   }
 };

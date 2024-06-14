@@ -1,11 +1,14 @@
-.profile {
+.profile-page {
   background-color: #F8F7FF;
-  height: calc(100vh - 80px);
+  height: 100vh;
   display: flex;
   padding-left: 20rem;
   padding-right: 20rem;
-  align-items: start;
 }
-.container {
-  padding-top: 20px;
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.profile-page .card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
