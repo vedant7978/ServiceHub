@@ -1,18 +1,21 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {Button, Col, Container, Form, Image, Row} from 'react-bootstrap';
 import './LoginPage.css';
 import {Link, useNavigate} from "react-router-dom";
-import {loginUser} from '../../api_service/AuthModule';
 import loginPageImg from '../../assets/loginPage.jpg';
 import {AppRoutes} from '../../utils/AppRoutes';
-import Constants from '../../utils/Constants';
 import HttpStatusCodes from '../../utils/HttpStatusCodes';
+import AuthContext from '../../context/AuthContext';
+import AxiosContext from '../../context/AxiosContext';
+import { ENDPOINTS } from '../../utils/Constants';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
+  const { storeAuthToken } = useContext(AuthContext);
+  const { postRequest } = useContext(AxiosContext);
   const navigate = useNavigate();
   const validate = () => {
     let errors = {};
@@ -39,20 +42,18 @@ const Login = () => {
         email: email,
         password: password,
       };
-      await loginUser(req)
-        .then((response) => {
-          const token = response.data.token;
-          localStorage.setItem(Constants.AUTH_TOKEN_KEY, token);
-          // [TODO]: navigate to home page when it is ready
-          navigate(AppRoutes.Landing);
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
+      try {
+        const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
+        const token = response.data.token;
+        storeAuthToken(token); 
+        navigate(AppRoutes.Landing);
+    } catch (error) {
+        if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
             setError("Invalid login credentials.");
-          } else {
+        } else {
             setError("An error occurred during login.");
-          }
-        });
+        }
+    }
     }
   };
     
@@ -63,6 +64,7 @@ const Login = () => {
             <div className="text-left mb-4">
               <h1 className="h4 mt-3">Log In</h1>
             </div>
+
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email Id</Form.Label>
@@ -94,7 +96,7 @@ const Login = () => {
   
               <Form.Group className="text-end mt-2">
                 <Form.Text>
-                  <a href="" className="text-muted" onClick={() => navigate(AppRoutes.ForgotPassword)}>Forgot Password?</a>
+                  <a href = {AppRoutes.ForgotPassword} className="text-muted">Forgot Password?</a>
                 </Form.Text>
               </Form.Group>
 

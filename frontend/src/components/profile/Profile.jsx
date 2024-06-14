@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import './Profile.css';
 import { FaCamera } from 'react-icons/fa';
-import { getUser, updateUser } from "../../api_service/ProfileModule";
 import { useNavigate } from "react-router-dom";
+import { ENDPOINTS } from '../../utils/Constants';
+import AxiosContext from '../../context/AxiosContext';
 
 const Profile = () => {
   const [name, setName] = useState('');
@@ -15,6 +16,7 @@ const Profile = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { getRequest, putRequest } = useContext(AxiosContext);
 
   useEffect(() => {
     getUserData();
@@ -23,7 +25,7 @@ const Profile = () => {
   const getUserData = async () => {
     try {
       const userData = { email: email };
-      const response = await getUser(userData);
+      const response = await getRequest(ENDPOINTS.GET_USER_DATA, true, userData);
       const data = response.data;
 
       if (response.status === 200) {
@@ -79,7 +81,7 @@ const Profile = () => {
     const userData = { name, email, phone, address, image };
 
     try {
-      const response = await updateUser(userData);
+      const response = await putRequest(ENDPOINTS.UPDATE_INTO_PROFILE, true, userData);
       if (response.status === 200) {
         setSuccessMessage('Profile updated successfully');
       } else {

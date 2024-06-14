@@ -1,14 +1,16 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {Button, Container, Form} from "react-bootstrap";
 import {Link, useLocation, useNavigate} from "react-router-dom";
-import {resetPassword} from "../../api_service/AuthModule";
 import {AppRoutes} from "../../utils/AppRoutes";
 import HttpStatusCodes from "../../utils/HttpStatusCodes";
 import './resetPassword.css'
+import AxiosContext from "../../context/AxiosContext";
+import { ENDPOINTS } from "../../utils/Constants";
 
 const ResetPassword = (props) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { postRequest } = useContext(AxiosContext);
 
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -50,7 +52,7 @@ const ResetPassword = (props) => {
     setError("");
     try {
       const userData = {email: email, password: formData.password, token: token}
-      const response = await resetPassword(userData);
+      const response = await postRequest(ENDPOINTS.RESET_PASSWORD, false, userData);
       const message = response.data.message;
 
       if (response.status === HttpStatusCodes.OK) {
