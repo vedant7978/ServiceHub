@@ -1,12 +1,12 @@
-import React, {useState} from "react";
-import {Alert, Button, Container, Form, Stack} from "react-bootstrap";
-import {useNavigate} from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "./Register.css";
-import {registerUser} from "../../api_service/AuthModule";
 import Loader from "../../components/Loader";
-import {AppRoutes} from "../../utils/AppRoutes";
-import Constants from "../../utils/Constants";
+import { AppRoutes } from "../../utils/AppRoutes";
 import HttpStatusCodes from "../../utils/HttpStatusCodes";
+import { ENDPOINTS } from "../../utils/Constants";
+import AxiosContext from "../../context/AxiosContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -22,6 +22,8 @@ export default function RegisterPage() {
     address: "",
     image: "",
   });
+  const { postRequest } = useContext(AxiosContext);
+
 
   const validate = () => {
     let errors = {};
@@ -97,12 +99,11 @@ export default function RegisterPage() {
     try {
       setApiError(null);
       setLoading(true);
-      const response = await registerUser(formData);
+      const response = await postRequest(ENDPOINTS.REGISTER, false, formData);
       const result = response.data;
       const message = result.message;
 
       if (response.status === HttpStatusCodes.CREATED) {
-        localStorage.setItem(Constants.AUTH_TOKEN_KEY, result.token);
         navigate(AppRoutes.Login);
       } else {
         setApiError(
@@ -219,7 +220,7 @@ export default function RegisterPage() {
               onChange={handleImageChange}
             />
           </Form.Group>
-          
+
           {loading && <Loader />}
 
           <Button

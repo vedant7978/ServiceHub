@@ -1,8 +1,10 @@
-import {lazy, Suspense} from "react";
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Loader from "./components/Loader";
-import {AppRoutes} from "./utils/AppRoutes";
-import {WithNavBar} from "./utils/WithNavBar";
+import { AppRoutes } from "./utils/AppRoutes";
+import { WithNavBar } from "./utils/WithNavBar";
+import { AuthProvider } from "./context/AuthContext";
+import { AxiosProvider } from "./context/AxiosContext";
 
 // Keep adding all screens here for lazy loading
 const LandingPage = lazy(() => import("./pages/landing_page/LandingPage"));
@@ -18,33 +20,37 @@ const Profile = lazy(() => import("./pages/profile_page/ProfilePage"))
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path={AppRoutes.Landing} element={withoutNavBar(LandingPage)}/>
-        <Route path={AppRoutes.Login} element={withoutNavBar(Login)}/>
-        <Route path={AppRoutes.Register} element={withoutNavBar(Register)}/>
-        <Route path={AppRoutes.ForgotPassword} element={withoutNavBar(ForgotPassword)}/>
-        <Route path={AppRoutes.ResetPassword} element={withoutNavBar(ResetPassword)}/>
-        <Route path={AppRoutes.Dashboard} element={withNavBar(Dashboard)}/>
-        <Route path={AppRoutes.ManageServices} element={withNavBar(ManageServices)}/>
-        <Route path={AppRoutes.ManageContracts} element={withNavBar(ManageContracts)}/>
-        <Route path={AppRoutes.Wishlist} element={withNavBar(Wishlist)}/>
-        <Route path={AppRoutes.Profile} element={withNavBar(Profile)}/>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <AxiosProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path={AppRoutes.Landing} element={withoutNavBar(LandingPage)} />
+            <Route path={AppRoutes.Login} element={withoutNavBar(Login)} />
+            <Route path={AppRoutes.Register} element={withoutNavBar(Register)} />
+            <Route path={AppRoutes.ForgotPassword} element={withoutNavBar(ForgotPassword)} />
+            <Route path={AppRoutes.ResetPassword} element={withoutNavBar(ResetPassword)} />
+            <Route path={AppRoutes.Dashboard} element={withNavBar(Dashboard)} />
+            <Route path={AppRoutes.ManageServices} element={withNavBar(ManageServices)} />
+            <Route path={AppRoutes.ManageContracts} element={withNavBar(ManageContracts)} />
+            <Route path={AppRoutes.Wishlist} element={withNavBar(Wishlist)} />
+            <Route path={AppRoutes.Profile} element={withNavBar(Profile)} />
+          </Routes>
+        </BrowserRouter>
+      </AxiosProvider>
+    </AuthProvider>
   );
 }
 
 const withNavBar = (Component) => (
   <WithNavBar>
-    <Suspense fallback={<Loader/>}>
-      <Component/>
+    <Suspense fallback={<Loader />}>
+      <Component />
     </Suspense>
   </WithNavBar>
 );
 
 const withoutNavBar = (Component) => (
-  <Suspense fallback={<Loader/>}>
-    <Component/>
+  <Suspense fallback={<Loader />}>
+    <Component />
   </Suspense>
 );
