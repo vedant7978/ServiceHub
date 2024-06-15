@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./LandingPage.css";
-import {Button, Container, Stack} from "react-bootstrap";
-import {useNavigate} from "react-router-dom";
+import { Button, Container, Stack } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import AppLogo from "../../assets/AppLogo.png";
 import LandingImage from "../../assets/LandingPageImage.png";
-import {AppRoutes} from "../../utils/AppRoutes";
+import { useAuth } from "../../context/AuthContext";
+import { AppRoutes } from "../../utils/AppRoutes";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { loggedInUserEmail } = useAuth();
+
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
 
   return (
     <Container fluid className="landing-page">

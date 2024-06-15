@@ -1,5 +1,6 @@
 
 export const AUTH_TOKEN_KEY = "AUTH_TOKEN";
+export const USER_EMAIL_KEY = "USER_EMAIL";
 
 // Define endpoints
 export const ENDPOINTS = {

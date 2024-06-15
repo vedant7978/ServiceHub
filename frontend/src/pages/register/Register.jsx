@@ -1,12 +1,13 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
 import Loader from "../../components/Loader";
+import { useAuth } from "../../context/AuthContext";
+import { useAxios } from "../../context/AxiosContext";
 import { AppRoutes } from "../../utils/AppRoutes";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
 import { ENDPOINTS } from "../../utils/Constants";
-import AxiosContext from "../../context/AxiosContext";
+import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -22,8 +23,15 @@ export default function RegisterPage() {
     address: "",
     image: "",
   });
-  const { postRequest } = useContext(AxiosContext);
+  const { postRequest } = useAxios();
+  const { loggedInUserEmail, storeAuthToken } = useAuth();
 
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
 
   const validate = () => {
     let errors = {};
@@ -104,7 +112,8 @@ export default function RegisterPage() {
       const message = result.message;
 
       if (response.status === HttpStatusCodes.CREATED) {
-        navigate(AppRoutes.Login);
+        storeAuthToken(result.token);
+        navigate(AppRoutes.Dashboard);
       } else {
         setApiError(
           message === null

@@ -1,13 +1,13 @@
-import React, {useContext, useState} from "react";
-import {Button, Container, Form} from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, Container, Form } from "react-bootstrap";
 import "./ForgotPassword.css";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import AppToast from "../../components/app_toast/AppToast";
-import {AppRoutes} from "../../utils/AppRoutes";
-import {validateEmail} from "../../utils/helper";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import AxiosContext from "../../context/AxiosContext";
+import { useAxios } from "../../context/AxiosContext";
+import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
+import { validateEmail } from "../../utils/helper";
+import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const [showToast, setShowToast] = useState(false);
   const [forgotPasswordSuccessMessage, setForgotPasswordSuccessMessage] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
-  const { postRequest } = useContext(AxiosContext);
+  const { postRequest } = useAxios();
 
   const handleSendMail = async () => {
     if (!validateEmail(email)) {
