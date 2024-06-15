@@ -30,7 +30,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-      <div className="container-fluid mt-5">
+      <div className="container-fluid profile-page-container mt-5">
         <div className="row">
           <div className="col-md-6">
             <Profile />
