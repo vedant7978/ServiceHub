@@ -1,18 +1,19 @@
 import React from 'react';
 import './FeedbackCard.css';
+import { Stack } from "react-bootstrap";
 
-const FeedbackCard = ({ providerName, rating, description }) => {
+const FeedbackCard = ({ feedback }) => {
 
   return (
-    <div className="card mb-3">
-      <div className="card-body">
-        <div className="d-flex justify-content-between">
-          <h5 className="card-title">{providerName}</h5>
-          <span className="badge bg-primary">{rating}/5.0</span>
-        </div>
-        <p className="card-text">{description}</p>
+    <Stack className="feedback-block p-2 mb-2 mt-2">
+      <div>
+        <Stack direction="horizontal" className="d-flex justify-content-between">
+          <div className="feedback-username">{feedback.providerName}</div>
+          <div className="feedback-rating">{feedback.rating.toFixed(2)}/5.00</div>
+        </Stack>
       </div>
-    </div>
+      <div className="feedback-description">{feedback.description}</div>
+    </Stack>
   );
 };
 

@@ -1,17 +1,28 @@
-.feedback-card {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.feedback-block {
+    background-color: #F8F7FF;
+    border-radius: 8px;
+    border: 1px solid #0C0059;
 }
 
-.feedback-header {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
+.feedback-username {
+    font-size: 16px;
+    color: black;
+    font-family: "Franklin Gothic Book", sans-serif;
+}
+
+.feedback-rating {
+    font-size: 14px;
+    color: black;
+    font-family: "Franklin Gothic Book", sans-serif;
 }
 
 .feedback-description {
-    margin-top: 5px;
+    font-size: 14px;
+    color: #808080;
+    font-family: "Franklin Gothic Book", sans-serif;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
 }

@@ -1,20 +1,37 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Container, Nav, Navbar} from 'react-bootstrap';
-import {NavLink} from 'react-router-dom';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { Container, Nav, Navbar } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
 import './NavBar.css';
 import AppLogo from '../../assets/AppLogoBlack.png'
-import {AppRoutes} from "../../utils/AppRoutes";
+import { AppRoutes } from "../../utils/AppRoutes";
 
 const NavBar = () => {
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState(getSelectedTab());
   const [underlineStyle, setUnderlineStyle] = useState({});
   const navRefs = useRef({});
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     updateUnderline();
     window.addEventListener('resize', updateUnderline);
     return () => window.removeEventListener('resize', updateUnderline);
   }, [activeTab]);
+
+  function getSelectedTab() {
+    switch (window.location.pathname) {
+      case AppRoutes.Dashboard:
+        return 'Dashboard';
+      case AppRoutes.ManageServices:
+        return 'Manage Services';
+      case AppRoutes.ManageContracts:
+        return 'Manage Contracts';
+      case AppRoutes.Wishlist:
+        return 'Wishlist';
+      case AppRoutes.Profile:
+        return 'Profile';
+      default:
+        return 'Dashboard';
+    }
+  }
 
   const updateUnderline = () => {
     const activeNav = navRefs.current[activeTab];
@@ -34,17 +51,17 @@ const NavBar = () => {
             src={AppLogo}
             width="80"
             height="50"
-            className=" align-top"
+            className="align-top object-fit-scale"
             alt="App Icon"
           />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav"/>
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="nav-bar me-auto" onSelect={(selectedKey) => setActiveTab(selectedKey)}>
+          <Nav className="nav-bar me-auto">
             <Nav.Link
               className="nav-link-custom"
               as={NavLink}
-              to="/dashboard"
+              to={AppRoutes.Dashboard}
               ref={(el) => (navRefs.current['Dashboard'] = el)}
               onClick={() => setActiveTab('Dashboard')}
               active={activeTab === 'Dashboard'}>
@@ -53,7 +70,7 @@ const NavBar = () => {
             <Nav.Link
               className="nav-link-custom"
               as={NavLink}
-              to="/manage-service"
+              to={AppRoutes.ManageServices}
               ref={(el) => (navRefs.current['Manage Service'] = el)}
               onClick={() => setActiveTab('Manage Service')}
               active={activeTab === 'Manage Service'}>
@@ -62,7 +79,7 @@ const NavBar = () => {
             <Nav.Link
               className="nav-link-custom"
               as={NavLink}
-              to="/manage-contracts"
+              to={AppRoutes.ManageContracts}
               ref={(el) => (navRefs.current['Manage Contracts'] = el)}
               onClick={() => setActiveTab('Manage Contracts')}
               active={activeTab === 'Manage Contracts'}>
@@ -70,7 +87,8 @@ const NavBar = () => {
             </Nav.Link>
             <Nav.Link
               className="nav-link-custom"
-              as={NavLink} to="/wishlist"
+              as={NavLink}
+              to={AppRoutes.Wishlist}
               ref={(el) => (navRefs.current['Wishlist'] = el)}
               onClick={() => setActiveTab('Wishlist')}
               active={activeTab === 'Wishlist'}>
@@ -78,7 +96,8 @@ const NavBar = () => {
             </Nav.Link>
             <Nav.Link
               className="nav-link-custom"
-              as={NavLink} to="/profile"
+              as={NavLink}
+              to={AppRoutes.Profile}
               ref={(el) => (navRefs.current['Profile'] = el)}
               onClick={() => setActiveTab('Profile')}
               active={activeTab === 'Profile'}>
@@ -86,8 +105,8 @@ const NavBar = () => {
             </Nav.Link>
           </Nav>
           <Nav>
-              {/* [TODO]: Update this for sign out functionality (might user Modal of Bootstrap to show dialog)*/}
-              Sign Out
+            {/* [TODO]: Update this for sign out functionality (might user Modal of Bootstrap to show dialog)*/}
+            Sign Out
           </Nav>
         </Navbar.Collapse>
       </Container>
