@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useEffect } from 'react';
 import axios from 'axios';
-import AuthContext from './AuthContext';
+import React, { createContext, useContext, useEffect } from 'react';
 import { BASE_URL } from '../utils/Constants';
+import { useAuth } from './AuthContext';
 
 const AxiosContext = createContext();
 
 export const AxiosProvider = ({ children }) => {
-  const { authToken } = useContext(AuthContext);
+  const { authToken } = useAuth();
   let axiosConfig = {
     baseURL: BASE_URL,
     headers: {
@@ -30,7 +30,6 @@ export const AxiosProvider = ({ children }) => {
       }
     );
   }
-  authInterceptor();
 
   useEffect(() => {
     authInterceptor();
@@ -56,7 +55,7 @@ export const AxiosProvider = ({ children }) => {
     }
   };
 
-  // Generic function to handle POST requests
+  // Generic function to handle PUT requests
   const putRequest = async (endpoint, useAuthToken = false, data) => {
     try {
       const instance = useAuthToken ? axiosInstanceWithAuth : axiosInstance;
@@ -75,5 +74,3 @@ export const AxiosProvider = ({ children }) => {
 };
 
 export const useAxios = () => useContext(AxiosContext);
-
-export default AxiosContext;

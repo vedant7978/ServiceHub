@@ -1,16 +1,16 @@
-import React, {useContext, useState} from "react";
-import {Button, Container, Form} from "react-bootstrap";
-import {Link, useLocation, useNavigate} from "react-router-dom";
-import {AppRoutes} from "../../utils/AppRoutes";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import './resetPassword.css'
-import AxiosContext from "../../context/AxiosContext";
+import React, { useState } from "react";
+import { Button, Container, Form } from "react-bootstrap";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAxios } from "../../context/AxiosContext";
+import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
+import HttpStatusCodes from "../../utils/HttpStatusCodes";
+import './ResetPassword.css'
 
 const ResetPassword = (props) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { postRequest } = useContext(AxiosContext);
+  const { postRequest } = useAxios();
 
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);

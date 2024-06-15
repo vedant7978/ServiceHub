@@ -1,22 +1,30 @@
-import React, {useState, useContext} from 'react';
-import {Button, Col, Container, Form, Image, Row} from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import './LoginPage.css';
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import loginPageImg from '../../assets/loginPage.jpg';
-import {AppRoutes} from '../../utils/AppRoutes';
-import HttpStatusCodes from '../../utils/HttpStatusCodes';
-import AuthContext from '../../context/AuthContext';
-import AxiosContext from '../../context/AxiosContext';
+import { useAuth } from "../../context/AuthContext";
+import { useAxios } from '../../context/AxiosContext';
+import { AppRoutes } from '../../utils/AppRoutes';
 import { ENDPOINTS } from '../../utils/Constants';
+import HttpStatusCodes from '../../utils/HttpStatusCodes';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
-  const { storeAuthToken } = useContext(AuthContext);
-  const { postRequest } = useContext(AxiosContext);
+  const { postRequest } = useAxios();
+  const { loggedInUserEmail, storeAuthToken } = useAuth();
   const navigate = useNavigate();
+
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
+
   const validate = () => {
     let errors = {};
     if (!email.trim()) {
@@ -45,15 +53,16 @@ const Login = () => {
       try {
         const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
         const token = response.data.token;
-        storeAuthToken(token); 
-        navigate(AppRoutes.Landing);
-    } catch (error) {
+        storeAuthToken(token);
+        navigate(AppRoutes.Dashboard);
+      } catch (error) {
         if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
-            setError("Invalid login credentials.");
+          setError("Invalid login credentials.");
         } else {
-            setError("An error occurred during login.");
+          console.log(error)
+          setError("An error occurred during login.");
         }
-    }
+      }
     }
   };
     

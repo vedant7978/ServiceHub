@@ -1,22 +1,22 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Modal, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
 import './Profile.css';
 import { FaCamera } from 'react-icons/fa';
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useAxios } from "../../context/AxiosContext";
 import { ENDPOINTS } from '../../utils/Constants';
-import AxiosContext from '../../context/AxiosContext';
 
 const Profile = () => {
+  const { loggedInUserEmail } = useAuth();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(loggedInUserEmail);
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [image, setImage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { getRequest, putRequest } = useContext(AxiosContext);
+  const { getRequest, putRequest } = useAxios();
 
   useEffect(() => {
     getUserData();
@@ -34,7 +34,6 @@ const Profile = () => {
         setAddress(data.address);
         setPhone(data.phone);
         setImage(data.image);
-        setSuccessMessage('Profile updated successfully');
       } else {
         setError('Failed to update profile');
       }
@@ -131,7 +130,7 @@ const Profile = () => {
           <button className="btn btn-link" onClick={handleChangePassword}>Change Password</button>
           <button className="btn btn-success" onClick={handleSave}>Save</button>
         </div>
-        {error && <div className="alert alert-danger mt-3">{Object.values(error).join('. ')}</div>}
+        {error && <div className="alert alert-danger mt-3">{error}</div>}
         {successMessage && <div className="alert alert-success mt-3">{successMessage}</div>}
       </div>
 

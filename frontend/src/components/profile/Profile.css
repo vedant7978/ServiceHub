@@ -1,8 +1,8 @@
 .profile {
     display: flex;
     flex-direction: column;
-    background-color: #007bff;
 }
+
 .profile-image-container {
     width: 100px;
     height: 100px;
