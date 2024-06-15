@@ -10,7 +10,8 @@ export const ENDPOINTS = {
   GET_USER_DATA: "/api/user-profile/get-user-details",
   UPDATE_INTO_PROFILE: "/api/user-profile/update-user-details",
   GET_FEEDBACK: "/api/user/get-feedbacks",
-  GET_CONTRACTS: "/api/contract/get-contracts"
+  GET_CONTRACTS: "/api/contract/get-contracts",
+  GET_HISTORY_CONTRACTS: "/api/contract/get-history-contracts"
   // Add other endpoints here
 };
 

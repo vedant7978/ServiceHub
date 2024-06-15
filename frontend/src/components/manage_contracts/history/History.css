@@ -1,0 +1,44 @@
+.base-container {
+  overflow-x: scroll;
+  scrollbar-width: none;
+  height: 500px;
+}
+
+.search-box {
+  box-shadow: 0 0 14px 2px #0C00593F;
+  border-radius: 8px;
+}
+
+.search-input {
+  font-size: 18px;
+  background-color: white;
+  border-radius: 8px 0 0 8px;
+  border: none;
+  box-sizing: border-box;
+  font-weight: normal;
+  font-family: "Franklin Gothic Book", sans-serif;
+}
+
+.search-input:focus {
+  border: none;
+  outline: none;
+}
+
+.history-type-dropdown {
+  background-color: #EF5366;
+  font-size: 18px;
+  cursor: pointer;
+  color: white;
+  border-radius: 0 8px 8px 0;
+}
+
+.contracts-list-view {
+  max-height: 60vh;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.empty-contracts-view {
+  width: 70vw;
+  height: 70vh;
+}
