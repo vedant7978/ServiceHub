@@ -5,7 +5,7 @@ import EmptyListView from "../../../assets/EmptyListView.png";
 import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
 import { ConfirmationPopup } from "../../ConfirmationPopup";
-import { ContractCard } from "../contract_card/ContractCard";
+import { PendingContractCard } from "../pending_contract_card/PendingContractCard";
 
 export const PendingContracts = () => {
   const [isAcceptContractConfirmationVisible, setIsAcceptContractConfirmationVisible] = useState(false);
@@ -44,7 +44,7 @@ export const PendingContracts = () => {
         {
           contracts.length > 0 ? (
             contracts.map(contract => (
-              <ContractCard
+              <PendingContractCard
                 contract={contract}
                 showAcceptDialog={() => setIsAcceptContractConfirmationVisible(true)}
                 showRejectDialog={() => setIsRejectContractConfirmationVisible(true)}

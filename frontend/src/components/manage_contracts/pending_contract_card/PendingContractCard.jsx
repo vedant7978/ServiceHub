@@ -1,12 +1,12 @@
 import React from "react";
 import { Stack } from "react-bootstrap";
-import "./ContractCard.css";
+import "./PendingContractCard.css";
 import AcceptIcon from "../../../assets/ContractAcceptIcon.png";
 import RejectIcon from "../../../assets/ContractRejectIcon.png";
 import ImagePlaceholder from "../../../assets/ProfileImagePlaceholder.png";
 import FeedbackCard from "../../feedback_card/FeedbackCard";
 
-export const ContractCard = ({ contract, showAcceptDialog, showRejectDialog, onSelectContract }) => {
+export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDialog, onSelectContract }) => {
 
   const handleAcceptContract = () => {
     showAcceptDialog();
