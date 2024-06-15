@@ -10,7 +10,7 @@ const FeedbackList = ({ feedbacks }) => {
       <div className="feedback-container">
 
         {feedbacks.map((feedback, index) => (<>
-            <FeedbackCard key={index} {...feedback} />
+            <FeedbackCard key={index} feedback={feedback} />
           </>
         ))}
       </div>
