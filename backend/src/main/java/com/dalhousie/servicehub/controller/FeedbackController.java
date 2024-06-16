@@ -16,19 +16,19 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/feedback")
+public class FeedbackController {
 
-    private static final Logger logger = LogManager.getLogger(UserController.class);
+    private static final Logger logger = LogManager.getLogger(FeedbackController.class);
 
     @Autowired
     private FeedbackService feedbackService;
 
     @PostMapping("/add-feedback")
-    public ResponseEntity<ResponseBody<Object>> addFeedback(@Valid @RequestBody AddFeedbackRequest addFeedbackRequest) {
+    public ResponseEntity<ResponseBody<String>> addFeedback(@Valid @RequestBody AddFeedbackRequest addFeedbackRequest) {
         try {
             logger.info("Add feedback request received: {}", addFeedbackRequest);
-            ResponseBody<Object> responseBody = feedbackService.addFeedback(addFeedbackRequest);
+            ResponseBody<String> responseBody = feedbackService.addFeedback(addFeedbackRequest);
             logger.info("Add feedback request success");
             return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         } catch (UserNotFoundException exception) {
@@ -58,7 +58,7 @@ public class UserController {
         }
     }
 
-    private ResponseBody<Object> getFailureResponseBody(String message) {
+    private ResponseBody<String> getFailureResponseBody(String message) {
         return new ResponseBody<>(FAILURE, null, message);
     }
 }

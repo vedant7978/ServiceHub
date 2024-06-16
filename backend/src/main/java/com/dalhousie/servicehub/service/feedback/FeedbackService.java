@@ -10,7 +10,7 @@ public interface FeedbackService {
      * @param addFeedbackRequest Request body of feedback to add
      * @return Response body with data of type Object
      */
-    ResponseBody<Object> addFeedback(AddFeedbackRequest addFeedbackRequest);
+    ResponseBody<String> addFeedback(AddFeedbackRequest addFeedbackRequest);
 
     /**
      * Get all feedbacks for the requesting user id

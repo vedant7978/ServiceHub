@@ -26,7 +26,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackMapper feedbackMapper;
 
     @Override
-    public ResponseBody<Object> addFeedback(AddFeedbackRequest addFeedbackRequest) {
+    public ResponseBody<String> addFeedback(AddFeedbackRequest addFeedbackRequest) {
         long providerId = addFeedbackRequest.getProviderId();
         long consumerId = addFeedbackRequest.getConsumerId();
         boolean doesProviderIdExists = userRepository.existsById(providerId);

@@ -3,12 +3,12 @@ package com.dalhousie.servicehub.controller;
 import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
+import com.dalhousie.servicehub.request.ForgotPasswordRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
 import com.dalhousie.servicehub.service.user.UserService;
 import com.dalhousie.servicehub.util.Constants;
-import com.dalhousie.servicehub.util.forgotPasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
@@ -84,7 +84,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> processForgotPassword(@Valid @RequestBody forgotPasswordRequest request, HttpServletRequest servletRequest) {
+    public ResponseEntity<String> processForgotPassword(@Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest servletRequest) {
         try {
             String resetUrl = userService.getURL(servletRequest) + "/reset-password";
             userService.forgotPassword(request.getEmail(), resetUrl);
