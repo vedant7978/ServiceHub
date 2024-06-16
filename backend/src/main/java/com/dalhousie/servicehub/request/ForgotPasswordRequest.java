@@ -1,4 +1,4 @@
-package com.dalhousie.servicehub.util;
+package com.dalhousie.servicehub.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class forgotPasswordRequest {
+public class ForgotPasswordRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email address")
     private String email;

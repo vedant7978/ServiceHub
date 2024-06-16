@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class FeedbackServiceTest {
 
-    private static final Logger logger = LogManager.getLogger(UserServiceTest.class);
+    private static final Logger logger = LogManager.getLogger(FeedbackServiceTest.class);
 
     @Mock
     private FeedbackRepository feedbackRepository;
@@ -132,7 +132,7 @@ public class FeedbackServiceTest {
 
         // When
         logger.info("Providing valid input to add feedback: {}", addFeedbackRequest);
-        ResponseBody<Object> responseBody = feedbackService.addFeedback(addFeedbackRequest);
+        ResponseBody<String> responseBody = feedbackService.addFeedback(addFeedbackRequest);
 
         // Then
         logger.info("Response body after providing valid input: {}", responseBody);
