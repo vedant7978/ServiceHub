@@ -12,11 +12,11 @@ export const History = () => {
   const [contracts, setContracts] = useState([]);
   const [filteredContracts, setFilteredContracts] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [selectedContractId, setSelectedContractId] = useState(null);
   const { getRequest } = useAxios();
 
   useEffect(() => {
-    // [TODO]: Uncomment after adding API
-    // loadContracts()
+    loadContracts()
   }, []);
 
   useEffect(() => {
@@ -27,9 +27,15 @@ export const History = () => {
     filterContractsBySearchText();
   }, [searchText]);
 
+  useEffect(() => {
+    if (filteredContracts.every(contract => contract.id !== selectedContractId)) {
+      setSelectedContractId(null);
+    }
+  }, [filteredContracts]);
+
   const loadContracts = async () => {
     try {
-      const response = await getRequest(ENDPOINTS.GET_HISTORY_CONTRACTS);
+      const response = await getRequest(ENDPOINTS.GET_HISTORY_CONTRACTS, true);
       const contractsWithSelection = response.data.data.contracts.map(contract => ({
         ...contract,
         isSelected: false
@@ -45,9 +51,9 @@ export const History = () => {
     const filtered = contracts.filter(contract => {
       switch (selectedHistoryType) {
         case "Completed contracts":
-          return contract.type === "completed";
+          return contract.historyType === "Completed";
         case "Requested contracts":
-          return contract.type === "requested";
+          return contract.historyType === "Requested";
         default:
           return true;
       }
@@ -57,19 +63,22 @@ export const History = () => {
 
   const filterContractsBySearchText = () => {
     const filtered = contracts.filter(contract =>
-      contract.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      contract.type.toLowerCase().includes(searchText.toLowerCase())
+      contract.serviceName.toLowerCase().includes(searchText.toLowerCase()) ||
+      contract.serviceType.toLowerCase().includes(searchText.toLowerCase())
+    ).filter(contract => {
+        switch (selectedHistoryType) {
+          case "Completed contracts":
+            return contract.historyType === "Completed";
+          case "Requested contracts":
+            return contract.historyType === "Requested";
+          default:
+            return true;
+        }
+      }
     );
     setFilteredContracts(filtered);
   };
 
-  const handleContractSelection = (selectedContract) => {
-    const updatedContracts = contracts.map(contract => ({
-      ...contract,
-      isSelected: contract.id === selectedContract.id,
-    }));
-    setContracts(updatedContracts);
-  };
 
   const handleViewProfileClicked = (userId) => {
     // [TODO]: View profile of the user with user id as {userId}
@@ -118,7 +127,7 @@ export const History = () => {
   };
 
   return (
-    <Container className="base-container h-auto pt-4 pb-4 justify-content-start">
+    <Container className="history-contracts-container h-auto pt-4 pb-4 justify-content-start">
       <Stack direction="horizontal" className="search-box w-75 align-items-stretch">
         <input
           className="search-input w-75 pt-2 pb-2 ps-4 pe-4"
@@ -140,16 +149,22 @@ export const History = () => {
         </div>
       </Stack>
 
-      <Stack direction="horizontal" className="d-flex justify-content-between align-items-start pt-3" gap={5}>
-        <div className="w-75">
+      <Stack
+        direction="horizontal"
+        className="d-flex justify-content-between align-items-center pt-3 flex-md-row flex-column"
+        gap={5}
+      >
+        <div>
           <Stack direction="vertical" className="contracts-list-view p-3">
             {
               filteredContracts.length > 0 ? (
                 filteredContracts.map(contract => (
                   <HistoryContractCard
                     contract={contract}
-                    onSelect={handleContractSelection}
+                    isSelected={selectedContractId === contract.id}
+                    onSelect={setSelectedContractId}
                     onViewProfileClicked={handleViewProfileClicked}
+                    key={contract.id}
                   />
                 ))
               ) : (
@@ -168,10 +183,16 @@ export const History = () => {
 
         {
           filteredContracts.length > 0 && (
-            <div className="w-25">
-              {/*[TODO]: Add feedback card to provide and update feedback*/}
-              Feedback Section
-            </div>
+            selectedContractId ? (
+              <div>
+                {/*[TODO]: Add feedback card to provide and update feedback*/}
+                Feedback Section {selectedContractId}
+              </div>
+            ) : (
+              <div className="select-feedback-title">
+                Select contract to give feedback
+              </div>
+            )
           )
         }
       </Stack>
