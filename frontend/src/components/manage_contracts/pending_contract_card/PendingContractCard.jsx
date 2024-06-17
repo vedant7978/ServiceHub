@@ -20,7 +20,7 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
 
   return (
     <div className="pending-contract-card p-3">
-      <Stack className="h-100 justify-content-between align-items-center">
+      <Stack className="h-100 justify-content-between">
         <div>
           <Stack className="d-flex" gap={3}>
             <div className="contract-card-title">{contract.serviceName}</div>
@@ -31,30 +31,34 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
                 src={contract.imageUrl || ImagePlaceholder}
                 alt="User profile image"/>
               <Stack>
-                <div className="requester-user-name">{contract.userName}</div>
-                <div className="requester-rating">{contract.rating}/5.0</div>
+                <div className="requester-user-name">Requester: {contract.userName}</div>
+                <div className="requester-rating">{contract.rating || "0.0"}/5.0</div>
               </Stack>
             </Stack>
 
             <Stack>
               <div className="contract-card-sub-title">Address</div>
-              <div className="contract-address">{contract.address}</div>
+              <div className="contract-description">{contract.address}</div>
             </Stack>
 
             <Stack>
               <div className="contract-card-sub-title">Feedbacks</div>
               <div className="feedback">
                 {
-                  contract.feedbacks.map((feedback, index) => (
-                    <FeedbackCard key={index} feedback={feedback}/>
-                  ))
+                  contract.feedbacks.length > 0 ? (
+                    contract.feedbacks.map((feedback, index) => (
+                      <FeedbackCard key={index} feedback={feedback}/>
+                    ))
+                  ) : (
+                    <div className="contract-description">No feedbacks provided</div>
+                  )
                 }
               </div>
             </Stack>
           </Stack>
         </div>
         <div>
-          <Stack direction="horizontal" className="mt-3" gap={4}>
+          <Stack direction="horizontal" className="justify-content-center mt-3" gap={4}>
             <div className="contract-reject-button d-flex align-items-center justify-content-center">
               <img
                 src={RejectIcon}

@@ -18,4 +18,11 @@ public interface FeedbackService {
      * @return List of feedbacks of requesting user id
      */
     ResponseBody<GetFeedbackResponse> getFeedbacks(long userId);
+
+    /**
+     * Provide average rating of the requesting user
+     * @param userId ID of the user to get average rating of
+     * @return Double representing average rating of the user
+     */
+    Double getAverageRatingForUser(Long userId);
 }

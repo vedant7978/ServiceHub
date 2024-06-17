@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.dto;
 
+import com.dalhousie.servicehub.enums.ServiceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,6 @@ public class ServiceDto {
     private String description;
     private String name;
     private Double perHourRate;
-    private String type;
+    private ServiceType type;
     private Long providerId;
 }

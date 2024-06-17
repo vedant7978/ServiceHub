@@ -15,13 +15,12 @@ export const PendingContracts = () => {
   const { getRequest } = useAxios();
 
   useEffect(() => {
-    // [TODO]: Uncomment after adding API
-    // loadContracts()
+    loadContracts()
   }, []);
 
   const loadContracts = async () => {
     try {
-      const response = await getRequest(ENDPOINTS.GET_CONTRACTS);
+      const response = await getRequest(ENDPOINTS.GET_PENDING_CONTRACTS, true);
       setContracts(response.data.data.contracts);
     } catch (error) {
       console.log("Failed to load contracts", error);

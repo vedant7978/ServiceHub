@@ -227,4 +227,34 @@ public class FeedbackServiceTest {
         assertEquals(responseBody2.message(), "Get feedbacks successful");
         logger.info("Test completed: Registered user id to get feedbacks method with some feedbacks in database");
     }
+
+    @Test
+    public void shouldReturnZeroRating_WhenNoFeedbackPresentForUser_AndGetAverageRatingForUserCalled() {
+        // Given
+        logger.info("Test start: No feedback found for the requesting user");
+        long userId = 10;
+        when(feedbackRepository.findAllByConsumerId(userId)).thenReturn(Optional.empty());
+
+        // When
+        Double averageRatingForUser = feedbackService.getAverageRatingForUser(userId);
+
+        // Then
+        assertEquals(averageRatingForUser, 0.0);
+        logger.info("Test completed: No feedback found for the requesting user");
+    }
+
+    @Test
+    public void shouldReturnProperRating_WhenFeedbacksArePresentForUser_AndGetAverageRatingForUserCalled() {
+        // Given
+        logger.info("Test start: Get average rating from some feedbacks already present for the requesting user");
+        long userId = 10;
+        when(feedbackRepository.findAllByConsumerId(userId)).thenReturn(Optional.of(dummyFeedbacks));
+
+        // When
+        Double averageRatingForUser = feedbackService.getAverageRatingForUser(userId);
+
+        // Then
+        assertEquals(averageRatingForUser, 3.0); // Manually averaging value
+        logger.info("Test completed: Get average rating from some feedbacks already present for the requesting user");
+    }
 }
