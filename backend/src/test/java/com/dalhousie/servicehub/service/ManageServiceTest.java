@@ -1,8 +1,9 @@
 package com.dalhousie.servicehub.service;
 
 import com.dalhousie.servicehub.dto.ServiceDto;
-import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Collections;
 import java.util.Optional;
 
@@ -56,7 +58,7 @@ public class ManageServiceTest {
                 .name("Test Service")
                 .description("Test Description")
                 .perHourRate(50.0)
-                .type("Test Type")
+                .type(ServiceType.Other)
                 .build();
         logger.info("Starting test: Unregistered provider id provided to add service");
 
@@ -83,7 +85,7 @@ public class ManageServiceTest {
                 .name("Test Service")
                 .description("Test Description")
                 .perHourRate(50.0)
-                .type("Test Type")
+                .type(ServiceType.Other)
                 .build();
         logger.info("Starting test: Valid input provided to add service");
 

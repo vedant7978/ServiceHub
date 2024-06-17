@@ -18,4 +18,7 @@ public interface ServiceRepository extends JpaRepository<ServiceModel, Long> {
     @Transactional
     @Query("UPDATE ServiceModel s SET s.description = :description, s.name = :name, s.perHourRate = :perHourRate, s.type = :type WHERE s.id = :id AND s.providerId = :providerId")
     void updateService(Long id, String description, String name, Double perHourRate, String type, Long providerId);
+
+    @Query("SELECT s.id FROM ServiceModel s WHERE s.providerId = :providerId")
+    List<Long> getServiceIdsByProviderId(Long providerId);
 }

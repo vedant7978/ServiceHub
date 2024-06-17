@@ -65,6 +65,17 @@ public class FeedbackServiceImpl implements FeedbackService {
         return new ResponseBody<>(SUCCESS, getFeedbackResponse, "Get feedbacks successful");
     }
 
+    @Override
+    public Double getAverageRatingForUser(Long userId) {
+        List<FeedbackModel> feedbackModels = feedbackRepository.findAllByConsumerId(userId).orElse(List.of());
+        if (feedbackModels.isEmpty())
+            return 0.0;
+        double sumRatings = feedbackModels.stream()
+                .mapToDouble(FeedbackModel::getRating)
+                .sum();
+        return sumRatings / feedbackModels.size();
+    }
+
     private FeedbackDto toFeedbackDto(FeedbackModel feedbackModel) {
         UserModel user = userRepository.findById(feedbackModel.getProviderId()).orElse(null);
         return user == null ? feedbackMapper.toDto(feedbackModel) : FeedbackDto.builder()

@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.model;
 
+import com.dalhousie.servicehub.enums.ServiceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +28,9 @@ public class ServiceModel {
     @Column(name = "per_hour_rate")
     private Double perHourRate;
 
-    @Column
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ServiceType type;
 
     @Column(name = "provider_id", nullable = false)
     private Long providerId;
