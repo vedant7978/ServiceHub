@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @ExtendWith(MockitoExtension.class)
 public class ProfileServiceTest {
 
@@ -147,5 +148,34 @@ public class ProfileServiceTest {
         verify(userRepository, never()).save(any(UserModel.class));
 
         logger.info("Test completed: updateUser_WhenEmailDoesNotExist");
+    }
+
+    @Test
+    @DisplayName("Should not update user details when email exists and update request has no data")
+    void doNotUpdateUser_WhenEmailExists_AndNoDataToUpdate() {
+        logger.info("Starting test: doNotUpdateUser_WhenEmailExists_AndNoDataToUpdate");
+
+        // Given
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setEmail(userModel.getEmail());
+        logger.info("Mocking userRepository.findByEmail to return userModel");
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(userModel));
+        logger.info("Mocking userRepository.save to return updated userModel");
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
+
+        // When
+        UserModel updatedUser = userService.updateUser(request);
+
+        // Then
+        logger.info("Asserting that the updatedUser is not null and fields are updated");
+        assertNotNull(updatedUser);
+        assertEquals(userModel.getName(), updatedUser.getName());
+        assertEquals(userModel.getPhone(), updatedUser.getPhone());
+        assertEquals(userModel.getAddress(), updatedUser.getAddress());
+        assertEquals(userModel.getImage(), updatedUser.getImage());
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verify(userRepository, times(1)).save(any(UserModel.class));
+
+        logger.info("Test completed: doNotUpdateUser_WhenEmailExists_AndNoDataToUpdate");
     }
 }
