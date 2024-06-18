@@ -30,8 +30,7 @@ export const HistoryContractCard = ({ contract, isSelected, onSelect, onViewProf
             </div>
             <div className="w-100">
               <Stack direction="horizontal" className="w-100 justify-content-between">
-                {/*[TODO]: Update logic in another feature i.e. accept/reject contract*/}
-                <div><b>Status:</b> Pending</div>
+                <div><b>Status:</b> {contract.status}</div>
                 <div className="view-profile" onClick={() => onViewProfileClicked(contract.serviceProviderId)}>
                   View profile
                 </div>
