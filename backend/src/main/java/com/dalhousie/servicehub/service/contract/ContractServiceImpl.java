@@ -2,7 +2,9 @@ package com.dalhousie.servicehub.service.contract;
 
 import com.dalhousie.servicehub.dto.HistoryContractDto;
 import com.dalhousie.servicehub.dto.PendingContractDto;
+import com.dalhousie.servicehub.enums.ContractStatus;
 import com.dalhousie.servicehub.enums.HistoryType;
+import com.dalhousie.servicehub.exceptions.ContractNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
@@ -21,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static com.dalhousie.servicehub.enums.ContractStatus.*;
 import static com.dalhousie.servicehub.enums.HistoryType.Completed;
 import static com.dalhousie.servicehub.enums.HistoryType.Requested;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
@@ -60,12 +63,29 @@ public class ContractServiceImpl implements ContractService {
         List<ContractModel> contracts = contractRepository.findHistoryContractsByServiceIds(userServicesIds, userId);
         List<HistoryContractDto> historyContracts = contracts.stream()
                 .map(contract -> getHistoryContractDto(contract, userId))
+                .filter(historyContractDto -> {
+                    if (historyContractDto.getHistoryType() == Completed)
+                        return historyContractDto.getStatus() != Pending;
+                    return true;
+                })
                 .sorted(Comparator.comparing(HistoryContractDto::getCreatedAt).reversed())
                 .toList();
         GetHistoryContractsResponse response = GetHistoryContractsResponse.builder()
                 .contracts(historyContracts)
                 .build();
         return new ResponseBody<>(SUCCESS, response, "Get history contracts successful");
+    }
+
+    @Override
+    public ResponseBody<Boolean> acceptContract(Long contractId) {
+        updateContractStatus(Accepted, contractId);
+        return new ResponseBody<>(SUCCESS, true, "Contract accepted");
+    }
+
+    @Override
+    public ResponseBody<Boolean> rejectContract(Long contractId) {
+        updateContractStatus(Rejected, contractId);
+        return new ResponseBody<>(SUCCESS, true, "Contract rejected");
     }
 
     private PendingContractDto getPendingContractDto(ContractModel contract) {
@@ -96,12 +116,19 @@ public class ContractServiceImpl implements ContractService {
                 .serviceDescription(service.getDescription())
                 .userImageUrl(historyType == Completed ? user.getImage() : serviceProviderUser.getImage())
                 .userName(historyType == Completed ? user.getName() : serviceProviderUser.getName())
-                .isPending(contractModel.isPending())
+                .status(contractModel.getStatus())
                 .createdAt(contractModel.getCreatedAt())
                 .build();
     }
 
     private UserModel getUser(long userId) {
         return userRepository.findById(userId).orElse(UserModel.builder().build());
+    }
+
+    private void updateContractStatus(ContractStatus status, long contractId) {
+        ContractModel contractModel = contractRepository.findById(contractId)
+                .orElseThrow(() -> new ContractNotFoundException("Contract not found for id: " + contractId));
+        contractModel.setStatus(status);
+        contractRepository.save(contractModel);
     }
 }

@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.model;
 
+import com.dalhousie.servicehub.enums.ContractStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +33,9 @@ public class ContractModel {
     @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
-    @Column(name = "is_pending", nullable = false)
-    private boolean isPending;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ContractStatus status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
