@@ -1,4 +1,4 @@
-.base-container {
+.history-contracts-container {
   overflow-x: scroll;
   scrollbar-width: none;
   height: 500px;
@@ -41,4 +41,11 @@
 .empty-contracts-view {
   width: 70vw;
   height: 70vh;
+}
+
+.select-feedback-title {
+  font-size: 18px;
+  color: black;
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-weight: 600;
 }

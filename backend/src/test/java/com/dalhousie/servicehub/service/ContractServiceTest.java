@@ -8,6 +8,7 @@ import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.response.GetFeedbackResponse;
+import com.dalhousie.servicehub.response.GetHistoryContractsResponse;
 import com.dalhousie.servicehub.response.GetPendingContractsResponse;
 import com.dalhousie.servicehub.service.contract.ContractServiceImpl;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
@@ -21,12 +22,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @ExtendWith(MockitoExtension.class)
 public class ContractServiceTest {
 
@@ -55,15 +59,21 @@ public class ContractServiceTest {
     private final ServiceModel serviceModel1 = ServiceModel.builder().id(3L).name("Service3").providerId(2L).build();
     private final ServiceModel serviceModel2 = ServiceModel.builder().id(4L).name("Service4").providerId(2L).build();
     private final ServiceModel serviceModel3 = ServiceModel.builder().id(5L).name("Service5").providerId(2L).build();
+    private final ServiceModel serviceModel4 = ServiceModel.builder().id(6L).name("Service5").providerId(1L).build();
+    private final ServiceModel serviceModel5 = ServiceModel.builder().id(7L).name("Service5").providerId(1L).build();
 
     private final ContractModel contractModel1 = ContractModel.builder()
-            .id(3L).service(serviceModel1).user(userModel1).isPending(true).build();
+            .id(3L).service(serviceModel1).user(userModel1).isPending(true).createdAt(LocalDateTime.now()).build();
     private final ContractModel contractModel2 = ContractModel.builder()
-            .id(4L).service(serviceModel2).user(userModel1).isPending(false).build();
+            .id(4L).service(serviceModel2).user(userModel1).isPending(false).createdAt(LocalDateTime.now()).build();
     private final ContractModel contractModel3 = ContractModel.builder()
-            .id(5L).service(serviceModel3).user(userModel1).isPending(true).build();
+            .id(5L).service(serviceModel3).user(userModel1).isPending(true).createdAt(LocalDateTime.now()).build();
     private final ContractModel contractModel4 = ContractModel.builder()
-            .id(8L).service(serviceModel3).user(userModel1).isPending(true).build();
+            .id(8L).service(serviceModel3).user(userModel1).isPending(true).createdAt(LocalDateTime.now()).build();
+    private final ContractModel contractModel5 = ContractModel.builder()
+            .id(9L).service(serviceModel4).user(userModel2).isPending(true).createdAt(LocalDateTime.now()).build();
+    private final ContractModel contractModel6 = ContractModel.builder()
+            .id(10L).service(serviceModel5).user(userModel2).isPending(true).createdAt(LocalDateTime.now()).build();
 
     @Test
     public void shouldThrowUserNotFoundException_WhenUserNotRegistered_AndGetPendingContractsIsCalled() {
@@ -121,7 +131,7 @@ public class ContractServiceTest {
         when(contractRepository.findPendingContractsByServiceIds(servicesIds)).thenReturn(contracts);
 
         logger.info("Returning empty feedbacks for service provider user");
-        when(feedbackService.getFeedbacks(userId)).thenReturn(feedbackResponseResponseBody);
+        when(feedbackService.getFeedbacks(userModel1.getId())).thenReturn(feedbackResponseResponseBody);
 
         // When
         ResponseBody<GetPendingContractsResponse> response = contractService.getPendingContracts(userId);
@@ -129,5 +139,75 @@ public class ContractServiceTest {
         // Then
         assertEquals(response.data().getContracts().size(), contracts.size());
         logger.info("Test completed: Get pending contracts for valid user with valid services");
+    }
+
+    @Test
+    public void shouldThrowUserNotFoundException_WhenUserNotRegistered_AndGetHistoryContractsIsCalled() {
+        // Given
+        logger.info("Starting test: Unregistered id provided to get history contracts");
+        long userId = 10;
+
+        // When
+        when(userRepository.existsById(userId)).thenReturn(false);
+        logger.info("Inputting non registered user id: {}", userId);
+
+        UserNotFoundException exception1 = assertThrows(UserNotFoundException.class,
+                () -> contractService.getHistoryContracts(userId)
+        );
+
+        // Then
+        assertEquals(exception1.getMessage(), "User not found for id: " + userId);
+        logger.info("Test completed: Unregistered id provided to get history contracts");
+    }
+
+    @Test
+    public void shouldReturnEmptyList_WhenUserHasNoServicesRegistered_AndGetHistoryContractsIsCalled() {
+        // Given
+        logger.info("Starting test: No services completed/requested by user and called get history contracts");
+        long userId = 10;
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
+
+        // When
+        ResponseBody<GetHistoryContractsResponse> response = contractService.getHistoryContracts(userId);
+
+        // Then
+        assertTrue(response.data().getContracts().isEmpty());
+        logger.info("Test completed: No services completed/requested by user and called get history contracts");
+    }
+
+    @Test
+    public void shouldProvideProperContractDetails_WhenUserHasServices_AndGetHistoryContractsIsCalled() {
+        // Given
+        logger.info("Starting test: Get history contracts for valid user with valid services");
+        long userId = userModel2.getId();
+        List<Long> servicesIds = List.of(3L, 4L, 5L);
+        List<ContractModel> contracts = List.of(
+                contractModel1,
+                contractModel2,
+                contractModel3,
+                contractModel4,
+                contractModel5,
+                contractModel6
+        );
+
+        logger.info("Return true when existsById called for user id: {}", userId);
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
+        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);
+
+        logger.info("Returned array when findHistoryContractsByServiceIds called for above serviceIds: {}", contracts);
+        when(contractRepository.findHistoryContractsByServiceIds(servicesIds, userId)).thenReturn(contracts);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel2));
+
+        // When
+        ResponseBody<GetHistoryContractsResponse> response = contractService.getHistoryContracts(userId);
+
+        // Then
+        assertEquals(response.data().getContracts().size(), contracts.size());
+        assertEquals(response.resultType(), SUCCESS);
+        System.out.println(response);
+        logger.info("Test completed: Get history contracts for valid user with valid services");
     }
 }
