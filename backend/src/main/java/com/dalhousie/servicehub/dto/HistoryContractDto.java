@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.dto;
 
+import com.dalhousie.servicehub.enums.ContractStatus;
 import com.dalhousie.servicehub.enums.HistoryType;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -22,7 +23,7 @@ public class HistoryContractDto {
     private String serviceDescription;
     private String userImageUrl;
     private String userName;
-    private boolean isPending;
+    private ContractStatus status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
