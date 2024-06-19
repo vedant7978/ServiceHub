@@ -1,8 +1,6 @@
 import React from "react";
 import { Stack } from "react-bootstrap";
 import "./PendingContractCard.css";
-import AcceptIcon from "../../../assets/ContractAcceptIcon.png";
-import RejectIcon from "../../../assets/ContractRejectIcon.png";
 import ImagePlaceholder from "../../../assets/ProfileImagePlaceholder.png";
 import FeedbackCard from "../../feedback_card/FeedbackCard";
 
@@ -10,12 +8,12 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
 
   const handleAcceptContract = () => {
     showAcceptDialog();
-    onSelectContract(contract)
+    onSelectContract(contract.id)
   }
 
   const handleRejectContract = () => {
     showRejectDialog()
-    onSelectContract(contract)
+    onSelectContract(contract.id)
   }
 
   return (
@@ -59,24 +57,8 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
         </div>
         <div>
           <Stack direction="horizontal" className="justify-content-center mt-3" gap={4}>
-            <div className="contract-reject-button d-flex align-items-center justify-content-center">
-              <img
-                src={RejectIcon}
-                alt="Reject contract"
-                width="40px"
-                height="40px"
-                onClick={() => handleRejectContract()}
-              />
-            </div>
-            <div className="contract-accept-button d-flex align-items-center justify-content-center">
-              <img
-                src={AcceptIcon}
-                alt="Accept contract"
-                width="40px"
-                height="40px"
-                onClick={() => handleAcceptContract()}
-              />
-            </div>
+            <div className="contract-reject-button px-4 py-2" onClick={handleRejectContract}>Reject</div>
+            <div className="contract-accept-button px-4 py-2" onClick={handleAcceptContract}>Accept</div>
           </Stack>
         </div>
       </Stack>

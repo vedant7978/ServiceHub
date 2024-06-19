@@ -71,15 +71,17 @@
 }
 
 .contract-reject-button {
-  background-color: #FC0F0F;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+  color: #0C0059;
+  cursor: pointer;
 }
 
 .contract-accept-button {
-  background-color: #0FFC43;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  background-color: #0C0059;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+  color: white;
+  cursor: pointer;
 }

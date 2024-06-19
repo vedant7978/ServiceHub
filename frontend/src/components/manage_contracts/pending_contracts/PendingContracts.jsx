@@ -4,15 +4,19 @@ import "./PendingContracts.css";
 import EmptyListView from "../../../assets/EmptyListView.png";
 import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
+import AppToast from "../../app_toast/AppToast";
 import { ConfirmationPopup } from "../../ConfirmationPopup";
 import { PendingContractCard } from "../pending_contract_card/PendingContractCard";
 
 export const PendingContracts = () => {
   const [isAcceptContractConfirmationVisible, setIsAcceptContractConfirmationVisible] = useState(false);
   const [isRejectContractConfirmationVisible, setIsRejectContractConfirmationVisible] = useState(false);
-  const [selectedContract, setSelectedContract] = useState(null);
+  const [selectedContractId, setSelectedContractId] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastTitle, setToastTitle] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const [contracts, setContracts] = useState([]);
-  const { getRequest } = useAxios();
+  const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
     loadContracts()
@@ -27,14 +31,56 @@ export const PendingContracts = () => {
     }
   }
 
-  const handleAcceptContract = (shouldShow, contract) => {
-    setIsAcceptContractConfirmationVisible(shouldShow);
-    setSelectedContract(contract)
+  const acceptSelectedContract = async () => {
+    try {
+      const requestData = { contractId: selectedContractId }
+      const response = await postRequest(ENDPOINTS.ACCEPT_CONTRACT, true, requestData);
+      const data = response.data.data;
+      if (data) {
+        setToastTitle("Contract accepted successfully")
+        setToastMessage("You can view more details about requester from history.")
+      } else {
+        setToastTitle("Error")
+        setToastMessage("Failed to accept contract.")
+      }
+    } catch (error) {
+      setToastTitle("Error")
+      setToastMessage(`Failed to accept contract: ${error}`)
+    } finally {
+      setShowToast(true)
+      await loadContracts()
+    }
   }
 
-  const handleRejectContract = (shouldShow, contract) => {
+  const rejectSelectedContract = async () => {
+    try {
+      const requestData = { contractId: selectedContractId }
+      const response = await postRequest(ENDPOINTS.REJECT_CONTRACT, true, requestData);
+      const data = response.data.data;
+      if (data) {
+        setToastTitle("Contract rejected successfully")
+        setToastMessage("You can view more details about requester from history.")
+      } else {
+        setToastTitle("Error")
+        setToastMessage("Failed to reject contract.")
+      }
+    } catch (error) {
+      setToastTitle("Error")
+      setToastMessage(`Failed to reject contract: ${error}`)
+    } finally {
+      setShowToast(true)
+      await loadContracts()
+    }
+  }
+
+  const handleAcceptContract = (shouldShow, contractId) => {
+    setIsAcceptContractConfirmationVisible(shouldShow);
+    setSelectedContractId(contractId)
+  }
+
+  const handleRejectContract = (shouldShow, contractId) => {
     setIsRejectContractConfirmationVisible(shouldShow);
-    setSelectedContract(contract)
+    setSelectedContractId(contractId)
   }
 
   return (
@@ -47,7 +93,7 @@ export const PendingContracts = () => {
                 contract={contract}
                 showAcceptDialog={() => setIsAcceptContractConfirmationVisible(true)}
                 showRejectDialog={() => setIsRejectContractConfirmationVisible(true)}
-                onSelectContract={(contract) => setSelectedContract(contract)}
+                onSelectContract={(contractId) => setSelectedContractId(contractId)}
                 key={contract.id}
               />
             ))
@@ -55,7 +101,7 @@ export const PendingContracts = () => {
             <Container fluid className="empty-contracts-view d-flex align-items-center justify-content-center">
               <div>
                 <Stack className="align-items-center" gap={3}>
-                  <img src={EmptyListView} alt="NavigateLeft" width="200px" height="200px" />
+                  <img src={EmptyListView} alt="NavigateLeft" width="200px" height="200px"/>
                   <div className="empty-contracts-text">No pending contracts available</div>
                 </Stack>
               </div>
@@ -67,8 +113,8 @@ export const PendingContracts = () => {
       {isAcceptContractConfirmationVisible && (
         <ConfirmationPopup
           message="Are you sure you accept the contract?"
-          onConfirm={() => {
-            console.log(`Accepted the contract: ${selectedContract.serviceName}`)
+          onConfirm={async () => {
+            await acceptSelectedContract()
             handleAcceptContract(false, null)
           }}
           onCancel={() => handleAcceptContract(false, null)}
@@ -78,13 +124,15 @@ export const PendingContracts = () => {
       {isRejectContractConfirmationVisible && (
         <ConfirmationPopup
           message="Are you sure you reject the contract?"
-          onConfirm={() => {
-            console.log(`Rejected the contract: ${selectedContract.serviceName}`)
+          onConfirm={async () => {
+            await rejectSelectedContract()
             handleRejectContract(false, null)
           }}
           onCancel={() => handleRejectContract(false, null)}
         />
       )}
+
+      <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage}/>
     </Container>
   );
 }
