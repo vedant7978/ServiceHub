@@ -4,10 +4,12 @@ import { NavLink } from 'react-router-dom';
 import './NavBar.css';
 import AppLogo from '../../assets/AppLogoBlack.png'
 import { AppRoutes } from "../../utils/AppRoutes";
+import { ConfirmationPopup } from "../ConfirmationPopup";
 
 const NavBar = () => {
   const [activeTab, setActiveTab] = useState(getSelectedTab());
   const [underlineStyle, setUnderlineStyle] = useState({});
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const navRefs = useRef({});
 
   useLayoutEffect(() => {
@@ -41,6 +43,16 @@ const NavBar = () => {
         left: `${activeNav.offsetLeft}px`
       });
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setConfirmLogout(false);
+  };
+
+  const onCancel = () => {
+    console.log("Cancel ");
+    setConfirmLogout(false);
   };
 
   return (
@@ -104,13 +116,23 @@ const NavBar = () => {
               Profile
             </Nav.Link>
           </Nav>
-          <Nav>
+           <Nav
+            onClick={() => setConfirmLogout(true)}
+            style={{ cursor: "pointer" }}
+          >
             {/* [TODO]: Update this for sign out functionality (might user Modal of Bootstrap to show dialog)*/}
             Sign Out
           </Nav>
         </Navbar.Collapse>
       </Container>
       <div className="underline" style={underlineStyle}/>
+      {confirmLogout && (
+        <ConfirmationPopup
+          message="Are you sure you want to sign out ?"
+          onConfirm={handleLogout}
+          onCancel={onCancel}
+        />
+      )}
     </Navbar>
   );
 };
