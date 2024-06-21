@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.config;
 
+import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,6 +31,9 @@ public class JwtAuthenticationFilterTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private BlackListTokenService blackListTokenService;
 
     @Mock
     private HttpServletResponse response;
@@ -82,15 +86,18 @@ public class JwtAuthenticationFilterTest {
 
         String validToken = "validToken";
         String validUser = "validUser";
+
         when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
-        when(jwtService.extractUsername("validToken")).thenReturn(validUser);
-        when(userDetailsService.loadUserByUsername("validUser")).thenReturn(null);
+        when(jwtService.extractUsername(validToken)).thenReturn(validUser);
+        when(userDetailsService.loadUserByUsername(validUser)).thenReturn(null);
+        when(blackListTokenService.doesBlackListTokenExists(validToken)).thenReturn(false);
 
         logger.info("Authorization header: Bearer {}", validToken);
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         logger.info("Extracted username from JWT: {}", validUser);
         verify(jwtService, times(1)).extractUsername(validToken);
+        verify(blackListTokenService, times(1)).doesBlackListTokenExists(validToken);
         verify(filterChain, times(1)).doFilter(request, response);
 
         logger.info("Test completed: Should extract username from JWT when header is valid");

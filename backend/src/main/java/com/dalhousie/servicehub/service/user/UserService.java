@@ -31,4 +31,5 @@ public interface UserService {
 
     String getURL(HttpServletRequest request);
 
+    void signOut(String token);
 }
