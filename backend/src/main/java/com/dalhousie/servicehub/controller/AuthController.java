@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.exceptions.BlackListTokenAlreadyExistsException;
 import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
@@ -92,6 +93,22 @@ public class AuthController {
         } catch (Exception e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/sign-out")
+    public ResponseEntity<Object> signOutHandler(HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization").replace("Bearer ", "");
+            userService.signOut(token);
+            logger.info("User signed out successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body("User signed out successfully.");
+        } catch (BlackListTokenAlreadyExistsException blackListTokenAlreadyExistsException) {
+            logger.error("user is already logged out: {}", blackListTokenAlreadyExistsException.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(blackListTokenAlreadyExistsException.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error during user sign-out: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.config;
 
+import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -27,6 +28,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtService jwtService;
 
     @Autowired
+    private BlackListTokenService blackListTokenService;
+
+    @Autowired
     @Lazy
     private UserDetailsService userDetailsService;
 
@@ -48,6 +52,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //extract jwtToken
         jwtToken = authHeader.substring(accessTokenStartInd);
+
+        if (blackListTokenService.doesBlackListTokenExists(jwtToken)){
+            // Token is invalid, set response status code and send a message
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write("User is logged out." );
+            return;
+        }
+
         //extract userEmail from jwtToken also catch error if the token is INVALID or EXPIRED
         try{
             userEmail = jwtService.extractUsername(jwtToken);

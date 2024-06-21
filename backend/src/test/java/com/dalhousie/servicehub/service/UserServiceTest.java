@@ -9,6 +9,7 @@ import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import com.dalhousie.servicehub.service.reset_password.ResetPasswordTokenService;
 import com.dalhousie.servicehub.service.user.UserServiceImpl;
@@ -61,6 +62,9 @@ class UserServiceTest {
 
     @Mock
     private JavaMailSender mailSender;
+
+    @Mock
+    private BlackListTokenService blackListTokenService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
@@ -420,5 +424,23 @@ class UserServiceTest {
 
         // Then
         assertEquals(resultUrl, result);
+    }
+    @Test
+    @DisplayName("Sign out user and blacklist token")
+    void signOut() {
+        // Given
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String token = "sampleToken";
+
+        logger.info("Getting token from header");
+        lenient().when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+
+        // When
+        logger.info("Calling signOut method");
+        userService.signOut(token);
+
+        // Then
+        verify(blackListTokenService, times(1)).addBlackListToken(token);
+        logger.info("Test completed: Sign out user and blacklist token.");
     }
 }

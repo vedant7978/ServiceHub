@@ -9,6 +9,7 @@ import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import com.dalhousie.servicehub.service.reset_password.ResetPasswordTokenService;
 import com.dalhousie.servicehub.util.EmailSender;
@@ -37,6 +38,8 @@ public class UserServiceImpl implements UserService {
     private final JavaMailSender mailSender;
     private final ResetPasswordTokenService resetPasswordTokenService;
     private final AuthenticationManager authenticationManager;
+    private final BlackListTokenService blackListTokenService;
+
 
     @Override
     public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
@@ -125,5 +128,10 @@ public class UserServiceImpl implements UserService {
         } catch (Exception exception) {
             throw new RuntimeException(exception.getMessage());
         }
+    }
+
+    @Override
+    public void signOut(String token) {
+        blackListTokenService.addBlackListToken(token);
     }
 }
