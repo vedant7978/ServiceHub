@@ -12,7 +12,8 @@ export const ENDPOINTS = {
   GET_PENDING_CONTRACTS: "/api/contract/get-pending-contracts",
   GET_HISTORY_CONTRACTS: "/api/contract/get-history-contracts",
   ACCEPT_CONTRACT: "/api/contract/accept-contract",
-  REJECT_CONTRACT: "/api/contract/reject-contract"
+  REJECT_CONTRACT: "/api/contract/reject-contract",
+  SIGN_OUT: "/api/auth/sign-out"
   // Add other endpoints here
 };
 
