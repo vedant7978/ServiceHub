@@ -1,7 +1,69 @@
 .dashboard {
-  background-color: #F8F7FF;
-  height: calc(100vh - 80px);
   display: flex;
-  padding-left: 20rem;
-  padding-right: 20rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #F8F7FF;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.card-text-custom {
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
+.card-title-link {
+  color: black;
+  text-decoration: none;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.card-title-link:hover {
+  text-decoration: underline;
+}
+
+.custom-button {
+  background-color: rgb(204, 22, 22);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+}
+
+.view-profile-link {
+  color: black;
+  text-decoration: none;
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.per_hour_rate {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+}
+
+.view-profile-link:hover {
+  text-decoration: underline;
+}
+
+.child1 {
+  width: 70%;
+  height: 80vh;
+  overflow-y: auto
+}
+
+.child2 {
+  width: 30%
+}
+
+.result-body {
+  width: 100%;
 }
