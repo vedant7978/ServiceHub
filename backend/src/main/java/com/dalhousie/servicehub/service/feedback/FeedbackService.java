@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.service.feedback;
 
+import com.dalhousie.servicehub.model.FeedbackModel;
 import com.dalhousie.servicehub.request.AddFeedbackRequest;
 import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
@@ -25,4 +26,20 @@ public interface FeedbackService {
      * @return Double representing average rating of the user
      */
     Double getAverageRatingForUser(Long userId);
+
+    /**
+     * Adds the feedback and provides added feedback in return
+     * @param feedbackModel Model to add to database
+     * @return FeedbackModel instance stored in database
+     */
+    FeedbackModel addFeedbackModel(FeedbackModel feedbackModel);
+
+    /**
+     * Update already added feedback
+     * @param id ID of the feedback to update
+     * @param rating New rating value of the feedback
+     * @param description New description of the feedback
+     * @return FeedbackModel instance stored in database
+     */
+    FeedbackModel updateFeedbackModel(long id, double rating, String description);
 }

@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.service;
 
 import com.dalhousie.servicehub.dto.FeedbackDto;
+import com.dalhousie.servicehub.exceptions.FeedbackNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.FeedbackMapper;
 import com.dalhousie.servicehub.model.FeedbackModel;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -63,6 +65,7 @@ public class FeedbackServiceTest {
             FeedbackModel.builder().id(4L).rating(4.0).description("Description4").build(),
             FeedbackModel.builder().id(5L).rating(5.0).description("Description5").build()
     );
+    private final FeedbackModel dummyFeedbackModel = FeedbackModel.builder().id(1L).build();
 
     @Test
     public void shouldThrowNPE_WhenInputIsInvalid_AndAddFeedbackIsCalled() {
@@ -256,5 +259,59 @@ public class FeedbackServiceTest {
         // Then
         assertEquals(averageRatingForUser, 3.0); // Manually averaging value
         logger.info("Test completed: Get average rating from some feedbacks already present for the requesting user");
+    }
+
+    @Test
+    public void shouldAddFeedback_WhenAddFeedbackModelCalled() {
+        // Given
+        logger.info("Test start: Add feedback model");
+
+        // When
+        logger.info("Passing dummy feedback model to add");
+        feedbackService.addFeedbackModel(dummyFeedbackModel);
+
+        // Then
+        verify(feedbackRepository).save(dummyFeedbackModel);
+        logger.info("Test completed: Add feedback model");
+    }
+
+    @Test
+    public void shouldThrowException_WhenUpdateFeedbackIsCalled_AndFeedbackNotFound() {
+        // Given
+        logger.info("Starting test: Should throw exception when updating feedback and feedback not found");
+        long feedbackId = 1;
+        logger.info("Will return empty value when trying to get feedback for id: {}", feedbackId);
+        when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.empty());
+
+        // When
+        FeedbackNotFoundException exception = assertThrows(FeedbackNotFoundException.class,
+                () -> feedbackService.updateFeedbackModel(feedbackId, 0.0, ""));
+
+        // Then
+        assertEquals("Cannot find feedback with id: " + feedbackId, exception.getMessage());
+        logger.info("Test completed: Should throw exception when updating feedback and feedback not found");
+    }
+
+    @Test
+    public void shouldUpdateFeedback_WhenUpdateFeedbackIsCalled() {
+        // Given
+        logger.info("Starting test: Should update feedback when updating feedback");
+        long feedbackId = 1L;
+        double newRating = 3.0;
+        String newDescription = "Updated description";
+        ArgumentCaptor<FeedbackModel> captor = ArgumentCaptor.forClass(FeedbackModel.class);
+
+        logger.info("Will return proper feedback model when trying to get feedback for id: {}", feedbackId);
+        when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(dummyFeedbackModel));
+
+        // When
+        feedbackService.updateFeedbackModel(feedbackId, newRating, newDescription);
+
+        // Then
+        verify(feedbackRepository).save(captor.capture());
+        assertEquals(feedbackId, captor.getValue().getId());
+        assertEquals(newRating, captor.getValue().getRating());
+        assertEquals(newDescription, captor.getValue().getDescription());
+        logger.info("Test completed: Should return proper feedback model when updating feedback");
     }
 }
