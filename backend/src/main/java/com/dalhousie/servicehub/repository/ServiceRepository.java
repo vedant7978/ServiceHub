@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.repository;
 
+import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.model.ServiceModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,4 +22,10 @@ public interface ServiceRepository extends JpaRepository<ServiceModel, Long> {
 
     @Query("SELECT s.id FROM ServiceModel s WHERE s.providerId = :providerId")
     List<Long> getServiceIdsByProviderId(Long providerId);
+
+    List<ServiceModel> findByType(ServiceType type);
+
+    List<ServiceModel> findByNameContainingIgnoreCase(String name);
+
+
 }
