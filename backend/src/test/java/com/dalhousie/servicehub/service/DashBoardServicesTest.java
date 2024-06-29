@@ -94,4 +94,34 @@ public class DashBoardServicesTest {
         verify(serviceRepository, times(1)).findByType(type);
         verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
     }
+    @Test
+    public void shouldSearchServicesByName_WhenServicesExist_ForGivenName() {
+        // Given
+        String name = "Service";
+        List<ServiceModel> serviceModels = Arrays.asList(
+                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.PLUMBING, 1L),
+                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+        );
+        List<ServiceDto> serviceDtos = Arrays.asList(
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.PLUMBING, 1L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+        );
+
+        // When
+        when(serviceRepository.findByNameContainingIgnoreCase(name)).thenReturn(serviceModels);
+        when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
+                invocation -> {
+                    ServiceModel model = invocation.getArgument(0);
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId());
+                }
+        );
+
+        ResponseBody<GetServicesResponse> responseBody = dashboardServices.searchServicesByName(name);
+
+        // Then
+        assertEquals(SUCCESS, responseBody.resultType());
+        assertEquals(serviceDtos.size(), responseBody.data().getServices().size());
+        verify(serviceRepository, times(1)).findByNameContainingIgnoreCase(name);
+        verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
+    }
 }
