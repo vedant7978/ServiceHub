@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.controller;
 
 import com.dalhousie.servicehub.enums.ServiceType;
+import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.dashboard_services.DashboardServices;
 import com.dalhousie.servicehub.util.ResponseBody;
@@ -61,6 +62,19 @@ public class DashboardController {
         } catch (Exception exception) {
             logger.error("Unexpected error occurred while searching services by name, {}", exception.getMessage());
             ResponseBody<GetServicesResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+    }
+    @GetMapping("/provider-details")
+    public ResponseEntity<ResponseBody<GetProviderResponse>> getUserDetailsByProviderId(@RequestParam Long providerId) {
+        try {
+            logger.info("Get user details by provider ID request received for provider ID: {}", providerId);
+            ResponseBody<GetProviderResponse> responseBody = dashboardServices.getProviderDetailsById(providerId);
+            logger.info("Get user details by provider ID request success");
+            return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+        } catch (Exception exception) {
+            logger.error("Unexpected error occurred while fetching user details by provider ID, {}", exception.getMessage());
+            ResponseBody<GetProviderResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
     }
