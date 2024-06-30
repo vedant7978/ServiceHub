@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "react-bootstrap";
 import "./PendingContractCard.css";
 import ImagePlaceholder from "../../../assets/ProfileImagePlaceholder.png";
 import FeedbackCard from "../../feedback_card/FeedbackCard";
 
 export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDialog, onSelectContract }) => {
+
+  const [imageUrl, setImageUrl] = useState(ImagePlaceholder);
 
   const handleAcceptContract = () => {
     showAcceptDialog();
@@ -25,12 +27,13 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
 
             <Stack direction="horizontal" className="align-items-start" gap={3}>
               <img
+                src={imageUrl}
+                onError={() => setImageUrl(ImagePlaceholder)}
                 className="requester-profile-image"
-                src={contract.imageUrl || ImagePlaceholder}
                 alt="User profile image"/>
               <Stack>
                 <div className="requester-user-name">Requester: {contract.userName}</div>
-                <div className="requester-rating">{contract.rating || "0.0"}/5.0</div>
+                <div className="requester-rating">{contract.userRating.toFixed(2) || "0.0"}/5.0</div>
               </Stack>
             </Stack>
 

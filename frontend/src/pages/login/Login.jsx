@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import './LoginPage.css';
@@ -7,7 +8,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useAxios } from '../../context/AxiosContext';
 import { AppRoutes } from '../../utils/AppRoutes';
 import { ENDPOINTS } from '../../utils/Constants';
-import HttpStatusCodes from '../../utils/HttpStatusCodes';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -56,7 +56,7 @@ const Login = () => {
         storeAuthToken(token);
         navigate(AppRoutes.Dashboard);
       } catch (error) {
-        if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
+        if (error.response && error.response.status === HttpStatusCode.BadRequest) {
           setError("Invalid login credentials.");
         } else {
           console.log(error)

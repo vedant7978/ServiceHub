@@ -13,7 +13,9 @@ export const ENDPOINTS = {
   GET_HISTORY_CONTRACTS: "/api/contract/get-history-contracts",
   ACCEPT_CONTRACT: "/api/contract/accept-contract",
   REJECT_CONTRACT: "/api/contract/reject-contract",
-  SIGN_OUT: "/api/auth/sign-out"
+  SIGN_OUT: "/api/auth/sign-out",
+  GET_CONTRACT_FEEDBACK: "/api/contract-feedback/get-contract-feedback",
+  ADD_CONTRACT_FEEDBACK: "/api/contract-feedback/add-contract-feedback"
   // Add other endpoints here
 };
 

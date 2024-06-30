@@ -1,15 +1,14 @@
+import { HttpStatusCode } from "axios";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./NavBar.css";
 import AppLogo from "../../assets/AppLogoBlack.png";
-import { AppRoutes } from "../../utils/AppRoutes";
-import { ConfirmationPopup } from "../ConfirmationPopup";
-import { useAxios } from "../../context/AxiosContext";
 import { useAuth } from "../../context/AuthContext";
+import { useAxios } from "../../context/AxiosContext";
+import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import { useNavigate } from "react-router-dom";
+import { ConfirmationPopup } from "../ConfirmationPopup";
 
 const NavBar = () => {
   const [activeTab, setActiveTab] = useState(getSelectedTab());
@@ -56,7 +55,7 @@ const NavBar = () => {
   const handleLogout = async () => {
     try {
       const response = await postRequest(ENDPOINTS.SIGN_OUT, true);
-      if (response.status === HttpStatusCodes.OK) {
+      if (response.status === HttpStatusCode.Ok) {
         deleteAuthToken();
         navigate(AppRoutes.Login);
       }

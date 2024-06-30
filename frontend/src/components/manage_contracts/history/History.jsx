@@ -5,6 +5,7 @@ import "./History.css";
 import EmptyListView from "../../../assets/EmptyListView.png";
 import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
+import { AddFeedbackCard } from "../add_feedback/AddFeedbackCard";
 import { HistoryContractCard } from "../history_contract_card/HistoryContractCard";
 
 export const History = () => {
@@ -84,6 +85,10 @@ export const History = () => {
     // [TODO]: View profile of the user with user id as {userId}
   }
 
+  const getSelectedContract = () => {
+    return contracts.filter(contract => contract.id === selectedContractId)[0];
+  }
+
   const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <Stack
       ref={ref}
@@ -151,7 +156,7 @@ export const History = () => {
 
       <Stack
         direction="horizontal"
-        className="d-flex justify-content-between align-items-center pt-3 flex-md-row flex-column"
+        className="d-flex justify-content-between align-items-center pt-3 flex-md-row align-items-md-start flex-column"
         gap={5}
       >
         <div>
@@ -181,20 +186,24 @@ export const History = () => {
           </Stack>
         </div>
 
-        {
-          filteredContracts.length > 0 && (
-            selectedContractId ? (
-              <div>
-                {/*[TODO]: Add feedback card to provide and update feedback*/}
-                Feedback Section {selectedContractId}
-              </div>
-            ) : (
-              <div className="select-feedback-title">
-                Select contract to give feedback
-              </div>
+        <div>
+          {
+            filteredContracts.length > 0 && (
+              selectedContractId ? (
+                <Container fluid className="add-feedback-card d-flex align-items-center mt-2">
+                  <AddFeedbackCard
+                    contract={getSelectedContract()}
+                    key={selectedContractId}
+                  />
+                </Container>
+              ) : (
+                <div className="select-feedback-title">
+                  Select contract to give feedback
+                </div>
+              )
             )
-          )
-        }
+          }
+        </div>
       </Stack>
     </Container>
   );
