@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.service.feedback;
 
 import com.dalhousie.servicehub.dto.FeedbackDto;
+import com.dalhousie.servicehub.exceptions.FeedbackNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.FeedbackMapper;
 import com.dalhousie.servicehub.model.FeedbackModel;
@@ -74,6 +75,21 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .mapToDouble(FeedbackModel::getRating)
                 .sum();
         return sumRatings / feedbackModels.size();
+    }
+
+    @Override
+    public FeedbackModel addFeedbackModel(FeedbackModel feedbackModel) {
+        return feedbackRepository.save(feedbackModel);
+    }
+
+    @Override
+    public FeedbackModel updateFeedbackModel(long id, double rating, String description) {
+        FeedbackModel feedbackModel = feedbackRepository.findById(id).orElseThrow(
+                () -> new FeedbackNotFoundException("Cannot find feedback with id: " + id)
+        );
+        feedbackModel.setRating(rating);
+        feedbackModel.setDescription(description);
+        return feedbackRepository.save(feedbackModel);
     }
 
     private FeedbackDto toFeedbackDto(FeedbackModel feedbackModel) {
