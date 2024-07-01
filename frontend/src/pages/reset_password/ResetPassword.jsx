@@ -1,10 +1,10 @@
+import { HttpStatusCode } from "axios";
 import React, { useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAxios } from "../../context/AxiosContext";
 import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
 import './ResetPassword.css'
 
 const ResetPassword = (props) => {
@@ -55,7 +55,7 @@ const ResetPassword = (props) => {
       const response = await postRequest(ENDPOINTS.RESET_PASSWORD, false, userData);
       const message = response.data.message;
 
-      if (response.status === HttpStatusCodes.OK) {
+      if (response.status === HttpStatusCode.Ok) {
         navigate(navigateTo)
       } else {
         setError(message);

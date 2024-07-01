@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import React, { useEffect, useState } from "react";
 import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useAxios } from "../../context/AxiosContext";
 import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -111,7 +111,7 @@ export default function RegisterPage() {
       const result = response.data;
       const message = result.message;
 
-      if (response.status === HttpStatusCodes.CREATED) {
+      if (response.status === HttpStatusCode.Created) {
         storeAuthToken(result.token);
         navigate(AppRoutes.Dashboard);
       } else {

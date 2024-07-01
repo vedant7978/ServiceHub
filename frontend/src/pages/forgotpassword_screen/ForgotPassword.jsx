@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import React, { useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import "./ForgotPassword.css";
@@ -7,7 +8,6 @@ import { useAxios } from "../../context/AxiosContext";
 import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
 import { validateEmail } from "../../utils/helper";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
@@ -29,7 +29,7 @@ const ForgotPassword = () => {
       const response = await postRequest(ENDPOINTS.FORGOT_PASSWORD, false, userData);
       const message = response.message;
 
-      if (response.status === HttpStatusCodes.OK) {
+      if (response.status === HttpStatusCode.Ok) {
         setForgotPasswordSuccessMessage(message);
         setShowToast(true);
         setIsButtonEnabled(false);
