@@ -74,6 +74,7 @@ class WishlistServiceTest {
         //when
         when(serviceRepository.existsById(serviceId)).thenReturn(true);
         when(wishlistRepository.save(any(WishlistModel.class))).thenReturn(wishlistModel);
+        wishlistService.addWishlist(serviceId, userModel);
 
         // Then
         verify(wishlistRepository, times(1)).save(any(WishlistModel.class));
@@ -111,7 +112,7 @@ class WishlistServiceTest {
                 .id(1L)
                 .providerId(2L)
                 .name("Test Service")
-                .type(ServiceType.valueOf("ELECTRICIAN"))
+                .type(ServiceType.valueOf("Electrician"))
                 .description("Test Description")
                 .perHourRate(50.0)
                 .build();
