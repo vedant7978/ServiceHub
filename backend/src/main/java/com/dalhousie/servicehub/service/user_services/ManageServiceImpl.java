@@ -1,10 +1,8 @@
 package com.dalhousie.servicehub.service.user_services;
 
-
 import com.dalhousie.servicehub.dto.ServiceDto;
-import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
-
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -14,9 +12,7 @@ import com.dalhousie.servicehub.request.AddServiceRequest;
 import com.dalhousie.servicehub.request.UpdateServiceRequest;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,17 +24,12 @@ import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 @RequiredArgsConstructor
 public class ManageServiceImpl implements ManageService {
 
-
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final ServiceMapper serviceMapper;
 
-
     @Override
-    @Transactional
-    public ResponseBody<Object> addService(AddServiceRequest addServiceRequest) throws ServiceException {
-        long providerId = addServiceRequest.getProviderId();
-
+    public ResponseBody<Object> addService(AddServiceRequest addServiceRequest, Long providerId) {
         if (!userRepository.existsById(providerId)) {
             throw new UserNotFoundException("User not found for id: " + providerId);
         }
@@ -48,7 +39,7 @@ public class ManageServiceImpl implements ManageService {
                 .name(addServiceRequest.getName())
                 .perHourRate(addServiceRequest.getPerHourRate())
                 .type(addServiceRequest.getType())
-                .providerId(addServiceRequest.getProviderId())
+                .providerId(providerId)
                 .build();
 
         serviceRepository.save(serviceModel);
@@ -57,7 +48,6 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
-    @Transactional
     public ResponseBody<GetServicesResponse> getUserServicesByProviderId(Long providerId) {
         UserModel user = userRepository.findById(providerId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + providerId));
@@ -75,7 +65,7 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
-    public ResponseBody<Object> deleteService(Long serviceId) throws ServiceNotFoundException {
+    public ResponseBody<Object> deleteService(Long serviceId) {
 
         ServiceModel service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + serviceId));
@@ -85,8 +75,7 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
-    @Transactional
-    public ResponseBody<Object> updateService(UpdateServiceRequest updateServiceRequest) throws ServiceException {
+    public ResponseBody<Object> updateService(UpdateServiceRequest updateServiceRequest, Long providerId) {
         if (!serviceRepository.existsById(updateServiceRequest.getId())) {
             throw new ServiceNotFoundException("Service not found for id: " + updateServiceRequest.getId());
         }
@@ -97,7 +86,7 @@ public class ManageServiceImpl implements ManageService {
                 updateServiceRequest.getName(),
                 updateServiceRequest.getPerHourRate(),
                 updateServiceRequest.getType(),
-                updateServiceRequest.getProviderId()
+                providerId
         );
 
         return new ResponseBody<>(SUCCESS, "", "Update service successful");

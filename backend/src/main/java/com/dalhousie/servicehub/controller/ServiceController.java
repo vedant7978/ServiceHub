@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.request.AddServiceRequest;
 import com.dalhousie.servicehub.request.UpdateServiceRequest;
 import com.dalhousie.servicehub.response.GetServicesResponse;
@@ -11,8 +12,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
@@ -26,10 +27,13 @@ public class ServiceController {
     private ManageService manageServices;
 
     @PostMapping("/add-service")
-    public ResponseEntity<ResponseBody<Object>> addService(@Valid @RequestBody AddServiceRequest addServiceRequest) {
+    public ResponseEntity<ResponseBody<Object>> addService(
+            @Valid @RequestBody AddServiceRequest addServiceRequest,
+            @AuthenticationPrincipal UserModel userModel
+    ) {
         try {
             logger.info("Add service request received: {}", addServiceRequest);
-            ResponseBody<Object> responseBody = manageServices.addService(addServiceRequest);
+            ResponseBody<Object> responseBody = manageServices.addService(addServiceRequest, userModel.getId());
             logger.info("Add service request success");
             return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         } catch (Exception exception) {
@@ -39,10 +43,10 @@ public class ServiceController {
     }
 
     @GetMapping("/get-user-services")
-    public ResponseEntity<ResponseBody<GetServicesResponse>> getUserServices(@RequestParam Long providerId) {
+    public ResponseEntity<ResponseBody<GetServicesResponse>> getUserServices(@AuthenticationPrincipal UserModel userModel) {
         try {
-            logger.info("Get user services request received for providerId: {}", providerId);
-            ResponseBody<GetServicesResponse> responseBody = manageServices.getUserServicesByProviderId(providerId);
+            logger.info("Get user services request received for providerId: {}", userModel.getId());
+            ResponseBody<GetServicesResponse> responseBody = manageServices.getUserServicesByProviderId(userModel.getId());
             logger.info("Get user services request success");
             return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         } catch (Exception exception) {
@@ -66,10 +70,13 @@ public class ServiceController {
     }
 
     @PutMapping("/update-service")
-    public ResponseEntity<ResponseBody<Object>> updateService(@Valid @RequestBody UpdateServiceRequest updateServiceRequest) {
+    public ResponseEntity<ResponseBody<Object>> updateService(
+            @Valid @RequestBody UpdateServiceRequest updateServiceRequest,
+            @AuthenticationPrincipal UserModel userModel
+    ) {
         try {
             logger.info("Update service request received: {}", updateServiceRequest);
-            ResponseBody<Object> responseBody = manageServices.updateService(updateServiceRequest);
+            ResponseBody<Object> responseBody = manageServices.updateService(updateServiceRequest, userModel.getId());
             logger.info("Update service request success");
             return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         } catch (Exception exception) {

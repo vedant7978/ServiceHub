@@ -50,12 +50,12 @@ public class DashBoardServicesTest {
     public void shouldGetAllServices_WhenServicesExist() {
         // Given
         List<ServiceModel> serviceModels = Arrays.asList(
-                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.PLUMBING, 1L),
-                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.Plumbing, 1L),
+                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.Electrician, 1L)
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.PLUMBING, 1L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 1L)
         );
 
         // When
@@ -79,7 +79,7 @@ public class DashBoardServicesTest {
     @Test
     public void shouldGetServicesByType_WhenServicesExist_ForGivenType() {
         // Given
-        ServiceType type = ServiceType.PLUMBING;
+        ServiceType type = ServiceType.Plumbing;
         List<ServiceModel> serviceModels = Arrays.asList(
                 new ServiceModel(1L, "Service 1", "Description 1", 50.0, type, 1L),
                 new ServiceModel(2L, "Service 2", "Description 2", 60.0, type, 1L)
@@ -111,12 +111,12 @@ public class DashBoardServicesTest {
         // Given
         String name = "Service";
         List<ServiceModel> serviceModels = Arrays.asList(
-                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.PLUMBING, 1L),
-                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.Plumbing, 1L),
+                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.Electrician, 1L)
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.PLUMBING, 1L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.ELECTRICIAN, 1L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 1L)
         );
 
         // When

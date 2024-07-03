@@ -11,7 +11,7 @@ public enum ServiceType {
     HealthAndWellness,
     CreativeServices,
     LegalAndFinancialServices,
-    PLUMBING,
-    ELECTRICIAN,
+    Plumbing,
+    Electrician,
     Other
 }

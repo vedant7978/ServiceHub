@@ -54,7 +54,6 @@ public class ManageServiceTest {
         // Given
         long providerId = 10;
         AddServiceRequest addServiceRequest = AddServiceRequest.builder()
-                .providerId(providerId)
                 .name("Test Service")
                 .description("Test Description")
                 .perHourRate(50.0)
@@ -68,7 +67,7 @@ public class ManageServiceTest {
 
         // Then
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> manageService.addService(addServiceRequest)
+                () -> manageService.addService(addServiceRequest, providerId)
         );
 
         assertEquals(exception.getMessage(), "User not found for id: " + providerId);
@@ -81,7 +80,6 @@ public class ManageServiceTest {
         // Given
         long providerId = 10;
         AddServiceRequest addServiceRequest = AddServiceRequest.builder()
-                .providerId(providerId)
                 .name("Test Service")
                 .description("Test Description")
                 .perHourRate(50.0)
@@ -94,7 +92,7 @@ public class ManageServiceTest {
         when(serviceRepository.save(any(ServiceModel.class))).thenReturn(new ServiceModel());
         logger.info("Providing valid input to add service: {}", addServiceRequest);
 
-        ResponseBody<Object> responseBody = manageService.addService(addServiceRequest);
+        ResponseBody<Object> responseBody = manageService.addService(addServiceRequest, providerId);
 
         // Then
         logger.info("Response body after providing valid input: {}", responseBody);
@@ -203,11 +201,10 @@ public class ManageServiceTest {
         long providerId = 10L;
         UpdateServiceRequest updateServiceRequest = UpdateServiceRequest.builder()
                 .id(serviceId)
-                .providerId(providerId)
                 .name("Updated Service")
                 .description("Updated Description")
                 .perHourRate(75.0)
-                .type("Updated Type")
+                .type(ServiceType.HomeServices)
                 .build();
         logger.info("Starting test: Valid input provided to update service");
 
@@ -215,11 +212,16 @@ public class ManageServiceTest {
         when(serviceRepository.existsById(serviceId)).thenReturn(true);
         logger.info("Providing valid input to update service: {}", updateServiceRequest);
 
-        ResponseBody<Object> responseBody = manageService.updateService(updateServiceRequest);
+        ResponseBody<Object> responseBody = manageService.updateService(updateServiceRequest, providerId);
 
         // Then
         logger.info("Response body after updating service: {}", responseBody);
-        verify(serviceRepository).updateService(serviceId, "Updated Description","Updated Service", 75.0, "Updated Type", providerId);
+        verify(serviceRepository).updateService(serviceId,
+                updateServiceRequest.getDescription(),
+                updateServiceRequest.getName(),
+                updateServiceRequest.getPerHourRate(),
+                updateServiceRequest.getType(),
+                providerId);
         assertEquals(ResponseBody.ResultType.SUCCESS, responseBody.resultType());
         assertEquals("Update service successful", responseBody.message());
         logger.info("Test completed: Valid input provided to update service");
@@ -233,11 +235,10 @@ public class ManageServiceTest {
         long providerId = 10L;
         UpdateServiceRequest updateServiceRequest = UpdateServiceRequest.builder()
                 .id(serviceId)
-                .providerId(providerId)
                 .name("Updated Service")
                 .description("Updated Description")
                 .perHourRate(75.0)
-                .type("Updated Type")
+                .type(ServiceType.HomeServices)
                 .build();
         System.out.println("Starting test: Non-existing service id provided to update service");
 
@@ -246,11 +247,11 @@ public class ManageServiceTest {
 
         // When and Then
         ServiceNotFoundException exception = assertThrows(ServiceNotFoundException.class,
-                () -> manageService.updateService(updateServiceRequest)
+                () -> manageService.updateService(updateServiceRequest, providerId)
         );
 
         // Verify repository method was never called
-        verify(serviceRepository, never()).updateService(anyLong(), anyString(), anyString(), anyDouble(), anyString(), anyLong());
+        verify(serviceRepository, never()).updateService(anyLong(), anyString(), anyString(), anyDouble(), any(), anyLong());
 
         // Assertions
         assertEquals("Service not found for id: " + serviceId, exception.getMessage());
