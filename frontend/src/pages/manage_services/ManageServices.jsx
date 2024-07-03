@@ -92,7 +92,7 @@ export default function ManageServices() {
                     <div>
                       <Stack className="align-items-center" gap={3}>
                         <img src={EmptyListView} alt="NavigateLeft" width="200px" height="200px"/>
-                        <div className="empty-contracts-text">No Services Added</div>
+                        <div className="empty-services-text">No Services Added</div>
                       </Stack>
                     </div>
                   </Container>
@@ -102,7 +102,7 @@ export default function ManageServices() {
           </div>
 
           <div>
-            <Container fluid className="add-feedback-card d-flex align-items-center mt-2">
+            <Container fluid className="d-flex align-items-center mt-2">
               <AddUpdateServiceCard
                 service={selectedServiceToEdit}
                 onRefreshServices={onServiceAddedOrUpdated}
