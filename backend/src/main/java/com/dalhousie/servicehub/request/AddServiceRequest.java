@@ -27,7 +27,4 @@ public class AddServiceRequest {
 
     @NotNull(message = "Type is required")
     private ServiceType type;
-
-    @NotNull(message = "Provider ID is required")
-    private Long providerId;
 }

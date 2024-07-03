@@ -35,6 +35,7 @@ export const AxiosProvider = ({ children }) => {
     authInterceptor();
   }, [authToken])
 
+  // Generic function to handle GET requests
   const getRequest = async (endpoint, useAuthToken = false, params = {}) => {
     try {
       const instance = useAuthToken ? axiosInstanceWithAuth : axiosInstance;
@@ -45,6 +46,7 @@ export const AxiosProvider = ({ children }) => {
     }
   };
 
+  // Generic function to handle POST requests
   const postRequest = async (endpoint, useAuthToken = false, data) => {
     try {
       const instance = useAuthToken ? axiosInstanceWithAuth : axiosInstance;
@@ -66,8 +68,19 @@ export const AxiosProvider = ({ children }) => {
     }
   };
 
+  // Generic function to handle DELETE requests
+  const deleteRequest = async (endpoint, useAuthToken = false, params = {}) => {
+    try {
+      const instance = useAuthToken ? axiosInstanceWithAuth : axiosInstance;
+      return await instance.delete(endpoint, { params });
+    } catch (error) {
+      console.error(`Error in DELETE request to ${endpoint}:`, error);
+      throw error;
+    }
+  };
+
   return (
-    <AxiosContext.Provider value={{ getRequest, postRequest, putRequest }}>
+    <AxiosContext.Provider value={{ getRequest, postRequest, putRequest, deleteRequest }}>
       {children}
     </AxiosContext.Provider>
   );
