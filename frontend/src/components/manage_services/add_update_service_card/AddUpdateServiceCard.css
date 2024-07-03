@@ -1,0 +1,77 @@
+.add-update-service-card {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0 0 14px 2px #0C00593F;
+}
+
+.add-update-service-title {
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.add-update-service-name {
+  font-size: 16px;
+  color: black;
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-weight: 400;
+  border-radius: 8px;
+  border-width: 1px;
+}
+
+.add-update-service-description {
+  font-size: 16px;
+  color: black;
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-weight: 400;
+  min-width: 250px;
+  min-height: 200px;
+  border-radius: 8px;
+  border-width: 1px;
+}
+
+.add-update-service-per-hour-rate {
+  font-size: 16px;
+  color: black;
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-weight: 400;
+  border-radius: 8px;
+  border-width: 1px;
+}
+
+.add-update-service-type-dropdown {
+  font-size: 16px;
+  cursor: pointer;
+  color: black;
+  border-radius: 8px;
+  border: 1px solid #00000080;
+}
+
+.add-update-service-submit-button {
+  background-color: #0C0059;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+  color: white;
+  cursor: pointer;
+}
+
+.add-update-service-submit-button:hover {
+  background-color: #0C0059;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+}
+
+.add-update-service-submit-button:disabled,
+.add-update-service-submit-button.disabled {
+  background-color: #0C0059;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+  cursor: not-allowed !important;
+}
+
+.add-update-service-submit-button:active,
+.add-update-service-submit-button.active {
+  background-color: #0C0059 !important;
+  border-radius: 8px !important;
+  border: 1px solid #0C0059 !important;
+}

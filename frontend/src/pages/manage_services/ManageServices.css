@@ -1,7 +1,21 @@
 .manage-services {
   background-color: #F8F7FF;
-  height: calc(100vh - 80px);
-  display: flex;
-  padding-left: 20rem;
-  padding-right: 20rem;
+  min-height: 100vh;
+}
+
+.my-services-title {
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.services-list-view {
+  max-height: 85vh;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.empty-services-view {
+  width: 40vw;
+  height: 60vh;
 }

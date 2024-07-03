@@ -15,9 +15,29 @@ export const ENDPOINTS = {
   REJECT_CONTRACT: "/api/contract/reject-contract",
   SIGN_OUT: "/api/auth/sign-out",
   GET_CONTRACT_FEEDBACK: "/api/contract-feedback/get-contract-feedback",
-  ADD_CONTRACT_FEEDBACK: "/api/contract-feedback/add-contract-feedback"
+  ADD_CONTRACT_FEEDBACK: "/api/contract-feedback/add-contract-feedback",
+  GET_SERVICES: "/api/service/get-user-services",
+  ADD_SERVICE: "/api/service/add-service",
+  UPDATE_SERVICE: "/api/service/update-service",
+  DELETE_SERVICE: "/api/service/delete-service"
   // Add other endpoints here
 };
+
+export const ServiceType = {
+  "1": "HomeServices",
+  "2": "PersonalServices",
+  "3": "ProfessionalServices",
+  "4": "EducationalServices",
+  "5": "TechnicalServices",
+  "6": "EventServices",
+  "7": "TransportationServices",
+  "8": "HealthAndWellness",
+  "9": "CreativeServices",
+  "10": "LegalAndFinancialServices",
+  "11": "Plumbing",
+  "12": "Electrician",
+  "13": "Other"
+}
 
 // const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
 // Comment above URL and uncomment this when running backend locally
