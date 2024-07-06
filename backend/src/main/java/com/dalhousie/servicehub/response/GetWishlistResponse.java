@@ -7,12 +7,12 @@ import com.dalhousie.servicehub.enums.ServiceType;
 @Data
 @Builder
 public class GetWishlistResponse {
-    private Long serviceId;
+    private Long id;
     private Long providerId;
     private String serviceProviderImage;
-    private String serviceName;
-    private ServiceType serviceType;
-    private String serviceDescription;
+    private String name;
+    private ServiceType type;
+    private String description;
     private Double serviceProviderRating;
-    private Double servicePerHourRate;
+    private Double perHourRate;
 }

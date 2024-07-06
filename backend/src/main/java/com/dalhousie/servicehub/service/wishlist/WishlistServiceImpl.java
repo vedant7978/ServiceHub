@@ -66,14 +66,14 @@ public class WishlistServiceImpl implements WishlistService {
                     Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
 
                     return GetWishlistResponse.builder()
-                            .serviceId(serviceModel.getId())
+                            .id(serviceModel.getId())
                             .providerId(serviceModel.getProviderId())
                             .serviceProviderImage(userModel.getImage())
-                            .serviceName(serviceModel.getName())
-                            .serviceType(serviceModel.getType())
-                            .serviceDescription(serviceModel.getDescription())
+                            .name(serviceModel.getName())
+                            .type(serviceModel.getType())
+                            .description(serviceModel.getDescription())
                             .serviceProviderRating(serviceProviderRating)
-                            .servicePerHourRate(serviceModel.getPerHourRate())
+                            .perHourRate(serviceModel.getPerHourRate())
                             .build();
                 })
                 .collect(Collectors.toList());
