@@ -1,14 +1,19 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.exceptions.BlackListTokenAlreadyExistsException;
+import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
-import com.dalhousie.servicehub.model.UserModel;
-import com.dalhousie.servicehub.repository.UserRepository;
-import com.dalhousie.servicehub.service.UserService;
-import com.dalhousie.servicehub.util.AuthenticationRequest;
-import com.dalhousie.servicehub.util.AuthenticationResponse;
-import com.dalhousie.servicehub.util.RegisterRequest;
+import com.dalhousie.servicehub.request.AuthenticationRequest;
+import com.dalhousie.servicehub.request.ForgotPasswordRequest;
+import com.dalhousie.servicehub.request.RegisterRequest;
+import com.dalhousie.servicehub.request.ResetPasswordRequest;
+import com.dalhousie.servicehub.response.AuthenticationResponse;
+import com.dalhousie.servicehub.service.user.UserService;
+import com.dalhousie.servicehub.util.Constants;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,24 +30,14 @@ public class AuthController {
     private static final Logger logger = LogManager.getLogger(AuthController.class);
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private UserService userService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @PostMapping("/register")
-    public ResponseEntity<Object> userRegisterHandler(@Valid @RequestBody RegisterRequest regReq) {
+    public ResponseEntity<Object> userRegisterHandler(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            if (userRepository.findByEmail(regReq.getEmail()).isPresent()) {
-                throw new UserAlreadyExistException("User with this email already exists.");
-            }
-            UserModel userModel = modelMapper.map(regReq, UserModel.class);
-            AuthenticationResponse authRes = userService.registerUser(userModel);
-            logger.info("User registered successfully with email: {}", regReq.getEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(authRes);
+            AuthenticationResponse authenticationResponse = userService.registerUser(registerRequest);
+            logger.info("User registered successfully with email: {}", registerRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(authenticationResponse);
         } catch (UserAlreadyExistException e) {
             logger.error("User registration failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
@@ -55,19 +48,66 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> userLoginHandler(@Valid @RequestBody AuthenticationRequest authReq) {
+    public ResponseEntity<Object> userLoginHandler(@Valid @RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            if (userRepository.findByEmail(authReq.getEmail()).isEmpty()) {
-                throw new UsernameNotFoundException("User with this email doesn't exists.");
-            }
-            AuthenticationResponse authRes = userService.authenticateUser(authReq);
-            logger.info("User login successful for email: {}", authReq.getEmail());
-            return ResponseEntity.status(HttpStatus.OK).body(authRes);
+            AuthenticationResponse authenticationResponse = userService.authenticateUser(authenticationRequest);
+            logger.info("User login successful for email: {}", authenticationRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.OK).body(authenticationResponse);
         } catch (UsernameNotFoundException e) {
             logger.error("User login failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error during user login: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Object> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        try {
+            userService.resetPassword(
+                    resetPasswordRequest.getEmail(),
+                    resetPasswordRequest.getPassword(),
+                    resetPasswordRequest.getToken()
+            );
+            logger.info("Successfully resetted password for {}", resetPasswordRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.RESET_PASSWORD_SUCCESS_MESSAGE);
+        } catch (UsernameNotFoundException e) {
+            logger.error("Field to reset password due to user not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (InvalidTokenException e) {
+            logger.error("Field to reset password due to invalid token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error during resetting password for {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> processForgotPassword(@Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest servletRequest) {
+        try {
+            String resetUrl = userService.getURL(servletRequest) + "/reset-password";
+            userService.forgotPassword(request.getEmail(), resetUrl);
+            return ResponseEntity.ok("Reset link is sent to your email");
+        } catch (Exception e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/sign-out")
+    public ResponseEntity<Object> signOutHandler(HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization").replace("Bearer ", "");
+            userService.signOut(token);
+            logger.info("User signed out successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body("User signed out successfully.");
+        } catch (BlackListTokenAlreadyExistsException blackListTokenAlreadyExistsException) {
+            logger.error("user is already logged out: {}", blackListTokenAlreadyExistsException.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(blackListTokenAlreadyExistsException.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error during user sign-out: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

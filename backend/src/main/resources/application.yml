@@ -9,11 +9,24 @@
 # PROD - CSCI5308_8_PRODUCTION_USER
 
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: pr5431177@gmail.com
+    password: bmzm krre mikb yejm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   datasource:
-    url: jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_8_DEVINT?useSSL=false&allowPublicKeyRetrieval=true
-    username: CSCI5308_8_DEVINT_USER
+    url: jdbc:mysql://db-5308.cs.dal.ca/CSCI5308_8_TEST?useSSL=false&allowPublicKeyRetrieval=true
+    username: CSCI5308_8_TEST_USER
     password: Aneisiru6b
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   application:
     name: ServiceHub
   jpa:
@@ -22,5 +35,12 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        format:_sql: true
+        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+email:
+  frontend-port: ${FRONTEND_PORT:3000}
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    enabled: true

@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./LandingPage.css";
-import LandingImage from "../../assets/LandingPageImage.png";
-import AppLogo from "../../assets/AppLogo.png";
 import { Button, Container, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { LOGIN, REGISTER } from "../../utils/Routes";
+import AppLogo from "../../assets/AppLogo.png";
+import LandingImage from "../../assets/LandingPageImage.png";
+import { useAuth } from "../../context/AuthContext";
+import { AppRoutes } from "../../utils/AppRoutes";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { loggedInUserEmail } = useAuth();
+
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
 
   return (
     <Container fluid className="landing-page">
@@ -41,13 +50,13 @@ export default function LandingPage() {
             <Stack gap={3}>
               <Button
                 className="outline-primary"
-                onClick={() => navigate(LOGIN)}
+                onClick={() => navigate(AppRoutes.Login)}
               >
                 Login
               </Button>
               <Button
                 className="colored-primary"
-                onClick={() => navigate(REGISTER)}
+                onClick={() => navigate(AppRoutes.Register)}
               >
                 Register
               </Button>

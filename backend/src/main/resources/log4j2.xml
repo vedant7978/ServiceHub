@@ -6,7 +6,7 @@
         </Console>
 
         <!-- Info level logs -->
-        <File name="InfoFile" fileName="D:/ASDC GIT/group08/backend/logs/info.log" append="false">
+        <File name="InfoFile" fileName="backend/logs/info.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
             <Filters>
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
@@ -14,7 +14,7 @@
         </File>
 
         <!-- Error level logs -->
-        <File name="ErrorFile" fileName="D:/ASDC GIT/group08/backend/logs/error.log" append="false">
+        <File name="ErrorFile" fileName="backend/logs/error.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
             <Filters>
                 <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>

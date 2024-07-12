@@ -1,0 +1,102 @@
+.profile {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-image-container {
+    width: 100px;
+    height: 100px;
+    margin-left: 20px;
+    margin-top: 20px;
+}
+
+.profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+
+}
+
+.upload-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.upload-icon svg {
+    font-size: 20px;
+    color: #007bff;
+}
+
+.upload-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.profile-details {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.change-password {
+    background: none;
+    border: none;
+    color: blue;
+    cursor: pointer;
+}
+
+.save {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 150px;
+    background-color: #d4a1f9;
+    border-radius: 50%;
+}
+
+
+.btn-upload {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.read-only-email {
+    cursor: not-allowed;
+    background-color: #f8f8f8;
+}
+
+.read-only-email:hover {
+    cursor: not-allowed;
+}

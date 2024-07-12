@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { Container, Stack, Button, Form, Alert } from "react-bootstrap";
+import { HttpStatusCode } from "axios";
+import React, { useEffect, useState } from "react";
+import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
-import HttpStatusCodes from "../../utils/HttpStatusCodes";
-import { LOGIN } from "../../utils/Routes";
-import Constants from "../../utils/Constants";
-import { registerUser } from "../../api_service/AuthModule";
 import Loader from "../../components/Loader";
+import { useAuth } from "../../context/AuthContext";
+import { useAxios } from "../../context/AxiosContext";
+import { AppRoutes } from "../../utils/AppRoutes";
+import { ENDPOINTS } from "../../utils/Constants";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -22,6 +23,15 @@ export default function RegisterPage() {
     address: "",
     image: "",
   });
+  const { postRequest } = useAxios();
+  const { loggedInUserEmail, storeAuthToken } = useAuth();
+
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
 
   const validate = () => {
     let errors = {};
@@ -97,13 +107,13 @@ export default function RegisterPage() {
     try {
       setApiError(null);
       setLoading(true);
-      const response = await registerUser(formData);
+      const response = await postRequest(ENDPOINTS.REGISTER, false, formData);
       const result = response.data;
       const message = result.message;
 
-      if (response.status === HttpStatusCodes.CREATED) {
-        localStorage.setItem(Constants.AUTH_TOKEN_KEY, result.token);
-        navigate(LOGIN);
+      if (response.status === HttpStatusCode.Created) {
+        storeAuthToken(result.token);
+        navigate(AppRoutes.Dashboard);
       } else {
         setApiError(
           message === null
@@ -219,7 +229,7 @@ export default function RegisterPage() {
               onChange={handleImageChange}
             />
           </Form.Group>
-          
+
           {loading && <Loader />}
 
           <Button

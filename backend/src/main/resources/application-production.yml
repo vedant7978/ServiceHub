@@ -1,0 +1,4 @@
+# Disable Swagger UI and documentation for production
+springdoc:
+  swagger-ui:
+    enabled: false

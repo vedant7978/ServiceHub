@@ -1,0 +1,28 @@
+.feedback-block {
+    background-color: #F8F7FF;
+    border-radius: 8px;
+    border: 1px solid #0C0059;
+}
+
+.feedback-username {
+    font-size: 16px;
+    color: black;
+    font-family: "Franklin Gothic Book", sans-serif;
+}
+
+.feedback-rating {
+    font-size: 14px;
+    color: black;
+    font-family: "Franklin Gothic Book", sans-serif;
+}
+
+.feedback-description {
+    font-size: 14px;
+    color: #808080;
+    font-family: "Franklin Gothic Book", sans-serif;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}

@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
+import { HttpStatusCode } from "axios";
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import './LoginPage.css';
 import { Link, useNavigate } from "react-router-dom";
 import loginPageImg from '../../assets/loginPage.jpg';
-import { LANDING } from '../../utils/Routes';
-import { REGISTER } from '../../utils/Routes';
-import { loginUser } from '../../api_service/AuthModule';
-import Constants from '../../utils/Constants';
-import HttpStatusCodes from '../../utils/HttpStatusCodes';
+import { useAuth } from "../../context/AuthContext";
+import { useAxios } from '../../context/AxiosContext';
+import { AppRoutes } from '../../utils/AppRoutes';
+import { ENDPOINTS } from '../../utils/Constants';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
+  const { postRequest } = useAxios();
+  const { loggedInUserEmail, storeAuthToken } = useAuth();
   const navigate = useNavigate();
+
+  // [TODO]: Use private routes
+  useEffect(() => {
+    if (loggedInUserEmail) {
+      navigate(AppRoutes.Dashboard);
+    }
+  }, []);
+
   const validate = () => {
     let errors = {};
     if (!email.trim()) {
@@ -40,20 +50,19 @@ const Login = () => {
         email: email,
         password: password,
       };
-      await loginUser(req)
-        .then((response) => {
-          const token = response.data.token;
-          localStorage.setItem(Constants.AUTH_TOKEN_KEY, token);
-          // [TODO]: naviagte to home page when it is ready
-          navigate(LANDING);
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === HttpStatusCodes.BAD_REQUEST) {
-            setError("Invalid login credentials.");
-          } else {
-            setError("An error occurred during login.");
-          }
-        });
+      try {
+        const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
+        const token = response.data.token;
+        storeAuthToken(token);
+        navigate(AppRoutes.Dashboard);
+      } catch (error) {
+        if (error.response && error.response.status === HttpStatusCode.BadRequest) {
+          setError("Invalid login credentials.");
+        } else {
+          console.log(error)
+          setError("An error occurred during login.");
+        }
+      }
     }
   };
     
@@ -64,6 +73,7 @@ const Login = () => {
             <div className="text-left mb-4">
               <h1 className="h4 mt-3">Log In</h1>
             </div>
+
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email Id</Form.Label>
@@ -95,12 +105,12 @@ const Login = () => {
   
               <Form.Group className="text-end mt-2">
                 <Form.Text>
-                  <a href="#" className="text-muted">Forgot Password?</a>
+                  <a href = {AppRoutes.ForgotPassword} className="text-muted">Forgot Password?</a>
                 </Form.Text>
               </Form.Group>
-  
+
               {error && (
-                <div className="alert alert-danger" role="alert">
+                  <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
@@ -110,7 +120,7 @@ const Login = () => {
               </Button>
               <Form.Group className="text-center mt-2">
                 <Form.Text>
-                  <Link to={REGISTER} className="text-muted">Don't have an account? Sign Up</Link>
+                  <Link to={AppRoutes.Register} className="text-muted">Don't have an account? Sign Up</Link>
                 </Form.Text>
               </Form.Group>
             </Form>

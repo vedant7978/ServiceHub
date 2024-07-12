@@ -1,0 +1,23 @@
+.top-nav-bar {
+  background-color: #FFFFFF;
+  height: auto;
+}
+
+.nav-link-custom {
+  font-size: 20px;
+  font-weight: normal;
+  font-family: "Franklin Gothic Book", sans-serif;
+  color: #808080FF;
+}
+
+.nav-link-custom:hover {
+  color: #EF5366;
+}
+
+.underline {
+  position: absolute;
+  bottom: 5px;
+  height: 2px;
+  background-color: #EF5366;
+  transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+}
