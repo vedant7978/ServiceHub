@@ -85,7 +85,7 @@ export const PendingContracts = () => {
 
   return (
     <Container className="pending-contracts-container pt-4 pb-4 d-flex justify-content-start">
-      <Stack direction="horizontal">
+      <Stack direction="horizontal" className="align-items-start">
         {
           contracts.length > 0 ? (
             contracts.map(contract => (

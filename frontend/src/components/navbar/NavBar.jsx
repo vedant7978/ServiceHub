@@ -71,7 +71,7 @@ const NavBar = () => {
   };
 
   return (
-    <Navbar expand="lg" className="top-nav-bar">
+    <Navbar expand="lg" className="top-nav-bar" sticky="top">
       <Container>
         <Navbar.Brand href={AppRoutes.Dashboard}>
           <img
