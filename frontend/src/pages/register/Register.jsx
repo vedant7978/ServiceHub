@@ -136,7 +136,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Container fluid className="registration-page">
+    <Container fluid className="registration-page py-5">
       <Stack
         direction="vertical"
         gap={3}
