@@ -7,18 +7,26 @@ import { ENDPOINTS, ServiceType } from "../../../utils/Constants";
 import AppToast from "../../app_toast/AppToast";
 
 export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
-
   const isAddingService = service === null;
-  const [name, setName] = useState(service ? service.name : "");
-  const [description, setDescription] = useState(service ? service.description : "");
-  const [perHourRate, setPerHourRate] = useState(service ? service.perHourRate : "");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [perHourRate, setPerHourRate] = useState("");
   const [type, setType] = useState(service ? service.type : ServiceType["1"]);
   const [hasServiceChanged, setHasServiceChanged] = useState(false);
   const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState();
   const [showToast, setShowToast] = useState(false);
   const [toastTitle, setToastTitle] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
   const { postRequest, putRequest } = useAxios();
+
+  useEffect(() => {
+    if (!service) return;
+    setName(service.name);
+    setDescription(service.description);
+    setPerHourRate(service.perHourRate);
+    setType(service.type);
+  }, [service]);
 
   useEffect(() => {
     if (isAddingService) {
@@ -31,7 +39,7 @@ export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
         type !== service.type
       )
     }
-  }, [name, description, perHourRate, type]);
+  }, [name, description, perHourRate, type, service, isAddingService])
 
   useEffect(() => {
     setIsSubmitButtonDisabled(!hasServiceChanged)
@@ -49,6 +57,7 @@ export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
   }
 
   const addService = async () => {
+    if (!validateService()) return;
     const service = { name: name, description: description, perHourRate: perHourRate, type: type };
     try {
       const response = await postRequest(ENDPOINTS.ADD_SERVICE, true, service);
@@ -68,6 +77,7 @@ export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
   }
 
   const updateService = async () => {
+    if (!validateService()) return;
     const serviceToUpdate = {
       id: service.id,
       name: name,
@@ -90,6 +100,27 @@ export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
       setToastMessage(`Failed to update service: ${error}`)
       setShowToast(true)
     }
+  }
+
+  const validateService = () => {
+    if (!name || name === "") {
+      setErrorMessage("Please enter valid name of the service");
+      return false;
+    }
+    if (!description || description === "") {
+      setErrorMessage("Please enter valid description of the service");
+      return false;
+    }
+    if (!perHourRate || perHourRate === "") {
+      setErrorMessage("Please enter valid per hour rate for the service");
+      return false;
+    }
+    if (!type || type === "") {
+      setErrorMessage("Please enter valid type of the service");
+      return false;
+    }
+    setErrorMessage(null);
+    return true;
   }
 
   const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -166,14 +197,20 @@ export const AddUpdateServiceCard = ({ service, onRefreshServices }) => {
           </Stack>
         </div>
 
-        <Button
-          disabled={isSubmitButtonDisabled}
-          className="add-update-service-submit-button mt-5"
-          onClick={handleSubmitService}>
-          {isAddingService ? "Add Service" : "Update Service"}
-        </Button>
+        <Stack>
+          {errorMessage && (
+            <div className="error-message-text">{errorMessage}</div>
+          )}
+
+          <Button
+            disabled={isSubmitButtonDisabled}
+            className="add-update-service-submit-button mt-5"
+            onClick={handleSubmitService}>
+            {isAddingService ? "Add Service" : "Update Service"}
+          </Button>
+        </Stack>
       </Stack>
-      <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage}/>
+      <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
   );
 }
