@@ -18,6 +18,7 @@ export const AddFeedbackCard = ({ contract }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastTitle, setToastTitle] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
@@ -25,13 +26,24 @@ export const AddFeedbackCard = ({ contract }) => {
   }, []);
 
   useEffect(() => {
-    setUserRating(initialFeedback.rating);
-    setFeedbackDescription(initialFeedback.description);
+    if (isSubmitButtonDisabled) {
+      if (contract.status === "Pending")
+        setErrorMessage("You cannot give feedback until the contract is accepted or rejected.")
+    } else {
+      setErrorMessage(null)
+    }
+  }, [isSubmitButtonDisabled]);
+
+  useEffect(() => {
+    if (initialFeedback.rating)
+      setUserRating(initialFeedback.rating);
+    if (initialFeedback.description)
+      setFeedbackDescription(initialFeedback.description);
   }, [initialFeedback]);
 
   useEffect(() => {
     setHasFeedbackChanged(feedbackDescription !== initialFeedback.description || userRating !== initialFeedback.rating)
-  }, [userRating], [feedbackDescription]);
+  }, [userRating, feedbackDescription]);
 
   const loadFeedback = async () => {
     try {
@@ -70,6 +82,8 @@ export const AddFeedbackCard = ({ contract }) => {
         setToastTitle("Success")
         setToastMessage("Successfully submitted the feedback.")
         setShowToast(true)
+        setInitialFeedback(feedback)
+        setHasFeedbackChanged(false)
       }
     } catch (error) {
       console.log("Failed to load contract feedback", error);
@@ -107,12 +121,18 @@ export const AddFeedbackCard = ({ contract }) => {
           </Stack>
         </div>
 
-        <Button
-          disabled={isSubmitButtonDisabled}
-          className="add-feedback-submit-button mt-5"
-          onClick={handleSubmitFeedback}>
-          Submit
-        </Button>
+        <Stack>
+          {errorMessage && (
+            <div className="error-message-text">{errorMessage}</div>
+          )}
+
+          <Button
+            disabled={isSubmitButtonDisabled}
+            className="add-feedback-submit-button mt-5"
+            onClick={handleSubmitFeedback}>
+            Submit
+          </Button>
+        </Stack>
       </Stack>
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage}/>
     </Container>

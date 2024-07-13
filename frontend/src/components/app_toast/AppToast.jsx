@@ -6,7 +6,7 @@ const AppToast = ({ show, setShow, title, message }) => {
 
   return (
     <ToastContainer position="top-end" className="p-3">
-      <Toast onClose={() => setShow(false)} show={show} delay={10000} autohide>
+      <Toast onClose={() => setShow(false)} show={show} delay={5000} autohide>
         <Toast.Header>
           <div className="mr-auto">
             <strong>{title}</strong>
