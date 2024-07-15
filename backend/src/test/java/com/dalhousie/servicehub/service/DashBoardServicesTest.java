@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -50,8 +51,8 @@ public class DashBoardServicesTest {
     public void shouldGetAllServices_WhenServicesExist() {
         // Given
         List<ServiceModel> serviceModels = Arrays.asList(
-                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.Plumbing, 1L),
-                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.Electrician, 1L)
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(1L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(1L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
                 new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
@@ -81,8 +82,8 @@ public class DashBoardServicesTest {
         // Given
         ServiceType type = ServiceType.Plumbing;
         List<ServiceModel> serviceModels = Arrays.asList(
-                new ServiceModel(1L, "Service 1", "Description 1", 50.0, type, 1L),
-                new ServiceModel(2L, "Service 2", "Description 2", 60.0, type, 1L)
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(type).providerId(1L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(1L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
                 new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 1L),
@@ -106,13 +107,14 @@ public class DashBoardServicesTest {
         verify(serviceRepository, times(1)).findByType(type);
         verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
     }
+
     @Test
     public void shouldSearchServicesByName_WhenServicesExist_ForGivenName() {
         // Given
         String name = "Service";
         List<ServiceModel> serviceModels = Arrays.asList(
-                new ServiceModel(1L, "Service 1", "Description 1", 50.0, ServiceType.Plumbing, 1L),
-                new ServiceModel(2L, "Service 2", "Description 2", 60.0, ServiceType.Electrician, 1L)
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(1L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(1L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
                 new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
@@ -136,19 +138,13 @@ public class DashBoardServicesTest {
         verify(serviceRepository, times(1)).findByNameContainingIgnoreCase(name);
         verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
     }
+
     @Test
     public void shouldGetProviderDetailsById_WhenProviderExists() {
         // Given
         Long providerId = 1L;
-        UserModel userModel = new UserModel();
-        userModel.setId(providerId);
-        userModel.setName("John Doe");
-        userModel.setEmail("john.doe@example.com");
-
-        UserDto userDto = new UserDto();
-        userDto.setId(providerId);
-        userDto.setName("John Doe");
-        userDto.setEmail("john.doe@example.com");
+        UserModel userModel = UserModel.builder().id(providerId).name("John Doe").email("john.doe@example.com").build();
+        UserDto userDto = UserDto.builder().id(providerId).name("John Doe").email("john.doe@example.com").build();
 
         // When
         when(userRepository.findById(providerId)).thenReturn(Optional.of(userModel));
@@ -175,7 +171,7 @@ public class DashBoardServicesTest {
 
         // Then
         assertEquals(ResponseBody.ResultType.FAILURE, responseBody.resultType());
-        assertEquals(null, responseBody.data());
+        assertNull(responseBody.data());
         assertEquals("Provider not found", responseBody.message());
         verify(userRepository, times(1)).findById(providerId);
         verify(userMapper, never()).toDto(any(UserModel.class));

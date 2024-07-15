@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,10 +45,12 @@ class WishlistServiceTest {
     @Mock
     private WishlistMapper wishlistMapper;
 
-    @InjectMocks
-    private WishlistServiceImpl wishlistService;
     @Mock
     private FeedbackService feedbackService;
+
+    @InjectMocks
+    private WishlistServiceImpl wishlistService;
+
     private UserModel userModel;
 
     @BeforeEach
@@ -66,17 +68,19 @@ class WishlistServiceTest {
     void addWishlist_Success() {
         // Given
         Long serviceId = 1L;
-        WishlistModel wishlistModel = WishlistModel.builder()
-                .serviceId(serviceId)
-                .userId(userModel.getId())
+        ServiceModel serviceModel = ServiceModel.builder()
+                .id(serviceId)
                 .build();
 
-        //when
-        when(serviceRepository.existsById(serviceId)).thenReturn(true);
-        when(wishlistRepository.save(any(WishlistModel.class))).thenReturn(wishlistModel);
-        wishlistService.addWishlist(serviceId, userModel);
+        when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(serviceModel));
+        when(wishlistRepository.save(any(WishlistModel.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        ResponseBody<String> response = wishlistService.addWishlist(serviceId, userModel);
 
         // Then
+        assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
+        assertEquals("Wishlist added successfully", response.message());
         verify(wishlistRepository, times(1)).save(any(WishlistModel.class));
     }
 
@@ -86,7 +90,7 @@ class WishlistServiceTest {
         // Given
         Long serviceId = 1L;
 
-        when(serviceRepository.existsById(serviceId)).thenReturn(false);
+        when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(ServiceNotFoundException.class, () -> wishlistService.addWishlist(serviceId, userModel));
@@ -101,21 +105,12 @@ class WishlistServiceTest {
 
         WishlistModel wishlistModel = WishlistModel.builder()
                 .id(1L)
-                .serviceId(1L)
-                .userId(userId)
+                .service(ServiceModel.builder().id(1L).providerId(2L).name("Test Service").type(ServiceType.Electrician).description("Test Description").perHourRate(50.0).build())
+                .user(userModel)
                 .build();
 
         List<WishlistModel> wishlistModels = new ArrayList<>();
         wishlistModels.add(wishlistModel);
-
-        ServiceModel serviceModel = ServiceModel.builder()
-                .id(1L)
-                .providerId(2L)
-                .name("Test Service")
-                .type(ServiceType.valueOf("Electrician"))
-                .description("Test Description")
-                .perHourRate(50.0)
-                .build();
 
         UserModel providerModel = UserModel.builder()
                 .id(2L)
@@ -123,9 +118,8 @@ class WishlistServiceTest {
                 .image("provider_image.jpg")
                 .build();
 
-        when(userRepository.existsById(userId)).thenReturn(true);
-        when(wishlistRepository.findAllByUserId(userId)).thenReturn(wishlistModels);
-        when(serviceRepository.findById(1L)).thenReturn(Optional.of(serviceModel));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel));
+        when(wishlistRepository.findAllByUser(userModel)).thenReturn(wishlistModels);
         when(userRepository.findById(2L)).thenReturn(Optional.of(providerModel));
         when(feedbackService.getAverageRatingForUser(2L)).thenReturn(4.5);
 
@@ -133,10 +127,11 @@ class WishlistServiceTest {
         ResponseBody<List<GetWishlistResponse>> response = wishlistService.getWishlists(userId);
 
         // Then
-        assertNotNull(response);
-        verify(userRepository, times(1)).existsById(userId);
-        verify(wishlistRepository, times(1)).findAllByUserId(userId);
-        verify(serviceRepository, times(1)).findById(1L);
+        assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
+        assertEquals("Get wishlists successful", response.message());
+        assertEquals(1, response.data().size());
+        verify(userRepository, times(1)).findById(userId);
+        verify(wishlistRepository, times(1)).findAllByUser(userModel);
         verify(userRepository, times(1)).findById(2L);
         verify(feedbackService, times(1)).getAverageRatingForUser(2L);
     }
@@ -147,13 +142,11 @@ class WishlistServiceTest {
         // Given
         Long userId = 1L;
 
-        when(userRepository.existsById(userId)).thenReturn(false);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(UserNotFoundException.class, () -> wishlistService.getWishlists(userId));
-        verify(wishlistRepository, never()).findAllByUserId(anyLong());
+        verify(wishlistRepository, never()).findAllByUser(any(UserModel.class));
         verify(wishlistMapper, never()).toDto(any(WishlistModel.class));
     }
-
-
 }
