@@ -14,10 +14,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -33,6 +35,8 @@ public class ProfileServiceTest {
     @InjectMocks
     private ProfileServiceImpl userService;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
     private UserModel userModel;
     private UpdateUserRequest updateUserRequest;
 
@@ -177,5 +181,46 @@ public class ProfileServiceTest {
         verify(userRepository, times(1)).save(any(UserModel.class));
 
         logger.info("Test completed: doNotUpdateUser_WhenEmailExists_AndNoDataToUpdate");
+    }
+
+    @Test
+    @DisplayName("Should reset password successfully when user exists")
+    void resetPassword_WhenUserExists() {
+        logger.info("Starting test: resetPassword_WhenUserExists");
+
+        // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+
+        // When
+        userService.resetPassword(1L, "newPassword");
+
+        // Then
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).save(any(UserModel.class));
+        verify(passwordEncoder, times(1)).encode("newPassword");
+
+        logger.info("Test completed: resetPassword_WhenUserExists");
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotFoundException when user does not exist")
+    void resetPassword_WhenUserDoesNotExist() {
+        logger.info("Starting test: resetPassword_WhenUserDoesNotExist");
+
+        // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
+                userService.resetPassword(1L, "newPassword")
+        );
+
+        // Then
+        assertEquals("User not found with ID: 1", exception.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, never()).save(any(UserModel.class));
+
+        logger.info("Test completed: resetPassword_WhenUserDoesNotExist");
     }
 }

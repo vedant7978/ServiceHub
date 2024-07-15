@@ -5,6 +5,7 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class ProfileServiceImpl implements ProfileService{
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -39,5 +41,14 @@ public class ProfileServiceImpl implements ProfileService{
         }
         repository.save(userModel);
         return userModel;
+    }
+
+    @Override
+    public void resetPassword(Long userId, String newPassword) {
+        UserModel existingUser = repository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        existingUser.setPassword(passwordEncoder.encode(newPassword));
+        repository.save(existingUser);
     }
 }
