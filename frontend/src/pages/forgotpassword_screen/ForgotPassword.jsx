@@ -84,7 +84,7 @@ const ForgotPassword = () => {
               </Form.Group>
             </Form>
           </div>
-          <AppToast show={showToast} setShow={setShowToast} title={"Success"} message={forgotPasswordSuccessMessage}/>
+          <AppToast show={showToast} setShow={setShowToast} title={"Email sent successfully"} message={forgotPasswordSuccessMessage}/>
 
         </Container>
 
