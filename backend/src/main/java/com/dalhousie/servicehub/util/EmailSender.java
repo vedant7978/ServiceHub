@@ -21,7 +21,7 @@ public class EmailSender {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
 
-        helper.setFrom("your-email@example.com", "Your Name");
+        helper.setFrom("noreplyservicehub@gmail.com", "Service Hub");
         helper.setTo(email);
 
         helper.setSubject(subject);
