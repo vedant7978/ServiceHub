@@ -13,33 +13,39 @@ import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.dashboard_services.DashboardServicesImpl;
 import com.dalhousie.servicehub.util.ResponseBody;
+import com.dalhousie.servicehub.util.SecurityUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DashBoardServicesTest {
-
     @Mock
     private ServiceRepository serviceRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private ServiceMapper serviceMapper;
 
     @Mock
-    private ServiceMapper serviceMapper;
+    private SecurityUtils securityUtils;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -47,20 +53,27 @@ public class DashBoardServicesTest {
     @InjectMocks
     private DashboardServicesImpl dashboardServices;
 
+    @BeforeEach
+    public void setUp() {
+        mockSecurityContextWithAuthenticatedUser();
+    }
+
     @Test
     public void shouldGetAllServices_WhenServicesExist() {
         // Given
         List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(1L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(1L).build()
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 1L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L)
         );
 
-        // When
+        // Mock the behavior of serviceRepository.findAll()
         when(serviceRepository.findAll()).thenReturn(serviceModels);
+
+        // Mock the behavior of serviceMapper.toDto()
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
@@ -68,6 +81,7 @@ public class DashBoardServicesTest {
                 }
         );
 
+        // When
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.getAllServices();
 
         // Then
@@ -82,12 +96,12 @@ public class DashBoardServicesTest {
         // Given
         ServiceType type = ServiceType.Plumbing;
         List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(type).providerId(1L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(1L).build()
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(type).providerId(2L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 1L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 1L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L)
         );
 
         // When
@@ -113,12 +127,12 @@ public class DashBoardServicesTest {
         // Given
         String name = "Service";
         List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(1L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(1L).build()
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 1L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 1L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L)
         );
 
         // When
@@ -143,8 +157,8 @@ public class DashBoardServicesTest {
     public void shouldGetProviderDetailsById_WhenProviderExists() {
         // Given
         Long providerId = 1L;
-        UserModel userModel = UserModel.builder().id(providerId).name("John Doe").email("john.doe@example.com").build();
-        UserDto userDto = UserDto.builder().id(providerId).name("John Doe").email("john.doe@example.com").build();
+        UserModel userModel = UserModel.builder().id(providerId).name("vedant patel").email("vedant@example.com").build();
+        UserDto userDto = UserDto.builder().id(providerId).name("vedant patel").email("vedant@example.com").build();
 
         // When
         when(userRepository.findById(providerId)).thenReturn(Optional.of(userModel));
@@ -175,5 +189,50 @@ public class DashBoardServicesTest {
         assertEquals("Provider not found", responseBody.message());
         verify(userRepository, times(1)).findById(providerId);
         verify(userMapper, never()).toDto(any(UserModel.class));
+    }
+    @Test
+    public void shouldThrowException_WhenUserNotAuthenticated() {
+        // Given
+        mockSecurityContextWithUnauthenticatedUser();
+
+        // When / Then
+        assertThrows(IllegalStateException.class, () -> SecurityUtils.getLoggedInUserId());
+    }
+
+    @Test
+    public void shouldThrowException_WhenAuthenticationIsNull() {
+        // Given
+        mockSecurityContextWithNullAuthentication();
+
+        // When / Then
+        assertThrows(IllegalStateException.class, () -> SecurityUtils.getLoggedInUserId());
+    }
+
+    private void mockSecurityContextWithAuthenticatedUser() {
+        UserModel userModel = UserModel.builder().id(1L).name("Test User").build();
+        Authentication authentication = mock(Authentication.class);
+        lenient().when(authentication.isAuthenticated()).thenReturn(true);
+        lenient().when(authentication.getPrincipal()).thenReturn(userModel);
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+    }
+    private void mockSecurityContextWithUnauthenticatedUser() {
+        Authentication authentication = mock(Authentication.class);
+        lenient().when(authentication.isAuthenticated()).thenReturn(false);
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+    }
+
+    private void mockSecurityContextWithNullAuthentication() {
+        SecurityContext securityContext = mock(SecurityContext.class);
+        lenient().when(securityContext.getAuthentication()).thenReturn(null);
+
+        SecurityContextHolder.setContext(securityContext);
     }
 }
