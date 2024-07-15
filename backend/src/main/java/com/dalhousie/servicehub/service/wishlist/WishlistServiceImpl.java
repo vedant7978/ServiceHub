@@ -38,12 +38,12 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public ResponseBody<String> addWishlist(Long serviceId, UserModel userModel) {
-        if (!serviceRepository.existsById(serviceId)) {
-            throw new ServiceNotFoundException("Service not found with ID: " + serviceId);
-        }
+        ServiceModel service_ID = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + serviceId));
+
         WishlistModel wishlistModel = WishlistModel.builder()
-                .serviceId(serviceId)
-                .userId(userModel.getId())
+                .service(service_ID)
+                .user(userModel)
                 .build();
 
         wishlistRepository.save(wishlistModel);
@@ -52,23 +52,21 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("User not found for id: " + userId);
-        }
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
-        List<GetWishlistResponse> wishlists = wishlistRepository.findAllByUserId(userId)
+        List<GetWishlistResponse> wishlists = wishlistRepository.findAllByUser(user)
                 .stream()
                 .map(wishlist -> {
-                    ServiceModel serviceModel = serviceRepository.findById(wishlist.getServiceId())
-                            .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + wishlist.getServiceId()));
-                    UserModel userModel = userRepository.findById(serviceModel.getProviderId())
+                    ServiceModel serviceModel = wishlist.getService();
+                    UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
                             .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
                     Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
 
                     return GetWishlistResponse.builder()
                             .id(serviceModel.getId())
                             .providerId(serviceModel.getProviderId())
-                            .serviceProviderImage(userModel.getImage())
+                            .serviceProviderImage(serviceProvider.getImage())
                             .name(serviceModel.getName())
                             .type(serviceModel.getType())
                             .description(serviceModel.getDescription())

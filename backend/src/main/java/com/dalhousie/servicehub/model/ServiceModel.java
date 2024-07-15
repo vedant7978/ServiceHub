@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,4 +36,10 @@ public class ServiceModel {
 
     @Column(name = "provider_id", nullable = false)
     private Long providerId;
+
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    private List<WishlistModel> wishlists;
+
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    private List<ContractModel> contracts;
 }
