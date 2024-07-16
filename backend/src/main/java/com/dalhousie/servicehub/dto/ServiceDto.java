@@ -17,4 +17,5 @@ public class ServiceDto {
     private Double perHourRate;
     private ServiceType type;
     private Long providerId;
+    private boolean isAddedToWishlist;
 }
