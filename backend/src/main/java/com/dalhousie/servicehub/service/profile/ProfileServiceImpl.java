@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.service.profile;
 
+import com.dalhousie.servicehub.exceptions.PasswordNotMatchingException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
@@ -14,7 +15,6 @@ public class ProfileServiceImpl implements ProfileService{
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public UserModel getUserByEmail(String email) {
@@ -44,9 +44,12 @@ public class ProfileServiceImpl implements ProfileService{
     }
 
     @Override
-    public void resetPassword(Long userId, String newPassword) {
+    public void newPassword(Long userId, String oldPassword, String newPassword) {
         UserModel existingUser = repository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        if (!passwordEncoder.matches(oldPassword, existingUser.getPassword()))
+            throw new PasswordNotMatchingException("Old password not matching!");
 
         existingUser.setPassword(passwordEncoder.encode(newPassword));
         repository.save(existingUser);
