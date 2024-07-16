@@ -23,7 +23,8 @@ export const ENDPOINTS = {
   GET_SERVICES: "/api/service/get-user-services",
   ADD_SERVICE: "/api/service/add-service",
   UPDATE_SERVICE: "/api/service/update-service",
-  DELETE_SERVICE: "/api/service/delete-service"
+  DELETE_SERVICE: "/api/service/delete-service",
+  NEW_PASSWORD: "/api/user-profile/new-password"
   // Add other endpoints here
 };
 
