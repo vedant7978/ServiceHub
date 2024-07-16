@@ -1,6 +1,8 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.exceptions.PasswordNotMatchingException;
 import com.dalhousie.servicehub.model.UserModel;
+import com.dalhousie.servicehub.request.NewPasswordRequest;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
 import com.dalhousie.servicehub.service.profile.ProfileService;
 import jakarta.validation.Valid;
@@ -52,12 +54,18 @@ public class ProfileController {
         }
     }
 
-    @PutMapping("/reset-password")
-    public ResponseEntity<Object> resetPassword(@AuthenticationPrincipal UserModel userModel, @RequestParam String newPassword) {
+    @PutMapping("/new-password")
+    public ResponseEntity<Object> newPassword(
+            @AuthenticationPrincipal UserModel userModel,
+            @RequestBody NewPasswordRequest newPasswordRequest
+    ) {
         try {
-            profileService.resetPassword(userModel.getId(), newPassword);
+            profileService.newPassword(userModel.getId(), newPasswordRequest.getOldPassword(), newPasswordRequest.getNewPassword());
             logger.info("Password reset successfully for user: {}", userModel.getEmail());
             return ResponseEntity.status(HttpStatus.OK).body("Password reset successfully");
+        } catch (PasswordNotMatchingException exception) {
+            logger.error("Error in resetting password: {}", exception.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (Exception e) {
             logger.error("Error resetting password: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

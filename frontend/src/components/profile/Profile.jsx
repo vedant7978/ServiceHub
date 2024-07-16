@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAxios } from "../../context/AxiosContext";
 import { ENDPOINTS } from '../../utils/Constants';
 
-const Profile = () => {
+const Profile = ({ onChangePasswordClicked }) => {
   const { loggedInUserEmail } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState(loggedInUserEmail);
@@ -92,10 +92,6 @@ const Profile = () => {
     }
   };
 
-  const handleChangePassword = () => {
-    // TODO: handle change password
-  };
-
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
 
@@ -127,7 +123,7 @@ const Profile = () => {
           <textarea className="form-control" value={address} onChange={handleAddressChange}></textarea>
         </div>
         <div className="d-flex justify-content-between">
-          <button className="btn btn-link" onClick={handleChangePassword}>Change Password</button>
+          <button className="btn btn-link" onClick={onChangePasswordClicked}>Change Password</button>
           <button className="btn btn-success" onClick={handleSave}>Save</button>
         </div>
         {error && <div className="alert alert-danger mt-3">{error}</div>}
