@@ -9,6 +9,7 @@ import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
+import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.dashboard_services.DashboardServicesImpl;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -42,6 +44,9 @@ public class DashBoardServicesTest {
     private ServiceMapper serviceMapper;
 
     @Mock
+    private WishlistRepository wishlistRepository;
+
+    @Mock
     private SecurityUtils securityUtils;
 
     @Mock
@@ -60,35 +65,57 @@ public class DashBoardServicesTest {
 
     @Test
     public void shouldGetAllServices_WhenServicesExist() {
-        // Given
-        List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
-        );
-        List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L)
-        );
+        // Mock the static method SecurityUtils.getLoggedInUserId
+        try (MockedStatic<SecurityUtils> mockedSecurityUtils = mockStatic(SecurityUtils.class)) {
+            // Given
+            Long loggedInUserId = 1L;
+            mockedSecurityUtils.when(SecurityUtils::getLoggedInUserId).thenReturn(loggedInUserId);
 
-        // Mock the behavior of serviceRepository.findAll()
-        when(serviceRepository.findAll()).thenReturn(serviceModels);
+            List<ServiceModel> serviceModels = Arrays.asList(
+                    ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
+                    ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
+            );
+            List<ServiceDto> serviceDtos = Arrays.asList(
+                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false),
+                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false)
+            );
 
-        // Mock the behavior of serviceMapper.toDto()
-        when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
-                invocation -> {
-                    ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId());
-                }
-        );
+            // Mock the behavior of serviceRepository.findAll()
+            when(serviceRepository.findAll()).thenReturn(serviceModels);
 
-        // When
-        ResponseBody<GetServicesResponse> responseBody = dashboardServices.getAllServices();
+            // Mock the behavior of serviceMapper.toDto()
+            when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
+                    invocation -> {
+                        ServiceModel model = invocation.getArgument(0);
+                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
+                    }
+            );
 
-        // Then
-        assertEquals(SUCCESS, responseBody.resultType());
-        assertEquals(serviceDtos.size(), responseBody.data().getServices().size());
-        verify(serviceRepository, times(1)).findAll();
-        verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
+            // Mock the behavior of serviceRepository.findById()
+            when(serviceRepository.findById(any(Long.class))).thenAnswer(
+                    invocation -> {
+                        Long id = invocation.getArgument(0);
+                        return serviceModels.stream()
+                                .filter(serviceModel -> serviceModel.getId().equals(id))
+                                .findFirst();
+                    }
+            );
+
+            // Mock the behavior of wishlistRepository.existsByServiceAndUser()
+            when(wishlistRepository.existsByServiceAndUser(any(ServiceModel.class), any(UserModel.class))).thenReturn(false);
+
+            // Mock the behavior of userRepository.findById()
+            when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
+
+            // When
+            ResponseBody<GetServicesResponse> responseBody = dashboardServices.getAllServices();
+
+            // Then
+            assertEquals(SUCCESS, responseBody.resultType());
+            assertEquals(serviceDtos.size(), responseBody.data().getServices().size());
+            verify(serviceRepository, times(1)).findAll();
+            verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
+        }
     }
 
     @Test
@@ -100,8 +127,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false)
         );
 
         // When
@@ -109,9 +136,22 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
                 }
         );
+
+        // Mock the behavior of serviceRepository.findById()
+        when(serviceRepository.findById(any(Long.class))).thenAnswer(
+                invocation -> {
+                    Long id = invocation.getArgument(0);
+                    return serviceModels.stream()
+                            .filter(serviceModel -> serviceModel.getId().equals(id))
+                            .findFirst();
+                }
+        );
+
+        // Mock the behavior of userRepository.findById()
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.getServicesByType(type);
 
@@ -122,6 +162,7 @@ public class DashBoardServicesTest {
         verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
     }
 
+
     @Test
     public void shouldSearchServicesByName_WhenServicesExist_ForGivenName() {
         // Given
@@ -131,8 +172,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false)
         );
 
         // When
@@ -140,9 +181,21 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
                 }
         );
+        // Mock the behavior of serviceRepository.findById()
+        when(serviceRepository.findById(any(Long.class))).thenAnswer(
+                invocation -> {
+                    Long id = invocation.getArgument(0);
+                    return serviceModels.stream()
+                            .filter(serviceModel -> serviceModel.getId().equals(id))
+                            .findFirst();
+                }
+        );
+
+        // Mock the behavior of userRepository.findById()
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.searchServicesByName(name);
 
