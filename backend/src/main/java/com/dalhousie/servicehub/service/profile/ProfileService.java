@@ -7,5 +7,5 @@ public interface ProfileService {
 
     UserModel getUserByEmail(String email);
     UserModel updateUser(UpdateUserRequest updateUserRequest);
-    void resetPassword(Long userId, String newPassword);
+    void newPassword(Long userId, String oldPassword, String newPassword);
 }
