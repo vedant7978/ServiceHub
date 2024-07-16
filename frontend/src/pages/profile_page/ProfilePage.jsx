@@ -16,8 +16,7 @@ const ProfilePage = () => {
 
   const getUserFeedbacks = async () => {
     try {
-      const userData = { userId: 10 }
-      const response = await getRequest(ENDPOINTS.GET_FEEDBACK, true, userData);
+      const response = await getRequest(ENDPOINTS.GET_FEEDBACK, true);
       const data = response.data.data.feedbacks;
 
       if (response.status === 200) {
