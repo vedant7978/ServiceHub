@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.service;
 
+import com.dalhousie.servicehub.exceptions.PasswordNotMatchingException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
@@ -185,15 +186,16 @@ public class ProfileServiceTest {
 
     @Test
     @DisplayName("Should reset password successfully when user exists")
-    void resetPassword_WhenUserExists() {
+    void newPassword_WhenUserExists() {
         logger.info("Starting test: resetPassword_WhenUserExists");
 
         // Given
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
         // When
-        userService.resetPassword(1L, "newPassword");
+        userService.newPassword(1L, "oldPassword", "newPassword");
 
         // Then
         verify(userRepository, times(1)).findById(1L);
@@ -205,7 +207,7 @@ public class ProfileServiceTest {
 
     @Test
     @DisplayName("Should throw UserNotFoundException when user does not exist")
-    void resetPassword_WhenUserDoesNotExist() {
+    void newPassword_WhenUserDoesNotExist() {
         logger.info("Starting test: resetPassword_WhenUserDoesNotExist");
 
         // Given
@@ -213,7 +215,7 @@ public class ProfileServiceTest {
 
         // When
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
-                userService.resetPassword(1L, "newPassword")
+                userService.newPassword(1L, "", "newPassword")
         );
 
         // Then
@@ -222,5 +224,29 @@ public class ProfileServiceTest {
         verify(userRepository, never()).save(any(UserModel.class));
 
         logger.info("Test completed: resetPassword_WhenUserDoesNotExist");
+    }
+
+    @Test
+    @DisplayName("Should throw PasswordNotMatchingException when old password does not match")
+    void newPassword_WhenPasswordNotMatching() {
+        logger.info("Starting test: resetPassword_WhenPasswordNotMatching");
+
+        // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
+        logger.info("Will return user with ID: {} when findById is called", userModel.getId());
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        logger.info("Will return false matching old password with encoded password");
+
+        // When
+        PasswordNotMatchingException exception = assertThrows(PasswordNotMatchingException.class, () ->
+                userService.newPassword(1L, "", "newPassword")
+        );
+
+        // Then
+        assertEquals("Old password not matching!", exception.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, never()).save(any(UserModel.class));
+
+        logger.info("Test completed: resetPassword_WhenPasswordNotMatching");
     }
 }
