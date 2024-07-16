@@ -55,7 +55,7 @@ const ProfilePage = () => {
   };
 
   const handleChangePassword = async () => {
-    if (!oldPassword.trim() || !newPassword.trim() || newPassword.length < 8) {
+    if (!oldPassword.trim() || !newPassword.trim() || newPassword.length < 8 || newPassword !== confirmPassword) {
       setToastTitle("Error")
       setToastMessage("Password must not be empty and should have at least 8 characters")
       setShowToast(true)
