@@ -5,11 +5,15 @@ import com.dalhousie.servicehub.controller.DashboardController;
 import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
+import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.mapper.UserMapper;
+import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
+import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
@@ -32,6 +36,7 @@ import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 public class DashboardServicesImpl implements DashboardServices {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
 
     private final ServiceMapper serviceMapper;
     private final UserMapper userMapper;
@@ -46,6 +51,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
+                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
                 .collect(Collectors.toList());
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -63,6 +69,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
+                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
                 .toList();
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -77,6 +84,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
+                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
                 .toList();
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -102,4 +110,11 @@ public class DashboardServicesImpl implements DashboardServices {
         }
     }
 
+    private boolean isAddedToWishlist(Long serviceId, Long userId) {
+        ServiceModel service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + serviceId));
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
+        return wishlistRepository.existsByServiceAndUser(service, user);
+    }
 }
