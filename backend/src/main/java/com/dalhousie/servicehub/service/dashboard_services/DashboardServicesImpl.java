@@ -16,6 +16,8 @@ import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
+import com.dalhousie.servicehub.service.feedback.FeedbackService;
+import com.dalhousie.servicehub.service.feedback.FeedbackServiceImpl;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +42,7 @@ public class DashboardServicesImpl implements DashboardServices {
 
     private final ServiceMapper serviceMapper;
     private final UserMapper userMapper;
-
-    private static final Logger logger = LogManager.getLogger(DashboardController.class);
+    private final FeedbackService feedbackService;
 
     @Override
     public ResponseBody<GetServicesResponse> getAllServices() {
@@ -51,7 +52,10 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
-                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
+                .peek(serviceDto -> {
+                    serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
+                    serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+                })
                 .collect(Collectors.toList());
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -69,7 +73,10 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
-                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
+                .peek(serviceDto -> {
+                    serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
+                    serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+                })
                 .toList();
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -84,7 +91,10 @@ public class DashboardServicesImpl implements DashboardServices {
                 .stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
-                .peek(serviceDto -> serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId)))
+                .peek(serviceDto -> {
+                    serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
+                    serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+                })
                 .toList();
 
         GetServicesResponse response = GetServicesResponse.builder()
