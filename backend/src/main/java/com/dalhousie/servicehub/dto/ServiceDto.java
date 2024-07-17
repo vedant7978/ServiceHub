@@ -18,4 +18,5 @@ public class ServiceDto {
     private ServiceType type;
     private Long providerId;
     private boolean isAddedToWishlist;
+    private Double averageRating;
 }
