@@ -13,6 +13,7 @@ import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.dashboard_services.DashboardServicesImpl;
+import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,9 @@ public class DashBoardServicesTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private FeedbackService feedbackService;
+
     @InjectMocks
     private DashboardServicesImpl dashboardServices;
 
@@ -76,8 +80,8 @@ public class DashBoardServicesTest {
                     ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
             );
             List<ServiceDto> serviceDtos = Arrays.asList(
-                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false),
-                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false)
+                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false,4.5),
+                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false,4.0)
             );
 
             // Mock the behavior of serviceRepository.findAll()
@@ -87,7 +91,7 @@ public class DashBoardServicesTest {
             when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                     invocation -> {
                         ServiceModel model = invocation.getArgument(0);
-                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
+                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
                     }
             );
 
@@ -106,6 +110,7 @@ public class DashBoardServicesTest {
 
             // Mock the behavior of userRepository.findById()
             when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
+            when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
 
             // When
             ResponseBody<GetServicesResponse> responseBody = dashboardServices.getAllServices();
@@ -127,8 +132,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false,4.5),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false,4.0)
         );
 
         // When
@@ -136,7 +141,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
                 }
         );
 
@@ -150,8 +155,10 @@ public class DashBoardServicesTest {
                 }
         );
 
+
         // Mock the behavior of userRepository.findById()
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
+        when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.getServicesByType(type);
 
@@ -172,8 +179,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false,4.5),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false,4.0)
         );
 
         // When
@@ -181,7 +188,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false);
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
                 }
         );
         // Mock the behavior of serviceRepository.findById()
@@ -196,6 +203,7 @@ public class DashBoardServicesTest {
 
         // Mock the behavior of userRepository.findById()
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
+        when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.searchServicesByName(name);
 
