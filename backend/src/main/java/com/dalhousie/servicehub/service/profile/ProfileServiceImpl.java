@@ -5,6 +5,7 @@ import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
+import com.dalhousie.servicehub.response.UserDetailsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,7 @@ public class ProfileServiceImpl implements ProfileService{
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserModel getUserByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-    }
-
-    @Override
-    public UserModel updateUser(UpdateUserRequest updateUserRequest) {
+    public UserDetailsResponse updateUser(UpdateUserRequest updateUserRequest) {
         UserModel userModel = repository.findByEmail(updateUserRequest.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + updateUserRequest.getEmail()));
 
@@ -40,7 +35,7 @@ public class ProfileServiceImpl implements ProfileService{
             userModel.setImage(updateUserRequest.getImage());
         }
         repository.save(userModel);
-        return userModel;
+        return getUserDetailsResponse(userModel);
     }
 
     @Override
@@ -53,5 +48,17 @@ public class ProfileServiceImpl implements ProfileService{
 
         existingUser.setPassword(passwordEncoder.encode(newPassword));
         repository.save(existingUser);
+    }
+
+    @Override
+    public UserDetailsResponse getUserDetailsResponse(UserModel userModel) {
+        return UserDetailsResponse.builder()
+                .id(userModel.getId())
+                .name(userModel.getName())
+                .email(userModel.getEmail())
+                .address(userModel.getAddress())
+                .phone(userModel.getPhone())
+                .image(userModel.getImage())
+                .build();
     }
 }

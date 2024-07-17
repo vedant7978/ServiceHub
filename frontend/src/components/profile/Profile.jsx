@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import './Profile.css';
 import { FaCamera } from 'react-icons/fa';
-import { useAuth } from "../../context/AuthContext";
 import { useAxios } from "../../context/AxiosContext";
 import { ENDPOINTS } from '../../utils/Constants';
 
 const Profile = ({ onChangePasswordClicked }) => {
-  const { loggedInUserEmail } = useAuth();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(loggedInUserEmail);
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [image, setImage] = useState('');
@@ -24,16 +22,15 @@ const Profile = ({ onChangePasswordClicked }) => {
 
   const getUserData = async () => {
     try {
-      const userData = { email: email };
-      const response = await getRequest(ENDPOINTS.GET_USER_DATA, true, userData);
-      const data = response.data;
+      const response = await getRequest(ENDPOINTS.GET_USER_DATA, true);
+      const user = response.data.data;
 
       if (response.status === 200) {
-        setName(data.name);
-        setEmail(data.email);
-        setAddress(data.address);
-        setPhone(data.phone);
-        setImage(data.image);
+        setName(user.name);
+        setEmail(user.email);
+        setAddress(user.address);
+        setPhone(user.phone);
+        setImage(user.image);
       } else {
         setError('Failed to update profile');
       }
@@ -43,8 +40,23 @@ const Profile = ({ onChangePasswordClicked }) => {
     }
   };
 
+  const handlePhoneChange = (e) => {
+    const phone = e.target.value.replace(/[^\d]/g, "").slice(0, 10);
+    let formattedPhone = "";
+    if (phone.length > 3) {
+      formattedPhone += phone.slice(0, 3) + "-";
+      if (phone.length > 6) {
+        formattedPhone += phone.slice(3, 6) + "-";
+        formattedPhone += phone.slice(6);
+      } else {
+        formattedPhone += phone.slice(3);
+      }
+    } else {
+      formattedPhone = phone;
+    }
+    setPhone(formattedPhone);
+  }
   const handleNameChange = (e) => setName(e.target.value);
-  const handlePhoneChange = (e) => setPhone(e.target.value);
   const handleAddressChange = (e) => setAddress(e.target.value);
 
   const handleImageChange = (e) => {
@@ -60,23 +72,23 @@ const Profile = ({ onChangePasswordClicked }) => {
   };
 
   const validate = () => {
-    let errors = {};
-    if (!name.trim()) errors.name = "Name is required";
-
-    if (!/^\d{3}-\d{3}-\d{4}$/.test(phone)) {
-      errors.phone = "Phone number must be in the format XXX-XXX-XXXX";
-    }
-    if (!address.trim()) errors.address = "Address is required";
-    return errors;
+    let error = null;
+    if (!name.trim())
+      error = "Name is required";
+    if (!/^\d{3}-\d{3}-\d{4}$/.test(phone))
+      error = "Phone number must be in the format XXX-XXX-XXXX";
+    if (!address.trim())
+      error = "Address is required";
+    return error;
   };
 
   const handleSave = async () => {
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setError(errors);
+    const error = validate();
+    if (error) {
+      setError(error);
       return;
     }
-
+    setError('')
     const userData = { name, email, phone, address, image };
 
     try {

@@ -15,12 +15,11 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
   const { postRequest } = useAxios();
-  const { loggedInUserEmail, storeAuthToken } = useAuth();
+  const { isUserLoggedIn, setUserLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  // [TODO]: Use private routes
   useEffect(() => {
-    if (loggedInUserEmail) {
+    if (isUserLoggedIn) {
       navigate(AppRoutes.Dashboard);
     }
   }, []);
@@ -53,7 +52,7 @@ const Login = () => {
       try {
         const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
         const token = response.data.token;
-        storeAuthToken(token);
+        setUserLoggedIn(token);
         navigate(AppRoutes.Dashboard);
       } catch (error) {
         if (error.response && error.response.status === HttpStatusCode.BadRequest) {
