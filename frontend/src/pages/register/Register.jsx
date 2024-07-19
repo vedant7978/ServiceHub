@@ -24,11 +24,10 @@ export default function RegisterPage() {
     image: "",
   });
   const { postRequest } = useAxios();
-  const { loggedInUserEmail, storeAuthToken } = useAuth();
+  const { isUserLoggedIn, setUserLoggedIn } = useAuth();
 
-  // [TODO]: Use private routes
   useEffect(() => {
-    if (loggedInUserEmail) {
+    if (isUserLoggedIn) {
       navigate(AppRoutes.Dashboard);
     }
   }, []);
@@ -112,7 +111,7 @@ export default function RegisterPage() {
       const message = result.message;
 
       if (response.status === HttpStatusCode.Created) {
-        storeAuthToken(result.token);
+        setUserLoggedIn(result.token);
         navigate(AppRoutes.Dashboard);
       } else {
         setApiError(

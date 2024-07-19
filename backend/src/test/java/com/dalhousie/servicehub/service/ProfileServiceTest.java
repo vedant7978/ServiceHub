@@ -5,6 +5,7 @@ import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
+import com.dalhousie.servicehub.response.UserDetailsResponse;
 import com.dalhousie.servicehub.service.profile.ProfileServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,50 +62,6 @@ public class ProfileServiceTest {
     }
 
     @Test
-    @DisplayName("Should return user when email exists")
-    void getUserByEmail_WhenEmailExists() {
-        logger.info("Starting test: getUserByEmail_WhenEmailExists");
-
-        // Given
-        logger.info("Mocking userRepository.findByEmail to return userModel");
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userModel));
-
-        // When
-        UserModel foundUser = userService.getUserByEmail("jems007patel@gmail.com");
-
-        // Then
-        logger.info("Asserting that the foundUser is not null and has the correct email");
-        assertNotNull(foundUser);
-        assertEquals("jems007patel@gmail.com", foundUser.getEmail());
-        verify(userRepository, times(1)).findByEmail(anyString());
-
-        logger.info("Test completed: getUserByEmail_WhenEmailExists");
-    }
-
-    @Test
-    @DisplayName("Should throw exception when email does not exist")
-    void getUserByEmail_WhenEmailDoesNotExist() {
-        logger.info("Starting test: getUserByEmail_WhenEmailDoesNotExist");
-
-        // Given
-        logger.info("Mocking userRepository.findByEmail to return empty Optional");
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
-        // When
-        logger.info("Expecting UserNotFoundException to be thrown");
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
-                userService.getUserByEmail("unknown@gmail.com")
-        );
-
-        // Then
-        logger.info("Asserting that the exception message is correct");
-        assertEquals("User not found with email: unknown@gmail.com", exception.getMessage());
-        verify(userRepository, times(1)).findByEmail(anyString());
-
-        logger.info("Test completed: getUserByEmail_WhenEmailDoesNotExist");
-    }
-
-    @Test
     @DisplayName("Should update user details when email exists")
     void updateUser_WhenEmailExists() {
         logger.info("Starting test: updateUser_WhenEmailExists");
@@ -116,7 +73,7 @@ public class ProfileServiceTest {
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
         // When
-        UserModel updatedUser = userService.updateUser(updateUserRequest);
+        UserDetailsResponse updatedUser = userService.updateUser(updateUserRequest);
 
         // Then
         logger.info("Asserting that the updatedUser is not null and fields are updated");
@@ -169,7 +126,7 @@ public class ProfileServiceTest {
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
         // When
-        UserModel updatedUser = userService.updateUser(request);
+        UserDetailsResponse updatedUser = userService.updateUser(request);
 
         // Then
         logger.info("Asserting that the updatedUser is not null and fields are updated");
