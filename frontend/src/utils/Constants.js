@@ -24,7 +24,8 @@ export const ENDPOINTS = {
   ADD_SERVICE: "/api/service/add-service",
   UPDATE_SERVICE: "/api/service/update-service",
   DELETE_SERVICE: "/api/service/delete-service",
-  NEW_PASSWORD: "/api/user-profile/new-password"
+  NEW_PASSWORD: "/api/user-profile/new-password",
+  UPLOAD_FILE: "/api/upload"
   // Add other endpoints here
 };
 
