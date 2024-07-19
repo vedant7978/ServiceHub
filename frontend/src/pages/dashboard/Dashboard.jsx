@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, FormControl, Dropdown, Spinner } from 'react-bootstrap';
-import { ENDPOINTS } from '../../utils/Constants';
-import { useAxios } from '../../context/AxiosContext';
+import { HttpStatusCode } from "axios";
+import debounce from 'lodash/debounce';
+import "./Dashboard.css";
+import React, { useCallback, useEffect, useState } from 'react';
+import { Container, Dropdown, FormControl, Spinner } from 'react-bootstrap';
 import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
-import debounce from 'lodash/debounce';
-import "./Dashboard.css";
-import { HttpStatusCode } from "axios";
+import { useAxios } from '../../context/AxiosContext';
+import { ENDPOINTS } from '../../utils/Constants';
 
 export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
@@ -27,7 +27,9 @@ export default function Dashboard() {
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
-    fetchServices('');
+    // Using debounce as when user trying to login, token takes some time to store
+    // Resulting into failing to fetch services as no token present
+    debouncedFetchServices('')
   }, []);
 
   const extractServiceTypes = (services) => {
@@ -61,7 +63,6 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const response = await getRequest(`${ENDPOINTS.GET_SEARCH_SERVICES}?name=${query}`, true);
-      console.log(response.status)
       if (response.status === HttpStatusCode.Ok) {
         const fetchedServices = response.data.data.services;
         setServices(fetchedServices);

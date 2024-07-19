@@ -63,11 +63,6 @@ export default function RegisterPage() {
     }
   };
 
-  const handleImageChange = (e) => {
-    // [TODO]: Upload image to firebase and set image url in user data request
-    // This will be a separate task in itself so not adding in this PR.
-  };
-
   const handlePhoneChange = (e) => {
     const phone = e.target.value.replace(/[^\d]/g, "").slice(0, 10);
     let formattedPhone = "";
@@ -218,15 +213,6 @@ export default function RegisterPage() {
             <Form.Control.Feedback type="invalid">
               {errors.address}
             </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group controlId="formImage" className="mb-3">
-            <Form.Label>Profile Image</Form.Label>
-            <Form.Control
-              type="file"
-              name="image"
-              onChange={handleImageChange}
-            />
           </Form.Group>
 
           {loading && <Loader />}

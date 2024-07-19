@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { createContext, useContext, useEffect } from 'react';
-import { BASE_URL } from '../utils/Constants';
+import { BASE_URL, ENDPOINTS } from '../utils/Constants';
 import { useAuth } from './AuthContext';
 
 const AxiosContext = createContext();
@@ -14,10 +14,31 @@ export const AxiosProvider = ({ children }) => {
       "Accept": "application/json"
     },
   }
+  let multipartAxiosConfig = {
+    baseURL: BASE_URL,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+
   const axiosInstance = axios.create(axiosConfig);
   const axiosInstanceWithAuth = axios.create(axiosConfig);
+  const multipartAxiosInstanceWithAuth = axios.create(multipartAxiosConfig);
+
   const authInterceptor = () => {
     axiosInstanceWithAuth.interceptors.request.use(
+      (config) => {
+        if (authToken) {
+          config.headers.Authorization = `Bearer ${authToken}`;
+        }
+        return config;
+      },
+      (error) => {
+        console.error("Request interceptor error:", error);
+        return Promise.reject(error);
+      }
+    );
+    multipartAxiosInstanceWithAuth.interceptors.request.use(
       (config) => {
         if (authToken) {
           config.headers.Authorization = `Bearer ${authToken}`;
@@ -79,8 +100,17 @@ export const AxiosProvider = ({ children }) => {
     }
   };
 
+  const uploadFile = async (data) => {
+    try {
+      return await multipartAxiosInstanceWithAuth.post(ENDPOINTS.UPLOAD_FILE, data);
+    } catch (error) {
+      console.error(`Error in uploading file:`, error);
+      throw error;
+    }
+  }
+
   return (
-    <AxiosContext.Provider value={{ getRequest, postRequest, putRequest, deleteRequest }}>
+    <AxiosContext.Provider value={{ getRequest, postRequest, putRequest, deleteRequest, uploadFile }}>
       {children}
     </AxiosContext.Provider>
   );

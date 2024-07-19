@@ -39,6 +39,9 @@ spring:
 email:
   frontend-port: ${FRONTEND_PORT:3000}
 
+upload:
+  path: backend/uploads
+
 springdoc:
   swagger-ui:
     operations-sorter: method

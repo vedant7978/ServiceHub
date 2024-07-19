@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import "./HistoryContractCard.css";
 import ImagePlaceholder from "../../../assets/ProfileImagePlaceholder.png";
 
 export const HistoryContractCard = ({ contract, isSelected, onSelect, onViewProfileClicked }) => {
   const [imageUrl, setImageUrl] = useState(ImagePlaceholder);
+
+  useEffect(() => {
+    if (contract !== null)
+      setImageUrl(contract.userImageUrl)
+  }, [contract]);
 
   return (
     <div

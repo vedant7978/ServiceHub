@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import React, { useEffect, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import './Profile.css';
@@ -11,10 +12,11 @@ const Profile = ({ onChangePasswordClicked }) => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [image, setImage] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
-  const { getRequest, putRequest } = useAxios();
+  const { getRequest, putRequest, uploadFile } = useAxios();
 
   useEffect(() => {
     getUserData();
@@ -62,7 +64,7 @@ const Profile = ({ onChangePasswordClicked }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // handle image upload
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result);
@@ -88,12 +90,21 @@ const Profile = ({ onChangePasswordClicked }) => {
       setError(error);
       return;
     }
-    setError('')
-    const userData = { name, email, phone, address, image };
+    setError('');
 
+    let imageUrl = image;
+    if (imageFile) {
+      imageUrl = await handleImageUpload();
+      if (!imageUrl) {
+        setError('Failed to upload image');
+        return;
+      }
+    }
+
+    const userData = { name, email, phone, address, image: imageUrl };
     try {
       const response = await putRequest(ENDPOINTS.UPDATE_INTO_PROFILE, true, userData);
-      if (response.status === 200) {
+      if (response.status === HttpStatusCode.Ok) {
         setSuccessMessage('Profile updated successfully');
       } else {
         setError('Failed to update profile');
@@ -101,6 +112,19 @@ const Profile = ({ onChangePasswordClicked }) => {
     } catch (error) {
       setError('Failed to update profile');
       console.error("Failed to update profile:", error);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    try {
+      const response = await uploadFile(formData);
+      return response.data.data.url;
+    } catch (error) {
+      setError('Failed to upload image');
+      console.error('Failed to upload image:', error);
+      return null;
     }
   };
 

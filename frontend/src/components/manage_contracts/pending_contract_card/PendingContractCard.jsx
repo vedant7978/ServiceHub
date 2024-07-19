@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import "./PendingContractCard.css";
 import ImagePlaceholder from "../../../assets/ProfileImagePlaceholder.png";
@@ -7,6 +7,11 @@ import FeedbackCard from "../../feedback_card/FeedbackCard";
 export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDialog, onSelectContract }) => {
 
   const [imageUrl, setImageUrl] = useState(ImagePlaceholder);
+
+  useEffect(() => {
+    if (contract !== null)
+      setImageUrl(contract.userImageUrl)
+  }, [contract]);
 
   const handleAcceptContract = () => {
     showAcceptDialog();
