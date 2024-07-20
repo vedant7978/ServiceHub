@@ -8,9 +8,9 @@ import com.dalhousie.servicehub.response.UserDetailsResponse;
 import com.dalhousie.servicehub.service.profile.ProfileService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,46 +18,46 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
-import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/user-profile")
 public class ProfileController {
 
     private static final Logger logger = LogManager.getLogger(ProfileController.class);
-
-    @Autowired
-    private ProfileService profileService;
+    private final ProfileService profileService;
 
     @GetMapping("/get-user-details")
-    public ResponseEntity<ResponseBody<UserDetailsResponse>> getUserDetails(@AuthenticationPrincipal UserModel userModel) {
+    public ResponseEntity<ResponseBody<UserDetailsResponse>> getUserDetails(
+            @AuthenticationPrincipal UserModel userModel
+    ) {
         try {
+            ResponseBody<UserDetailsResponse> body = profileService.getUserDetailsResponse(userModel);
             logger.info("Fetched user details for id: {}", userModel.getId());
-            UserDetailsResponse userDetailsResponse = profileService.getUserDetailsResponse(userModel);
-            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(SUCCESS, userDetailsResponse, "Fetched user details");
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (Exception e) {
-            logger.error("Unexpected error fetching user details: {}", e.getMessage());
-            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+            return ResponseEntity.ok(body);
+        } catch (Exception exception) {
+            logger.error("Unexpected error fetching user details: {}", exception.getMessage());
+            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            return ResponseEntity.badRequest().body(body);
         }
     }
 
     @PutMapping("/update-user-details")
-    public ResponseEntity<ResponseBody<UserDetailsResponse>> updateUserDetails(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<ResponseBody<UserDetailsResponse>> updateUserDetails(
+            @Valid @RequestBody UpdateUserRequest updateUserRequest
+    ) {
         try {
-            UserDetailsResponse updatedUser = profileService.updateUser(updateUserRequest);
+            ResponseBody<UserDetailsResponse> body = profileService.updateUser(updateUserRequest);
             logger.info("Updated user details for email: {}", updateUserRequest.getEmail());
-            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(SUCCESS, updatedUser, "User updated successfully");
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (UsernameNotFoundException e) {
-            logger.error("User update failed: {}", e.getMessage());
-            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, e.getMessage());
+            return ResponseEntity.ok(body);
+        } catch (UsernameNotFoundException exception) {
+            logger.error("User update failed: {}", exception.getMessage());
+            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-        } catch (Exception e) {
-            logger.error("Unexpected error during user update: {}", e.getMessage());
-            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        } catch (Exception exception) {
+            logger.error("Unexpected error during user update: {}", exception.getMessage());
+            ResponseBody<UserDetailsResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            return ResponseEntity.badRequest().body(body);
         }
     }
 
@@ -67,18 +67,21 @@ public class ProfileController {
             @RequestBody NewPasswordRequest newPasswordRequest
     ) {
         try {
-            profileService.newPassword(userModel.getId(), newPasswordRequest.getOldPassword(), newPasswordRequest.getNewPassword());
+            ResponseBody<String> body = profileService.newPassword(
+                    userModel.getId(),
+                    newPasswordRequest.getOldPassword(),
+                    newPasswordRequest.getNewPassword()
+            );
             logger.info("Password reset successfully for user: {}", userModel.getEmail());
-            ResponseBody<String> body = new ResponseBody<>(SUCCESS, "" , "Password reset successfully");
-            return ResponseEntity.status(HttpStatus.OK).body(body);
+            return ResponseEntity.ok(body);
         } catch (PasswordNotMatchingException exception) {
             logger.error("Error in resetting password: {}", exception.getMessage());
             ResponseBody<String> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-        } catch (Exception e) {
-            logger.error("Error resetting password: {}", e.getMessage());
-            ResponseBody<String> body = new ResponseBody<>(FAILURE, null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+            return ResponseEntity.badRequest().body(body);
+        } catch (Exception exception) {
+            logger.error("Error resetting password: {}", exception.getMessage());
+            ResponseBody<String> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            return ResponseEntity.badRequest().body(body);
         }
     }
 }
