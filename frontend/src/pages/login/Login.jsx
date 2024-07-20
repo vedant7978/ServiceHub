@@ -51,7 +51,7 @@ const Login = () => {
       };
       try {
         const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
-        const token = response.data.token;
+        const token = response.data.data.token;
         setUserLoggedIn(token);
         navigate(AppRoutes.Dashboard);
       } catch (error) {
