@@ -2,15 +2,15 @@ package com.dalhousie.servicehub.mapper;
 
 import com.dalhousie.servicehub.dto.FeedbackDto;
 import com.dalhousie.servicehub.model.FeedbackModel;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class FeedbackMapper implements Mapper<FeedbackModel, FeedbackDto> {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @Override
     public FeedbackDto toDto(FeedbackModel feedbackModel) {

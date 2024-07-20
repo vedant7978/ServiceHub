@@ -1,7 +1,6 @@
 package com.dalhousie.servicehub.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -17,9 +16,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final String[] permittedEndpoints = {
+            "/api/auth/**", // Authentication api's where user won't have token
+            "/swagger-ui/**", // Swagger domain to get API overview
+            "/v3/api-docs/**", // Swagger domain to get API documentation
+            "/swagger-ui.html", // Swagger domain to get API testing homepage
+            "/public/uploads/**" // Public uploads domain where user can load images/files
+    };
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
@@ -27,9 +32,7 @@ public class SecurityConfig {
             throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> {
-                    requests.requestMatchers("/api/auth/**").permitAll();
-                    requests.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll();
-                    requests.requestMatchers("/public/uploads/**").permitAll();
+                    requests.requestMatchers(permittedEndpoints).permitAll();
                     requests.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

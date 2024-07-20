@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.exceptions.WishlistNotFoundException;
 import com.dalhousie.servicehub.mapper.WishlistMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -26,7 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -148,5 +150,42 @@ class WishlistServiceTest {
         assertThrows(UserNotFoundException.class, () -> wishlistService.getWishlists(userId));
         verify(wishlistRepository, never()).findAllByUser(any(UserModel.class));
         verify(wishlistMapper, never()).toDto(any(WishlistModel.class));
+    }
+
+    @Test
+    @DisplayName("Delete Wishlist Successfully")
+    void deleteWishlist_Success() {
+        // Given
+        Long wishlistId = 1L;
+        WishlistModel wishlistModel = WishlistModel.builder()
+                .id(wishlistId)
+                .service(ServiceModel.builder().id(1L).build())
+                .user(userModel)
+                .build();
+
+        when(wishlistRepository.findById(wishlistId)).thenReturn(Optional.of(wishlistModel));
+
+        // When
+        ResponseBody<String> response = wishlistService.deleteWishlist(wishlistId);
+
+        // Then
+        assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
+        assertEquals("Wishlist deleted successfully", response.message());
+        verify(wishlistRepository, times(1)).findById(wishlistId);
+        verify(wishlistRepository, times(1)).delete(wishlistModel);
+    }
+
+    @Test
+    @DisplayName("Delete Wishlist Not Found")
+    void deleteWishlist_WishlistNotFound() {
+        // Given
+        Long wishlistId = 1L;
+
+        when(wishlistRepository.findById(wishlistId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(WishlistNotFoundException.class, () -> wishlistService.deleteWishlist(wishlistId));
+        verify(wishlistRepository, times(1)).findById(wishlistId);
+        verify(wishlistRepository, never()).delete(any(WishlistModel.class));
     }
 }

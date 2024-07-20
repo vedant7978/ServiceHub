@@ -2,7 +2,7 @@ package com.dalhousie.servicehub.service.reset_password;
 
 import com.dalhousie.servicehub.model.ResetPasswordTokenModel;
 import com.dalhousie.servicehub.repository.ResetPasswordTokenRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -10,10 +10,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ResetPasswordTokenServiceImpl implements ResetPasswordTokenService {
 
-    @Autowired
-    private ResetPasswordTokenRepository resetPasswordTokenRepository;
+    private final ResetPasswordTokenRepository resetPasswordTokenRepository;
 
     @Override
     public ResetPasswordTokenModel createResetPasswordToken(Long userId) {
@@ -38,7 +38,7 @@ public class ResetPasswordTokenServiceImpl implements ResetPasswordTokenService 
     }
 
     @Override
-    public boolean isTokenValid(ResetPasswordTokenModel token) {
-        return token.getExpiryDate().compareTo(Instant.now()) >= 0;
+    public boolean isTokenValid(ResetPasswordTokenModel resetPasswordTokenModel) {
+        return resetPasswordTokenModel.getExpiryDate().compareTo(Instant.now()) >= 0;
     }
 }

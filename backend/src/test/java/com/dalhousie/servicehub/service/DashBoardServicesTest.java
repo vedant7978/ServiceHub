@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.mapper.UserMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
@@ -10,6 +11,7 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
+import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.dashboard_services.DashboardServicesImpl;
@@ -32,12 +34,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DashBoardServicesTest {
+
     @Mock
     private ServiceRepository serviceRepository;
 
@@ -46,9 +50,6 @@ public class DashBoardServicesTest {
 
     @Mock
     private WishlistRepository wishlistRepository;
-
-    @Mock
-    private SecurityUtils securityUtils;
 
     @Mock
     private UserRepository userRepository;
@@ -80,8 +81,8 @@ public class DashBoardServicesTest {
                     ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
             );
             List<ServiceDto> serviceDtos = Arrays.asList(
-                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false,4.5),
-                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false,4.0)
+                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false, 4.5, List.of()),
+                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false, 4.0, List.of())
             );
 
             // Mock the behavior of serviceRepository.findAll()
@@ -91,7 +92,7 @@ public class DashBoardServicesTest {
             when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                     invocation -> {
                         ServiceModel model = invocation.getArgument(0);
-                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
+                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
                     }
             );
 
@@ -111,6 +112,10 @@ public class DashBoardServicesTest {
             // Mock the behavior of userRepository.findById()
             when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
             when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
+            ResponseBody<GetFeedbackResponse> feedbackResponseResponseBody = new ResponseBody<>(
+                    SUCCESS, GetFeedbackResponse.builder().build(), ""
+            );
+            when(feedbackService.getFeedbacks(anyLong())).thenReturn(feedbackResponseResponseBody);
 
             // When
             ResponseBody<GetServicesResponse> responseBody = dashboardServices.getAllServices();
@@ -132,8 +137,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false,4.5),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false,4.0)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false, 4.5, List.of()),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false, 4.0, List.of())
         );
 
         // When
@@ -141,7 +146,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
                 }
         );
 
@@ -159,6 +164,10 @@ public class DashBoardServicesTest {
         // Mock the behavior of userRepository.findById()
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
         when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
+        ResponseBody<GetFeedbackResponse> feedbackResponseResponseBody = new ResponseBody<>(
+                SUCCESS, GetFeedbackResponse.builder().build(), ""
+        );
+        when(feedbackService.getFeedbacks(anyLong())).thenReturn(feedbackResponseResponseBody);
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.getServicesByType(type);
 
@@ -169,7 +178,6 @@ public class DashBoardServicesTest {
         verify(serviceMapper, times(serviceModels.size())).toDto(any(ServiceModel.class));
     }
 
-
     @Test
     public void shouldSearchServicesByName_WhenServicesExist_ForGivenName() {
         // Given
@@ -179,8 +187,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false,4.5),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false,4.0)
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false, 4.5, List.of()),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false, 4.0, List.of())
         );
 
         // When
@@ -188,7 +196,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null);
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
                 }
         );
         // Mock the behavior of serviceRepository.findById()
@@ -204,6 +212,10 @@ public class DashBoardServicesTest {
         // Mock the behavior of userRepository.findById()
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(new UserModel()));
         when(feedbackService.getAverageRatingForUser(anyLong())).thenReturn(4.5);
+        ResponseBody<GetFeedbackResponse> feedbackResponseResponseBody = new ResponseBody<>(
+                SUCCESS, GetFeedbackResponse.builder().build(), ""
+        );
+        when(feedbackService.getFeedbacks(anyLong())).thenReturn(feedbackResponseResponseBody);
 
         ResponseBody<GetServicesResponse> responseBody = dashboardServices.searchServicesByName(name);
 
@@ -238,26 +250,25 @@ public class DashBoardServicesTest {
     public void shouldReturnFailure_WhenProviderDoesNotExist() {
         // Given
         Long providerId = 1L;
-
-        // When
         when(userRepository.findById(providerId)).thenReturn(Optional.empty());
 
-        ResponseBody<GetProviderResponse> responseBody = dashboardServices.getProviderDetailsById(providerId);
+        // When
+        UserNotFoundException userNotFoundException = assertThrows(UserNotFoundException.class,
+                () -> dashboardServices.getProviderDetailsById(providerId));
 
         // Then
-        assertEquals(ResponseBody.ResultType.FAILURE, responseBody.resultType());
-        assertNull(responseBody.data());
-        assertEquals("Provider not found", responseBody.message());
+        assertEquals("User not found with ID: " + providerId, userNotFoundException.getMessage());
         verify(userRepository, times(1)).findById(providerId);
         verify(userMapper, never()).toDto(any(UserModel.class));
     }
+
     @Test
     public void shouldThrowException_WhenUserNotAuthenticated() {
         // Given
         mockSecurityContextWithUnauthenticatedUser();
 
         // When / Then
-        assertThrows(IllegalStateException.class, () -> SecurityUtils.getLoggedInUserId());
+        assertThrows(IllegalStateException.class, SecurityUtils::getLoggedInUserId);
     }
 
     @Test
@@ -266,7 +277,7 @@ public class DashBoardServicesTest {
         mockSecurityContextWithNullAuthentication();
 
         // When / Then
-        assertThrows(IllegalStateException.class, () -> SecurityUtils.getLoggedInUserId());
+        assertThrows(IllegalStateException.class, SecurityUtils::getLoggedInUserId);
     }
 
     private void mockSecurityContextWithAuthenticatedUser() {
@@ -280,6 +291,7 @@ public class DashBoardServicesTest {
 
         SecurityContextHolder.setContext(securityContext);
     }
+
     private void mockSecurityContextWithUnauthenticatedUser() {
         Authentication authentication = mock(Authentication.class);
         lenient().when(authentication.isAuthenticated()).thenReturn(false);

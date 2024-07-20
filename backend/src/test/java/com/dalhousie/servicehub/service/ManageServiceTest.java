@@ -92,7 +92,7 @@ public class ManageServiceTest {
         when(serviceRepository.save(any(ServiceModel.class))).thenReturn(new ServiceModel());
         logger.info("Providing valid input to add service: {}", addServiceRequest);
 
-        ResponseBody<Object> responseBody = manageService.addService(addServiceRequest, providerId);
+        ResponseBody<String> responseBody = manageService.addService(addServiceRequest, providerId);
 
         // Then
         logger.info("Response body after providing valid input: {}", responseBody);
@@ -164,7 +164,7 @@ public class ManageServiceTest {
         when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(serviceModel));
         logger.info("Providing existing service id to delete service: {}", serviceId);
 
-        ResponseBody<Object> responseBody = manageService.deleteService(serviceId);
+        ResponseBody<String> responseBody = manageService.deleteService(serviceId);
 
         // Then
         logger.info("Response body after deleting service: {}", responseBody);
@@ -212,7 +212,7 @@ public class ManageServiceTest {
         when(serviceRepository.existsById(serviceId)).thenReturn(true);
         logger.info("Providing valid input to update service: {}", updateServiceRequest);
 
-        ResponseBody<Object> responseBody = manageService.updateService(updateServiceRequest, providerId);
+        ResponseBody<String> responseBody = manageService.updateService(updateServiceRequest, providerId);
 
         // Then
         logger.info("Response body after updating service: {}", responseBody);

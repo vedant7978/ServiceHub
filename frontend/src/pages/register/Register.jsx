@@ -102,7 +102,7 @@ export default function RegisterPage() {
       setApiError(null);
       setLoading(true);
       const response = await postRequest(ENDPOINTS.REGISTER, false, formData);
-      const result = response.data;
+      const result = response.data.data;
       const message = result.message;
 
       if (response.status === HttpStatusCode.Created) {

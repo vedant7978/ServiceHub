@@ -8,9 +8,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,68 +22,75 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final int  accessTokenStartInd = 7;
-    @Autowired
-    private JwtService jwtService;
 
-    @Autowired
-    private BlackListTokenService blackListTokenService;
+    private static final int accessTokenStartInd = 7;
 
-    @Autowired
-    @Lazy
-    private UserDetailsService userDetailsService;
+    private final JwtService jwtService;
+    private final BlackListTokenService blackListTokenService;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-
-        final String authHeader = request.getHeader("Authorization");
-        final String jwtToken;
-        final String userEmail;
-
-        if(authHeader==null || !authHeader.startsWith("Bearer ")){
-            filterChain.doFilter(request,response);
+        String jwtToken = getJwtToken(request, response, filterChain);
+        if (jwtToken == null || validateIfBlacklistTokenExists(jwtToken, response))
             return;
-        }
 
-        //extract jwtToken
-        jwtToken = authHeader.substring(accessTokenStartInd);
-
-        if (blackListTokenService.doesBlackListTokenExists(jwtToken)){
-            // Token is invalid, set response status code and send a message
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("User is logged out." );
+        String userEmail = getUserEmail(jwtToken, response);
+        if (userEmail == null)
             return;
-        }
 
-        //extract userEmail from jwtToken also catch error if the token is INVALID or EXPIRED
-        try{
-            userEmail = jwtService.extractUsername(jwtToken);
-        }catch (ExpiredJwtException | MalformedJwtException e) {
-            // Token has expired or malFormed, set response status code and send a message
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("User is Unauthorized. -> " + e.getMessage());
-            return;
-        }
-
-        if(userEmail!=null && SecurityContextHolder.getContext().getAuthentication()==null){
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if(jwtService.isTokenValid(jwtToken,userDetails)){
+            if (jwtService.isTokenValid(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
+    }
+
+    private String getJwtToken(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return null;
+        }
+        return authHeader.substring(accessTokenStartInd);
+    }
+
+    private boolean validateIfBlacklistTokenExists(String jwtToken, HttpServletResponse response) throws IOException {
+        if (!blackListTokenService.doesBlackListTokenExists(jwtToken))
+            return false;
+        // Token is invalid, set response status code and send a message
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write("User is logged out.");
+        return true;
+    }
+
+    private String getUserEmail(String jwtToken, HttpServletResponse response) throws IOException {
+        // extract userEmail from jwtToken also catch error if the token is INVALID or EXPIRED
+        try {
+            return jwtService.extractUsername(jwtToken);
+        } catch (ExpiredJwtException | MalformedJwtException e) {
+            // Token has expired or malFormed, set response status code and send a message
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write("User is Unauthorized. -> " + e.getMessage());
+            return null;
+        }
     }
 }

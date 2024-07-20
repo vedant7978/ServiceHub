@@ -8,15 +8,17 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
+import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
 import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import com.dalhousie.servicehub.service.reset_password.ResetPasswordTokenService;
+import com.dalhousie.servicehub.util.Constants;
 import com.dalhousie.servicehub.util.EmailSender;
+import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+
+import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
 @Service
 @RequiredArgsConstructor
@@ -35,14 +39,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final JavaMailSender mailSender;
+    private final EmailSender emailSender;
     private final ResetPasswordTokenService resetPasswordTokenService;
     private final AuthenticationManager authenticationManager;
     private final BlackListTokenService blackListTokenService;
 
-
     @Override
-    public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
+    public ResponseBody<AuthenticationResponse> registerUser(RegisterRequest registerRequest) {
         if (repository.findByEmail(registerRequest.getEmail()).isPresent())
             throw new UserAlreadyExistException("User with this email already exists.");
         var userModel = UserModel.builder()
@@ -55,13 +58,14 @@ public class UserServiceImpl implements UserService {
                 .build();
         repository.save(userModel);
         var jwtToken = jwtService.generateToken(userModel);
-        return AuthenticationResponse.builder()
+        AuthenticationResponse authenticationResponse = AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+        return new ResponseBody<>(SUCCESS, authenticationResponse, "User successfully registered");
     }
 
     @Override
-    public AuthenticationResponse authenticateUser(AuthenticationRequest authenticationRequest) {
+    public ResponseBody<AuthenticationResponse> authenticateUser(AuthenticationRequest authenticationRequest) {
         if (repository.findByEmail(authenticationRequest.getEmail()).isEmpty())
             throw new UserNotFoundException("User not found with email: " + authenticationRequest.getEmail());
         authenticationManager.authenticate(
@@ -72,41 +76,54 @@ public class UserServiceImpl implements UserService {
         );
         var user = repository.findByEmail(authenticationRequest.getEmail()).get();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
+        AuthenticationResponse authenticationResponse = AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+        return new ResponseBody<>(SUCCESS, authenticationResponse, "User authenticated successfully");
     }
 
     @Override
-    public void resetPassword(String email, String password, String token) {
-        UserModel user = repository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    public ResponseBody<String> resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        UserModel user = repository.findByEmail(resetPasswordRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + resetPasswordRequest.getEmail()));
 
         ResetPasswordTokenModel resetPasswordTokenModel = resetPasswordTokenService.findByUserId(user.getId())
                 .orElseThrow(() -> new UserNotFoundException("User did not initiated reset password request."));
 
-        if (!Objects.equals(token, resetPasswordTokenModel.getToken()))
+        if (!Objects.equals(resetPasswordRequest.getToken(), resetPasswordTokenModel.getToken()))
             throw new InvalidTokenException("Failed to authenticate token. Please re-request to reset password.");
 
         if (!resetPasswordTokenService.isTokenValid(resetPasswordTokenModel))
             throw new InvalidTokenException("Token expired. Please re-request to reset password");
 
-        String newPassword = passwordEncoder.encode(password);
-        repository.updatePassword(email, newPassword);
+        String newPassword = passwordEncoder.encode(resetPasswordRequest.getPassword());
+        repository.updatePassword(resetPasswordRequest.getEmail(), newPassword);
         resetPasswordTokenService.deleteResetPasswordToken(resetPasswordTokenModel);
+        return new ResponseBody<>(SUCCESS, "", Constants.RESET_PASSWORD_SUCCESS_MESSAGE);
     }
 
     @Override
-    public void forgotPassword(String email, String resetUrl) {
+    public ResponseBody<String> forgotPassword(String email, HttpServletRequest servletRequest) {
         UserModel user = repository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        String resetUrl = getURL(servletRequest) + "/reset-password";
         String refreshToken = resetPasswordTokenService.createResetPasswordToken(user.getId()).getToken();
         String resetPasswordLink = resetUrl + "?token=" + refreshToken + "&email=" + email;
         sendMail(resetPasswordLink, email);
+        return new ResponseBody<>(SUCCESS, "", Constants.FORGOT_PASSWORD_SUCCESS_MESSAGE);
     }
 
     @Override
-    public String getURL(HttpServletRequest request) {
+    public ResponseBody<String> signOut(String token) {
+        return blackListTokenService.addBlackListToken(token);
+    }
+
+    /**
+     * Provides the URL for resetting password
+     * @param request HttpServletRequest instance
+     * @return String representing URL to reset password
+     */
+    private String getURL(HttpServletRequest request) {
         String siteURL = request.getRequestURL().toString().replace(request.getServletPath(), "");
         try {
             java.net.URL oldURL = new java.net.URL(siteURL);
@@ -117,8 +134,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Sends the mail for resetting password to requesting email with provided reset password link
+     * @param resetPasswordLink String representing link to reset password
+     * @param email Email of the user
+     */
     private void sendMail(String resetPasswordLink, String email) {
-        EmailSender emailSender = new EmailSender(mailSender);
         String subject = "Reset your password";
         String content = "<p>You have requested to reset your password. Password link only valid for 10 minutes.</p>"
                 + "<p>Click the link to reset your password:</p>"
@@ -128,10 +149,5 @@ public class UserServiceImpl implements UserService {
         } catch (Exception exception) {
             throw new RuntimeException(exception.getMessage());
         }
-    }
-
-    @Override
-    public void signOut(String token) {
-        blackListTokenService.addBlackListToken(token);
     }
 }

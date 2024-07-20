@@ -6,6 +6,7 @@ import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
 
 public interface FeedbackService {
+
     /**
      * Add feedback into the database
      * @param addFeedbackRequest Request body of feedback to add
