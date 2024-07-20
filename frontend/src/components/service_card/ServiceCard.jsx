@@ -5,6 +5,7 @@ import { FaDollarSign, FaStar } from 'react-icons/fa';
 import './ServiceCard.css';
 
 export default function ServiceCard({ service, onClick }) {
+  const roundedRating = service.averageRating ? service.averageRating.toFixed(1) : '0.0';
 
   return (
     <Card className="mb-3 service-card">
@@ -36,7 +37,7 @@ export default function ServiceCard({ service, onClick }) {
               <div className="detail-item">
                 <FaDollarSign className="icon" />
                 <b>{service.perHourRate}/hour</b>
-                <b><span style={{ marginLeft: '16px' }}>{service.averageRating}</span></b>
+                <b><span style={{ marginLeft: '16px' }}>{roundedRating}</span></b>
                 <FaStar className="icon" style={{ color: 'gold' }} />
               </div>
             </div>

@@ -24,12 +24,20 @@ export default function Dashboard() {
   const [serviceTypes, setServiceTypes] = useState([]);
   const [sortCriteria, setSortCriteria] = useState("");
   const [wishlistServiceIds, setWishlistServiceIds] = useState([]);
-
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
     debouncedFetchServices('')
   }, []);
+
+  useEffect(() => {
+    const storedWishlist = JSON.parse(localStorage.getItem('wishlistServiceIds')) || [];
+    setWishlistServiceIds(storedWishlist);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('wishlistServiceIds', JSON.stringify(wishlistServiceIds));
+  }, [wishlistServiceIds]);
 
   const extractServiceTypes = (services) => {
     const types = [...new Set(services.map(service => service.type))];
@@ -140,9 +148,10 @@ export default function Dashboard() {
           onChange={handleSearchChange}
         />
         {loading ? (
-          <Spinner animation="border" role="status">
-            <span className="sr-only">Loading...</span>
-          </Spinner>
+          <div className='d-flex align-items-center justify-content-center' style={{ minHeight: "72vh" }}>
+            <Spinner animation="border" role="status">
+            </Spinner>
+          </div>
         ) : (
           <>
             {serviceTypes.length > 0 ? (
@@ -176,7 +185,7 @@ export default function Dashboard() {
                         providerInfo={providerInfo}
                         rightIconOnclick={addToWishlist}
                         currentPage="dashboard"
-                        wishlistServiceIds={wishlistServiceIds} // Pass the new state variable
+                        wishlistServiceIds={wishlistServiceIds}
                       />
                     )}
                   </Container>
