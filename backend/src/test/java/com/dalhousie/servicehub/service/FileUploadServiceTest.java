@@ -5,6 +5,7 @@ import com.dalhousie.servicehub.response.FileUploadResponse;
 import com.dalhousie.servicehub.service.file_upload.FileUploadService;
 import com.dalhousie.servicehub.service.file_upload.FileUploadServiceImpl;
 import com.dalhousie.servicehub.util.FileHelper;
+import com.dalhousie.servicehub.util.ResponseBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +114,7 @@ public class FileUploadServiceTest {
         logger.info("Test started: Save file when file is valid");
         Long userId = 1L;
         String fileName = "abcd.png";
-        AtomicReference<FileUploadResponse> response = new AtomicReference<>();
+        AtomicReference<ResponseBody<FileUploadResponse>> response = new AtomicReference<>();
         MultipartFile file = mock(MultipartFile.class);
 
         logger.info("Will return false when it checks for if file is empty");
@@ -133,7 +134,7 @@ public class FileUploadServiceTest {
 
         // Then
         assertNotNull(response.get());
-        assertFalse(response.get().getUrl().isEmpty());
+        assertFalse(response.get().data().getUrl().isEmpty());
         logger.info("Test completed: Save file when file is valid");
     }
 
@@ -143,7 +144,7 @@ public class FileUploadServiceTest {
         logger.info("Test started: Save file when file is valid");
         Long userId = 1L;
         String fileName = "abcd";
-        AtomicReference<FileUploadResponse> response = new AtomicReference<>();
+        AtomicReference<ResponseBody<FileUploadResponse>> response = new AtomicReference<>();
         MultipartFile file = mock(MultipartFile.class);
 
         logger.info("Will return false when it checks for if file is empty");
@@ -163,7 +164,7 @@ public class FileUploadServiceTest {
 
         // Then
         assertNotNull(response.get());
-        assertFalse(response.get().getUrl().isEmpty());
+        assertFalse(response.get().data().getUrl().isEmpty());
         logger.info("Test completed: Save file when file is valid");
     }
 }

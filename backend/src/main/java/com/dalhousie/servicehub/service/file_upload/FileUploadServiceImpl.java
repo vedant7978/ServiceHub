@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.service.file_upload;
 import com.dalhousie.servicehub.exceptions.FileUploadException;
 import com.dalhousie.servicehub.response.FileUploadResponse;
 import com.dalhousie.servicehub.util.FileHelper;
+import com.dalhousie.servicehub.util.ResponseBody;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
 @Service
 public class FileUploadServiceImpl implements FileUploadService {
@@ -25,7 +28,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
-    public FileUploadResponse saveFile(Long userId, MultipartFile file) {
+    public ResponseBody<FileUploadResponse> saveFile(Long userId, MultipartFile file) {
         if (file.isEmpty())
             throw new FileUploadException("Cannot upload file because provided file is empty");
 
@@ -35,7 +38,8 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         try {
             String fileUrl = saveAndGetPublicUrlForFile(userId, file, fileName);
-            return FileUploadResponse.builder().url(fileUrl).build();
+            FileUploadResponse fileUploadResponse = FileUploadResponse.builder().url(fileUrl).build();
+            return new ResponseBody<>(SUCCESS, fileUploadResponse, "File uploaded successfully");
         } catch (IOException exception) {
             throw new FileUploadException(exception.getMessage());
         }
