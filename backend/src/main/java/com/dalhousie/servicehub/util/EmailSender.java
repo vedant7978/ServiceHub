@@ -2,20 +2,21 @@ package com.dalhousie.servicehub.util;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 
 /**
  * Utility class to handle sending mails
  */
+@Component
+@RequiredArgsConstructor
 public class EmailSender {
-    private final JavaMailSender mailSender;
 
-    public EmailSender(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    private final JavaMailSender mailSender;
 
     public void sendEmail(String email, String subject, String content) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = mailSender.createMimeMessage();
