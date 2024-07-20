@@ -22,4 +22,11 @@ public interface WishlistService {
      * @return ResponseBody object for List of GetWishlistResponse
      */
     ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId);
+
+    /**
+     * Delete a wishlist by its ID.
+     * @param wishlistId ID of the wishlist to be deleted.
+     * @return ResponseBody instance with the result of the deletion.
+     */
+    ResponseBody<String> deleteWishlist(Long wishlistId);
 }

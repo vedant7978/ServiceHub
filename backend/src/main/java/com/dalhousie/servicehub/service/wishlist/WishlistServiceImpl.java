@@ -2,6 +2,7 @@ package com.dalhousie.servicehub.service.wishlist;
 
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.exceptions.WishlistNorFoundException;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.model.WishlistModel;
@@ -50,6 +51,15 @@ public class WishlistServiceImpl implements WishlistService {
                 .map(this::getWishlistResponse)
                 .toList();
         return new ResponseBody<>(SUCCESS, wishlists, "Get wishlists successful");
+    }
+
+    @Override
+    public ResponseBody<String> deleteWishlist(Long wishlistId) {
+        WishlistModel wishlist = wishlistRepository.findById(wishlistId)
+                .orElseThrow(() -> new WishlistNorFoundException("Wishlist not found with ID: " + wishlistId));
+
+        wishlistRepository.delete(wishlist);
+        return new ResponseBody<>(SUCCESS, "", "Wishlist deleted successfully");
     }
 
     /**

@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.exceptions.WishlistNorFoundException;
 import com.dalhousie.servicehub.mapper.WishlistMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -150,7 +151,6 @@ class WishlistServiceTest {
         verify(wishlistMapper, never()).toDto(any(WishlistModel.class));
     }
 
-
     @Test
     @DisplayName("Delete Wishlist Successfully")
     void deleteWishlist_Success() {
@@ -183,7 +183,7 @@ class WishlistServiceTest {
         when(wishlistRepository.findById(wishlistId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(RuntimeException.class, () -> wishlistService.deleteWishlist(wishlistId)); // Replace RuntimeException with your custom exception
+        assertThrows(WishlistNorFoundException.class, () -> wishlistService.deleteWishlist(wishlistId));
         verify(wishlistRepository, times(1)).findById(wishlistId);
         verify(wishlistRepository, never()).delete(any(WishlistModel.class));
     }
