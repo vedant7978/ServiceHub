@@ -149,4 +149,42 @@ class WishlistServiceTest {
         verify(wishlistRepository, never()).findAllByUser(any(UserModel.class));
         verify(wishlistMapper, never()).toDto(any(WishlistModel.class));
     }
+
+
+    @Test
+    @DisplayName("Delete Wishlist Successfully")
+    void deleteWishlist_Success() {
+        // Given
+        Long wishlistId = 1L;
+        WishlistModel wishlistModel = WishlistModel.builder()
+                .id(wishlistId)
+                .service(ServiceModel.builder().id(1L).build())
+                .user(userModel)
+                .build();
+
+        when(wishlistRepository.findById(wishlistId)).thenReturn(Optional.of(wishlistModel));
+
+        // When
+        ResponseBody<String> response = wishlistService.deleteWishlist(wishlistId);
+
+        // Then
+        assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
+        assertEquals("Wishlist deleted successfully", response.message());
+        verify(wishlistRepository, times(1)).findById(wishlistId);
+        verify(wishlistRepository, times(1)).delete(wishlistModel);
+    }
+
+    @Test
+    @DisplayName("Delete Wishlist Not Found")
+    void deleteWishlist_WishlistNotFound() {
+        // Given
+        Long wishlistId = 1L;
+
+        when(wishlistRepository.findById(wishlistId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> wishlistService.deleteWishlist(wishlistId)); // Replace RuntimeException with your custom exception
+        verify(wishlistRepository, times(1)).findById(wishlistId);
+        verify(wishlistRepository, never()).delete(any(WishlistModel.class));
+    }
 }
