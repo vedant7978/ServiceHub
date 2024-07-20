@@ -2,15 +2,15 @@ package com.dalhousie.servicehub.mapper;
 
 import com.dalhousie.servicehub.dto.WishlistDto;
 import com.dalhousie.servicehub.model.WishlistModel;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WishlistMapper implements Mapper<WishlistModel, WishlistDto> {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @Override
     public WishlistDto toDto(WishlistModel wishlistModel) {
