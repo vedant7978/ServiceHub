@@ -12,11 +12,9 @@ import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
@@ -24,16 +22,9 @@ import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 @RequiredArgsConstructor
 public class WishlistServiceImpl implements WishlistService {
 
-    @Autowired
     private final WishlistRepository wishlistRepository;
-
-    @Autowired
     private final ServiceRepository serviceRepository;
-
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final FeedbackService feedbackService;
 
     @Override
@@ -45,7 +36,6 @@ public class WishlistServiceImpl implements WishlistService {
                 .service(service_ID)
                 .user(userModel)
                 .build();
-
         wishlistRepository.save(wishlistModel);
         return new ResponseBody<>(SUCCESS, "Wishlist added successfully", "Wishlist added successfully");
     }
@@ -57,25 +47,31 @@ public class WishlistServiceImpl implements WishlistService {
 
         List<GetWishlistResponse> wishlists = wishlistRepository.findAllByUser(user)
                 .stream()
-                .map(wishlist -> {
-                    ServiceModel serviceModel = wishlist.getService();
-                    UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
-                            .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
-                    Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
-
-                    return GetWishlistResponse.builder()
-                            .id(serviceModel.getId())
-                            .providerId(serviceModel.getProviderId())
-                            .serviceProviderImage(serviceProvider.getImage())
-                            .name(serviceModel.getName())
-                            .type(serviceModel.getType())
-                            .description(serviceModel.getDescription())
-                            .serviceProviderRating(serviceProviderRating)
-                            .perHourRate(serviceModel.getPerHourRate())
-                            .build();
-                })
-                .collect(Collectors.toList());
-
+                .map(this::getWishlistResponse)
+                .toList();
         return new ResponseBody<>(SUCCESS, wishlists, "Get wishlists successful");
+    }
+
+    /**
+     * Convert WishlistModel to GetWishlistResponse
+     * @param wishlistModel WishlistModel to convert
+     * @return GetWishlistResponse instance
+     */
+    private GetWishlistResponse getWishlistResponse(WishlistModel wishlistModel) {
+        ServiceModel serviceModel = wishlistModel.getService();
+        UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
+        Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
+
+        return GetWishlistResponse.builder()
+                .id(serviceModel.getId())
+                .providerId(serviceModel.getProviderId())
+                .serviceProviderImage(serviceProvider.getImage())
+                .name(serviceModel.getName())
+                .type(serviceModel.getType())
+                .description(serviceModel.getDescription())
+                .serviceProviderRating(serviceProviderRating)
+                .perHourRate(serviceModel.getPerHourRate())
+                .build();
     }
 }

@@ -6,9 +6,9 @@ import com.dalhousie.servicehub.request.AddWishlistRequest;
 import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.wishlist.WishlistService;
 import com.dalhousie.servicehub.util.ResponseBody;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,13 +19,12 @@ import java.util.List;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/wishlist")
 public class WishlistController {
 
     private static final Logger logger = LogManager.getLogger(WishlistController.class);
-
-    @Autowired
-    private WishlistService wishlistService;
+    private final WishlistService wishlistService;
 
     @PostMapping("/add-wishlist")
     public ResponseEntity<ResponseBody<String>> addWishlist(
