@@ -6,9 +6,9 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.response.GetContractFeedbackResponse;
 import com.dalhousie.servicehub.service.contract_feedback.ContractFeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/contract-feedback")
 public class ContractFeedbackController {
 
     private static final Logger logger = LogManager.getLogger(ContractFeedbackController.class);
-
-    @Autowired
-    private ContractFeedbackService contractFeedbackService;
+    private final ContractFeedbackService contractFeedbackService;
 
     @GetMapping("/get-contract-feedback")
     public ResponseEntity<ResponseBody<GetContractFeedbackResponse>> getContractFeedback(
