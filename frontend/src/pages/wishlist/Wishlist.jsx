@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, FormControl, Dropdown, Spinner } from 'react-bootstrap';
+import { Container, FormControl, Dropdown, Spinner, Stack } from 'react-bootstrap';
 import { HttpStatusCode } from "axios";
 import { ENDPOINTS } from '../../utils/Constants';
 import { useAxios } from '../../context/AxiosContext';
 import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
-import "../dashboard/Dashboard.css";
-
+import "./Wishlist.css";
+import EmptyListView from "../../assets/EmptyListView.png";
 
 export default function Wishlist() {
   const [showToast, setShowToast] = useState(false);
@@ -27,9 +27,8 @@ export default function Wishlist() {
   }, []);
 
   const removeFromWishlist = async (serviceId) => {
-   console.log('clicked')
+    console.log('clicked')
   };
-
 
   const fetchWishlistedServices = async () => {
     setLoading(true);
@@ -74,36 +73,49 @@ export default function Wishlist() {
     setProviderInfoLoading(false);
   };
 
-
   return (
-    <Container fluid className="dashboard">
-      <Container className='d-flex result-body'>
-        <Container fluid className='child1 flex-column'>
-          {loading ? (
-            <Spinner animation="border" role="status">
-              <span className="sr-only">Loading...</span>
-            </Spinner>
-          ) : (
-            services.map((service, idx) => (
-              <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
-               
-            ))
-          )}
-        </Container>
+    <Container fluid className="wishlist">
+      {loading ? (
+        <div className='d-flex align-items-center justify-content-center' style={{ minHeight: "72vh", width: "100%" }}>
+          <Spinner animation="border" role="status">
+          </Spinner>
+        </div>
+      ) :
+        (<Container className='d-flex result-body' style={{ marginTop: "30px" }}>
+          <Container fluid className='child1 flex-column'>
+            {services.length > 0 ? (
+              services.map((service, idx) => (
+                <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
+              ))
+            ) : (
+              <Container
+                fluid
+                className="empty-services-view d-flex align-items-center justify-content-center pb-5"
+              >
+                <div>
+                  <Stack className="align-items-center" gap={3}>
+                    <img src={EmptyListView} alt="No Services" width="200px" height="200px" />
+                    <div className="empty-services-text">No Services Added</div>
+                  </Stack>
+                </div>
+              </Container>
+            )
+            }
+          </Container>
 
-        <Container fluid className='child2'>
-          {selectedService && (
-            <ServiceDetailsCard
-              selectedService={selectedService}
-              providerLoading={providerLoading}
-              feedbacks={feedbacks}
-              providerInfo={providerInfo}
-              rightIconOnclick={removeFromWishlist}
-              currentPage="wishilist"
-            />
-          )}
-        </Container>
-      </Container>
+          <Container fluid className='child2'>
+            {selectedService && (
+              <ServiceDetailsCard
+                selectedService={selectedService}
+                providerLoading={providerLoading}
+                providerInfo={providerInfo}
+                rightIconOnclick={removeFromWishlist}
+                currentPage="wishlist"
+              />
+            )}
+          </Container>
+        </Container>)
+      }
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
   );

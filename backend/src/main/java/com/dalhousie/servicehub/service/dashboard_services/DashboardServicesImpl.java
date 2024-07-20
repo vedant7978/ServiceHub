@@ -1,7 +1,6 @@
 package com.dalhousie.servicehub.service.dashboard_services;
 
 
-import com.dalhousie.servicehub.controller.DashboardController;
 import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
@@ -17,12 +16,9 @@ import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
-import com.dalhousie.servicehub.service.feedback.FeedbackServiceImpl;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,7 +51,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .peek(serviceDto -> {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
                     serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
-                })
+                    serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());                })
                 .collect(Collectors.toList());
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -76,7 +72,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .peek(serviceDto -> {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
                     serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
-                })
+                    serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());                })
                 .toList();
 
         GetServicesResponse response = GetServicesResponse.builder()
@@ -94,6 +90,7 @@ public class DashboardServicesImpl implements DashboardServices {
                 .peek(serviceDto -> {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
                     serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+                    serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
                 })
                 .toList();
 

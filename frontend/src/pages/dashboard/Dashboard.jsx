@@ -1,19 +1,19 @@
-import { HttpStatusCode } from "axios";
-import debounce from 'lodash/debounce';
-import "./Dashboard.css";
 import React, { useCallback, useEffect, useState } from 'react';
-import { Container, Dropdown, FormControl, Spinner } from 'react-bootstrap';
+import { Container, Dropdown, Stack, FormControl, Spinner } from 'react-bootstrap';
 import AppToast from "../../components/app_toast/AppToast";
+import EmptyListView from "../../assets/EmptyListView.png";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
+import debounce from 'lodash/debounce';
+import { HttpStatusCode } from "axios";
+import "./Dashboard.css";
 
 export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastTitle, setToastTitle] = useState("");
-  const [feedbacks, setFeedbacks] = useState([]);
   const [providerInfo, setProviderInfo] = useState({});
   const [providerLoading, setProviderInfoLoading] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
@@ -23,14 +23,21 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [serviceTypes, setServiceTypes] = useState([]);
   const [sortCriteria, setSortCriteria] = useState("");
-
+  const [wishlistServiceIds, setWishlistServiceIds] = useState([]);
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
-    // Using debounce as when user trying to login, token takes some time to store
-    // Resulting into failing to fetch services as no token present
     debouncedFetchServices('')
   }, []);
+
+  useEffect(() => {
+    const storedWishlist = JSON.parse(localStorage.getItem('wishlistServiceIds')) || [];
+    setWishlistServiceIds(storedWishlist);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('wishlistServiceIds', JSON.stringify(wishlistServiceIds));
+  }, [wishlistServiceIds]);
 
   const extractServiceTypes = (services) => {
     const types = [...new Set(services.map(service => service.type))];
@@ -38,13 +45,21 @@ export default function Dashboard() {
   };
 
   const addToWishlist = async (serviceId) => {
+    if (wishlistServiceIds.includes(serviceId)) {
+      setToastMessage('Service is already in the wishlist');
+      setToastTitle('Info');
+      setShowToast(true);
+      return;
+    }
+
     setProviderInfoLoading(true);
     try {
-      const requestData = { serviceId: serviceId }
+      const requestData = { serviceId: serviceId };
       const Response = await postRequest(ENDPOINTS.ADD_WISHLIST, true, requestData);
       if (Response.status === HttpStatusCode.Ok) {
+        setWishlistServiceIds([...wishlistServiceIds, serviceId]);
         setToastMessage('Added to wishlist');
-        setToastTitle('success');
+        setToastTitle('Success');
         setShowToast(true);
       } else {
         setToastMessage('Error while adding to wishlist');
@@ -89,17 +104,15 @@ export default function Dashboard() {
     setProviderInfoLoading(true);
     try {
       const providerInforesponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId });
-      const feedbackResponse = await getRequest(ENDPOINTS.GET_FEEDBACK, true, { userId: service.providerId });
-      if (providerInforesponse.status && feedbackResponse.status === HttpStatusCode.Ok) {
-        setFeedbacks(feedbackResponse.data.data.feedbacks);
+      if (providerInforesponse.status === HttpStatusCode.Ok) {
         setProviderInfo(providerInforesponse.data.data.provider);
       } else {
-        setToastMessage('Error fetching feedbacks.');
+        setToastMessage('Error fetching user Details.');
         setToastTitle('Error');
         setShowToast(true);
       }
     } catch (error) {
-      setToastMessage('Error fetching feedbacks.');
+      setToastMessage('Error fetching user Details.');
       setToastTitle('Error');
       setShowToast(true);
     }
@@ -134,44 +147,65 @@ export default function Dashboard() {
           value={searchQuery}
           onChange={handleSearchChange}
         />
-        <Dropdown className="mb-3">
-          <Dropdown.Toggle variant="outline-secondary">
-            Sort By
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            {serviceTypes.map((type, idx) => (
-              <Dropdown.Item key={idx} onClick={() => handleSortChange(type)}>
-                {type}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
-      </Container>
-      <Container className='d-flex result-body'>
-        <Container fluid className='child1 flex-column'>
-          {loading ? (
+        {loading ? (
+          <div className='d-flex align-items-center justify-content-center' style={{ minHeight: "72vh" }}>
             <Spinner animation="border" role="status">
-              <span className="sr-only">Loading...</span>
             </Spinner>
-          ) : (
-            filteredServices.map((service, idx) => (
-              <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
-            ))
-          )}
-        </Container>
-
-        <Container fluid className='child2'>
-          {selectedService && (
-            <ServiceDetailsCard
-              selectedService={selectedService}
-              providerLoading={providerLoading}
-              feedbacks={feedbacks}
-              providerInfo={providerInfo}
-              rightIconOnclick={addToWishlist}
-              currentPage="dashboard"
-            />
-          )}
-        </Container>
+          </div>
+        ) : (
+          <>
+            {serviceTypes.length > 0 ? (
+              <>
+                <Dropdown className="mb-3">
+                  <Dropdown.Toggle variant="outline-secondary">
+                    Sort By
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={() => handleSortChange('')}>
+                      All services
+                    </Dropdown.Item>
+                    {serviceTypes.map((type, idx) => (
+                      <Dropdown.Item key={idx} onClick={() => handleSortChange(type)}>
+                        {type}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+                <Container className='d-flex result-body' style={{ padding: '0px' }}>
+                  <Container fluid className='child1 flex-column'>
+                    {filteredServices.map((service, idx) => (
+                      <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
+                    ))}
+                  </Container>
+                  <Container fluid className='child2' style={{ padding: '0px' }}>
+                    {selectedService && (
+                      <ServiceDetailsCard
+                        selectedService={selectedService}
+                        providerLoading={providerLoading}
+                        providerInfo={providerInfo}
+                        rightIconOnclick={addToWishlist}
+                        currentPage="dashboard"
+                        wishlistServiceIds={wishlistServiceIds}
+                      />
+                    )}
+                  </Container>
+                </Container>
+              </>
+            ) : (
+              <Container
+                fluid
+                className="empty-services-view d-flex align-items-center justify-content-center pb-5"
+              >
+                <div>
+                  <Stack className="align-items-center" gap={3}>
+                    <img src={EmptyListView} alt="NavigateLeft" width="200px" height="200px" />
+                    <div className="empty-services-text">No Services Added</div>
+                  </Stack>
+                </div>
+              </Container>
+            )}
+          </>
+        )}
       </Container>
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
