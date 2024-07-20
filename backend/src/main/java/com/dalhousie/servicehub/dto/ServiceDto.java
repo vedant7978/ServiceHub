@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -19,4 +20,5 @@ public class ServiceDto {
     private Long providerId;
     private boolean isAddedToWishlist;
     private Double averageRating;
+    private List<FeedbackDto> feedbacks;
 }

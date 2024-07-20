@@ -1,12 +1,11 @@
 .dashboard {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   width: 100%;
   background-color: #F8F7FF;
   padding-left: 20px;
   padding-right: 20px;
+  min-height: 100vh;
 }
 
 .card-text-custom {
@@ -56,8 +55,10 @@
 
 .child1 {
   width: 70%;
-  height: 80vh;
-  overflow-y: auto
+  overflow-y: scroll;
+  max-height: 600px;
+  scrollbar-width: none;
+  padding-top: 12px;
 }
 
 .child2 {
@@ -66,4 +67,9 @@
 
 .result-body {
   width: 100%;
+}
+
+.empty-services-view {
+  width: 40vw;
+  height: 70vh;
 }

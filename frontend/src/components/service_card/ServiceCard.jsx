@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
 import default_profile_pic from "../../assets/default_profile_pic.png";
-import { FaDollarSign } from 'react-icons/fa';
+import { FaDollarSign, FaStar } from 'react-icons/fa';
 import './ServiceCard.css';
 
 export default function ServiceCard({ service, onClick }) {
@@ -27,12 +27,17 @@ export default function ServiceCard({ service, onClick }) {
           </div>
           <div className="content-container">
             <Card.Text className="card-text-custom">
+            <b>Type: </b>{service.type}
+            </Card.Text>
+            <Card.Text>
               {service.description}
             </Card.Text>
             <div className="details-container">
               <div className="detail-item">
                 <FaDollarSign className="icon" />
-                <b><span>{service.perHourRate}/hour</span></b>
+                <b>{service.perHourRate}/hour</b>
+                <b><span style={{ marginLeft: '16px' }}>{service.averageRating}</span></b>
+                <FaStar className="icon" style={{ color: 'gold' }} />
               </div>
             </div>
           </div>
