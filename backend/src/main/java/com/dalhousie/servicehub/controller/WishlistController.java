@@ -65,6 +65,19 @@ public class WishlistController {
         }
     }
 
+    @DeleteMapping("/delete-wishlist")
+    public ResponseEntity<ResponseBody<String>> deleteWishlist(@RequestParam Long wishlistId) {
+        try {
+            logger.info("Delete wishlist request received for wishlistId: {}", wishlistId);
+            ResponseBody<String> responseBody = wishlistService.deleteWishlist(wishlistId);
+            logger.info("Delete wishlist request success");
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception exception) {
+            logger.error("Unexpected error occurred while deleting wishlist, {}", exception.getMessage());
+            return ResponseEntity.badRequest().body(getFailureResponseBody(exception.getMessage()));
+        }
+    }
+
     private ResponseBody<String> getFailureResponseBody(String message) {
         return new ResponseBody<>(FAILURE, null, message);
     }
