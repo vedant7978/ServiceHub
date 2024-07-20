@@ -7,6 +7,7 @@ import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
 import com.dalhousie.servicehub.response.UserDetailsResponse;
 import com.dalhousie.servicehub.service.profile.ProfileServiceImpl;
+import com.dalhousie.servicehub.util.ResponseBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,25 @@ public class ProfileServiceTest {
     }
 
     @Test
+    @DisplayName("Should provide user details when trying to get user details")
+    void shouldProvideUserDetails() {
+        // Given
+        logger.info("Test started: Should provide user details");
+
+        // When
+        ResponseBody<UserDetailsResponse> body = userService.getUserDetailsResponse(userModel);
+
+        // Then
+        assertNotNull(body.data());
+        UserDetailsResponse updatedUserDetails = body.data();
+        assertEquals(userModel.getName(), updatedUserDetails.getName());
+        assertEquals(userModel.getPhone(), updatedUserDetails.getPhone());
+        assertEquals(userModel.getAddress(), updatedUserDetails.getAddress());
+        assertEquals(userModel.getImage(), updatedUserDetails.getImage());
+        logger.info("Test completed: Should provide user details");
+    }
+
+    @Test
     @DisplayName("Should update user details when email exists")
     void updateUser_WhenEmailExists() {
         logger.info("Starting test: updateUser_WhenEmailExists");
@@ -73,15 +93,16 @@ public class ProfileServiceTest {
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
         // When
-        UserDetailsResponse updatedUser = userService.updateUser(updateUserRequest);
+        ResponseBody<UserDetailsResponse> body = userService.updateUser(updateUserRequest);
 
         // Then
         logger.info("Asserting that the updatedUser is not null and fields are updated");
-        assertNotNull(updatedUser);
-        assertEquals("Updated Name", updatedUser.getName());
-        assertEquals("9876543210", updatedUser.getPhone());
-        assertEquals("Updated Address", updatedUser.getAddress());
-        assertEquals("updated-image.jpg", updatedUser.getImage());
+        assertNotNull(body.data());
+        UserDetailsResponse updatedUserDetails = body.data();
+        assertEquals("Updated Name", updatedUserDetails.getName());
+        assertEquals("9876543210", updatedUserDetails.getPhone());
+        assertEquals("Updated Address", updatedUserDetails.getAddress());
+        assertEquals("updated-image.jpg", updatedUserDetails.getImage());
         verify(userRepository, times(1)).findByEmail(anyString());
         verify(userRepository, times(1)).save(any(UserModel.class));
 
@@ -126,15 +147,16 @@ public class ProfileServiceTest {
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
         // When
-        UserDetailsResponse updatedUser = userService.updateUser(request);
+        ResponseBody<UserDetailsResponse> body = userService.updateUser(request);
 
         // Then
         logger.info("Asserting that the updatedUser is not null and fields are updated");
-        assertNotNull(updatedUser);
-        assertEquals(userModel.getName(), updatedUser.getName());
-        assertEquals(userModel.getPhone(), updatedUser.getPhone());
-        assertEquals(userModel.getAddress(), updatedUser.getAddress());
-        assertEquals(userModel.getImage(), updatedUser.getImage());
+        assertNotNull(body.data());
+        UserDetailsResponse updatedUserDetails = body.data();
+        assertEquals(userModel.getName(), updatedUserDetails.getName());
+        assertEquals(userModel.getPhone(), updatedUserDetails.getPhone());
+        assertEquals(userModel.getAddress(), updatedUserDetails.getAddress());
+        assertEquals(userModel.getImage(), updatedUserDetails.getImage());
         verify(userRepository, times(1)).findByEmail(anyString());
         verify(userRepository, times(1)).save(any(UserModel.class));
 
