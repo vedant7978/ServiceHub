@@ -22,4 +22,6 @@ public interface WishlistService {
      * @return ResponseBody object for List of GetWishlistResponse
      */
     ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId);
+
+    ResponseBody<String> deleteWishlist(Long wishlistId);
 }
