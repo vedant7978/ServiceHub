@@ -1,9 +1,6 @@
 package com.dalhousie.servicehub.service.dashboard_services;
 
-
-import com.dalhousie.servicehub.controller.DashboardController;
 import com.dalhousie.servicehub.dto.ServiceDto;
-import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
@@ -17,25 +14,19 @@ import com.dalhousie.servicehub.repository.WishlistRepository;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
-import com.dalhousie.servicehub.service.feedback.FeedbackServiceImpl;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
-
 
 @Service
 @RequiredArgsConstructor
 public class DashboardServicesImpl implements DashboardServices {
+
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final WishlistRepository wishlistRepository;
@@ -47,48 +38,57 @@ public class DashboardServicesImpl implements DashboardServices {
     @Override
     public ResponseBody<GetServicesResponse> getAllServices() {
         Long loggedInUserId = SecurityUtils.getLoggedInUserId();
-
-        List<ServiceDto> services = serviceRepository.findAll()
-                .stream()
-                .filter(service -> !service.getProviderId().equals(loggedInUserId))
-                .map(serviceMapper::toDto)
-                .peek(serviceDto -> {
-                    serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
-                    serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
-                })
-                .collect(Collectors.toList());
-
+        List<ServiceDto> services = getProcessedServiceDtoList(serviceRepository.findAll(), loggedInUserId);
         GetServicesResponse response = GetServicesResponse.builder()
                 .services(services)
                 .build();
-
         return new ResponseBody<>(SUCCESS, response, "Fetched user services successfully");
-
     }
 
     @Override
     public ResponseBody<GetServicesResponse> getServicesByType(ServiceType type) {
         Long loggedInUserId = SecurityUtils.getLoggedInUserId();
-        List<ServiceDto> services = serviceRepository.findByType(type)
-                .stream()
-                .filter(service -> !service.getProviderId().equals(loggedInUserId))
-                .map(serviceMapper::toDto)
-                .peek(serviceDto -> {
-                    serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
-                    serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
-                })
-                .toList();
-
+        List<ServiceDto> services = getProcessedServiceDtoList(serviceRepository.findByType(type), loggedInUserId);
         GetServicesResponse response = GetServicesResponse.builder()
                 .services(services)
                 .build();
         return new ResponseBody<>(SUCCESS, response, "Fetched user services successfully based on the type of the service");
     }
+
     @Override
     public ResponseBody<GetServicesResponse> searchServicesByName(String name) {
         Long loggedInUserId = SecurityUtils.getLoggedInUserId();
-        List<ServiceDto> services = serviceRepository.findByNameContainingIgnoreCase(name)
-                .stream()
+        List<ServiceDto> services = getProcessedServiceDtoList(
+                serviceRepository.findByNameContainingIgnoreCase(name),
+                loggedInUserId
+        );
+        GetServicesResponse response = GetServicesResponse.builder()
+                .services(services)
+                .build();
+        return new ResponseBody<>(SUCCESS, response, "Fetched user services successfully based on the name of the service");
+    }
+
+    @Override
+    public ResponseBody<GetProviderResponse> getProviderDetailsById(Long providerId) {
+        UserModel user = userRepository.findById(providerId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + providerId));
+        GetProviderResponse response = GetProviderResponse.builder()
+                .provider(userMapper.toDto(user))
+                .build();
+        return new ResponseBody<>(SUCCESS, response, "Fetched provider details successfully");
+    }
+
+    /**
+     * Provides processed list of serviceDto from list of serviceModel
+     * @param serviceModelList List of ServiceModel to process
+     * @param loggedInUserId ID of the logged-in user
+     * @return List of ServiceDto after processing list of service model
+     * Note: Processing includes:
+     * <li>Filtering all services from current logged-in user</li>
+     * <li>Mapping ServiceModel to ServiceDto and set derived variables</li>
+     */
+    private List<ServiceDto> getProcessedServiceDtoList(List<ServiceModel> serviceModelList, Long loggedInUserId) {
+        return serviceModelList.stream()
                 .filter(service -> !service.getProviderId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
                 .peek(serviceDto -> {
@@ -96,30 +96,14 @@ public class DashboardServicesImpl implements DashboardServices {
                     serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
                 })
                 .toList();
-
-        GetServicesResponse response = GetServicesResponse.builder()
-                .services(services)
-                .build();
-        return new ResponseBody<>(SUCCESS, response, "Fetched user services successfully based on the name of the service");
-
-    }
-    @Override
-    public ResponseBody<GetProviderResponse> getProviderDetailsById(Long providerId) {
-        Optional<UserModel> userModelOptional = userRepository.findById(providerId);
-
-        if (userModelOptional.isPresent()) {
-            UserDto userDto = userMapper.toDto(userModelOptional.get());
-
-            GetProviderResponse response = GetProviderResponse.builder()
-                    .provider(userDto)
-                    .build();
-
-            return new ResponseBody<>(SUCCESS, response, "Fetched provider details successfully");
-        } else {
-            return new ResponseBody<>(FAILURE, null, "Provider not found");
-        }
     }
 
+    /**
+     * Checks if requesting userId has provided serviceId added as wishlist or not
+     * @param serviceId ID of the service
+     * @param userId ID of the user
+     * @return True if serviceId is added to wishlist, False otherwise
+     */
     private boolean isAddedToWishlist(Long serviceId, Long userId) {
         ServiceModel service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + serviceId));
