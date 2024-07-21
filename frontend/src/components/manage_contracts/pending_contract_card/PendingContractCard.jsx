@@ -15,12 +15,12 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
 
   const handleAcceptContract = () => {
     showAcceptDialog();
-    onSelectContract(contract.id)
+    onSelectContract(contract)
   }
 
   const handleRejectContract = () => {
     showRejectDialog()
-    onSelectContract(contract.id)
+    onSelectContract(contract)
   }
 
   return (

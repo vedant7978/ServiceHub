@@ -7,6 +7,7 @@ import EmptyStar from "../../../assets/IconStarEmpty.png"
 import FilledStar from "../../../assets/IconStarFilled.png"
 import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
+import { CreateAndOpenContractDocument } from "../../../utils/CreateAndOpenContractDocument";
 import AppToast from "../../app_toast/AppToast";
 
 export const AddFeedbackCard = ({ contract }) => {
@@ -105,6 +106,7 @@ export const AddFeedbackCard = ({ contract }) => {
                   start={0}
                   initialRating={userRating}
                   fractions={4}
+                  readonly={contract.status === 'Pending'}
                   emptySymbol={<EmptySymbol/>}
                   fullSymbol={<FilledSymbol/>}
                   onChange={handleRatingChange}
@@ -117,18 +119,25 @@ export const AddFeedbackCard = ({ contract }) => {
               value={feedbackDescription}
               onChange={handleDescriptionChange}
               placeholder="Describe your experience (Optional)"
+              readOnly={contract.status === 'Pending'}
             />
           </Stack>
         </div>
 
         <Stack>
-          {errorMessage && (
+          {errorMessage ? (
             <div className="error-message-text">{errorMessage}</div>
+          ) : (
+            <Button
+              className="add-feedback-contract-document-button mt-3"
+              onClick={() => CreateAndOpenContractDocument(contract)}>
+              View contract document
+            </Button>
           )}
 
           <Button
             disabled={isSubmitButtonDisabled}
-            className="add-feedback-submit-button mt-5"
+            className="add-feedback-submit-button mt-3"
             onClick={handleSubmitFeedback}>
             Submit
           </Button>
