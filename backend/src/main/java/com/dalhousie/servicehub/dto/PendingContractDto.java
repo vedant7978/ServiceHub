@@ -15,6 +15,8 @@ public class PendingContractDto {
     private Long id;
     private String address;
     private String serviceName;
+    private String serviceProviderName;
+    private Double perHourRate;
     private String userImageUrl;
     private String userName;
     private Double userRating;
