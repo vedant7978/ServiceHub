@@ -186,6 +186,11 @@ export default function Dashboard() {
                         rightIconOnclick={addToWishlist}
                         currentPage="dashboard"
                         wishlistServiceIds={wishlistServiceIds}
+                        showToastMessage={(message,title) => {
+                          setToastMessage(message);
+                          setToastTitle(title);
+                          setShowToast(true);
+                        }}
                       />
                     )}
                   </Container>

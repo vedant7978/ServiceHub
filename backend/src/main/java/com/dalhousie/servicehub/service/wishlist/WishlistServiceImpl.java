@@ -74,7 +74,8 @@ public class WishlistServiceImpl implements WishlistService {
         Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
 
         return GetWishlistResponse.builder()
-                .id(serviceModel.getId())
+                .id(wishlistModel.getId())
+                .serviceId(serviceModel.getId())
                 .providerId(serviceModel.getProviderId())
                 .serviceProviderImage(serviceProvider.getImage())
                 .name(serviceModel.getName())
