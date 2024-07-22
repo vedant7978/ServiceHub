@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.service.dashboard_services;
 
 import com.dalhousie.servicehub.enums.ServiceType;
+import com.dalhousie.servicehub.request.ContractRequest;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
@@ -33,4 +34,6 @@ public interface DashboardServices {
      * @return GetProviderResponse instance containing user details
      */
     ResponseBody<GetProviderResponse> getProviderDetailsById(Long providerId);
+
+    ResponseBody<String> requestService(ContractRequest contractRequest, Long userId);
 }

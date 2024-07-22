@@ -3,11 +3,15 @@ import { Card, Row, Col, ListGroup, Button, Container, OverlayTrigger, Tooltip, 
 import Loader from '../../components/Loader';
 import default_profile_pic from '../../assets/default_profile_pic.png';
 import { FaPlusCircle, FaTimesCircle, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUser, FaCheckCircle } from 'react-icons/fa';
+import { useAxios } from '../../context/AxiosContext';
+import { ENDPOINTS } from '../../utils/Constants';
+import { HttpStatusCode } from 'axios';
 
-export default function ServiceDetailsCard({ selectedService, providerLoading, providerInfo, rightIconOnclick, currentPage, wishlistServiceIds }) {
+export default function ServiceDetailsCard({ selectedService, providerLoading, providerInfo, rightIconOnclick, currentPage, wishlistServiceIds, showToastMessage }) {
   const [icon, setIcon] = useState(null);
   const [userAddress, setUserAddress] = useState('');
   const [error, setError] = useState('');
+  const { postRequest } = useAxios();
 
   useEffect(() => {
     if (currentPage === 'dashboard') {
@@ -28,13 +32,29 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
     }
   };
 
-  const handleRequestService = () => {
+  const handleRequestService = async () => {
     if (!userAddress.trim()) {
       setError('Address is required');
       return;
     }
-    console.log('Requesting service with address:', userAddress);
-    setError('');
+
+    const serviceId = currentPage === 'dashboard' ? selectedService.id : selectedService.serviceId;
+
+    try {
+      const response = await postRequest(ENDPOINTS.REQUEST_SERVICE, true, {
+        serviceId: serviceId,
+        address: userAddress
+      });
+
+      if (response.status === HttpStatusCode.Ok) {
+        showToastMessage('Success', 'Service requested successfully');
+      } else {
+        showToastMessage('Info', 'Failed to request service');
+      }
+    } catch (error) {
+      showToastMessage('Info', 'Failed to request service');
+      console.error('Error requesting service:', error);
+    }
   };
 
   return (
@@ -59,7 +79,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
               >
                 <Button
                   variant="light"
-                  onClick={() => rightIconOnclick(selectedService.id)}
+                  onClick={() => rightIconOnclick(currentPage === 'dashboard' ? selectedService.id : selectedService.serviceId)}
                 >
                   {icon}
                 </Button>
@@ -80,6 +100,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
                 style={{ width: '300px' }}
               />
             </div>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <Card.Text>
               <b>Reviews and Ratings </b>
             </Card.Text>
@@ -98,7 +119,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
               </ListGroup>
             </div>
           </Card.Body>
-          <Card.Footer style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderTop: 'none', marginBottom: '15px', backgroundColor:'white'}}>
+          <Card.Footer style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderTop: 'none', marginBottom: '15px', backgroundColor: 'white' }}>
             <Button variant="danger" onClick={handleRequestService}>Request Service</Button>
           </Card.Footer>
         </>

@@ -20,15 +20,11 @@ export default function Wishlist() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { getRequest, postRequest } = useAxios();
+  const { getRequest, deleteRequest } = useAxios();
 
   useEffect(() => {
     fetchWishlistedServices();
   }, []);
-
-  const removeFromWishlist = async (serviceId) => {
-    console.log('clicked')
-  };
 
   const fetchWishlistedServices = async () => {
     setLoading(true);
@@ -73,6 +69,26 @@ export default function Wishlist() {
     setProviderInfoLoading(false);
   };
 
+  const removeFromWishlist = async (wishlistId) => {
+    try {
+      const response = await deleteRequest(ENDPOINTS.DELETE_WISHLIST, true, { wishlistId });
+      if (response.status === HttpStatusCode.Ok) {
+        setToastMessage('Removed from wishlist successfully');
+        setToastTitle('Success');
+        setShowToast(true);
+        fetchWishlistedServices(); 
+      } else {
+        setToastMessage('Error while removing from wishlist');
+        setToastTitle('Error');
+        setShowToast(true);
+      }
+    } catch (error) {
+      setToastMessage('Error while removing from wishlist');
+      setToastTitle('Error');
+      setShowToast(true);
+    }
+  };
+
   return (
     <Container fluid className="wishlist">
       {loading ? (
@@ -104,6 +120,7 @@ export default function Wishlist() {
           </Container>
 
           <Container fluid className='child2'>
+
             {selectedService && (
               <ServiceDetailsCard
                 selectedService={selectedService}
@@ -111,6 +128,11 @@ export default function Wishlist() {
                 providerInfo={providerInfo}
                 rightIconOnclick={removeFromWishlist}
                 currentPage="wishlist"
+                showToastMessage={(message, title) => {
+                  setToastMessage(message);
+                  setToastTitle(title);
+                  setShowToast(true);
+                }}
               />
             )}
           </Container>

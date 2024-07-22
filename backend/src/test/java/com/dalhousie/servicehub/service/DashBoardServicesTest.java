@@ -3,14 +3,18 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
+import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.mapper.UserMapper;
+import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
+import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
+import com.dalhousie.servicehub.request.ContractRequest;
 import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
@@ -53,6 +57,9 @@ public class DashBoardServicesTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ContractRepository contractRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -307,5 +314,55 @@ public class DashBoardServicesTest {
         lenient().when(securityContext.getAuthentication()).thenReturn(null);
 
         SecurityContextHolder.setContext(securityContext);
+    }
+
+    @Test
+    void shouldRequestService_WhenServiceExist() {
+        Long userId = 1L;
+        Long serviceId = 1L;
+        String address = "123 Test St";
+
+        UserModel user = new UserModel();
+        user.setId(userId);
+
+        ServiceModel service = new ServiceModel();
+        service.setId(serviceId);
+
+        ContractRequest contractRequest = new ContractRequest();
+        contractRequest.setServiceId(serviceId);
+        contractRequest.setAddress(address);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+        when(contractRepository.save(any(ContractModel.class))).thenReturn(new ContractModel());
+
+        ResponseBody<String> responseBody = dashboardServices.requestService(contractRequest, userId);
+
+
+        assertEquals(SUCCESS, responseBody.resultType());
+        verify(userRepository, times(1)).findById(userId);
+        verify(serviceRepository, times(1)).findById(serviceId);
+        verify(contractRepository, times(1)).save(any(ContractModel.class));
+    }
+
+    @Test
+    void shouldThrowServiceNotFoundException_WhenServiceDoesNotExist() {
+        Long userId = 1L;
+        ContractRequest contractRequest = new ContractRequest();
+        contractRequest.setServiceId(1L);
+        contractRequest.setAddress("Brunswick street");
+
+        UserModel user = new UserModel();
+        user.setId(userId);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(serviceRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        try {
+            dashboardServices.requestService(contractRequest, userId);
+        } catch (ServiceNotFoundException ex) {
+            assertEquals("Service not found with ID: " + contractRequest.getServiceId(), ex.getMessage());
+            verify(contractRepository, times(0)).save(any(ContractModel.class));
+        }
     }
 }

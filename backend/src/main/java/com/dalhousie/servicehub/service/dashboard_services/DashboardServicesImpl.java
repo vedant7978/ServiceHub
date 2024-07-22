@@ -1,16 +1,20 @@
 package com.dalhousie.servicehub.service.dashboard_services;
 
 import com.dalhousie.servicehub.dto.ServiceDto;
+import com.dalhousie.servicehub.enums.ContractStatus;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.mapper.UserMapper;
+import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
+import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
+import com.dalhousie.servicehub.request.ContractRequest;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
@@ -30,6 +34,7 @@ public class DashboardServicesImpl implements DashboardServices {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final WishlistRepository wishlistRepository;
+    private final ContractRepository contractRepository;
 
     private final ServiceMapper serviceMapper;
     private final UserMapper userMapper;
@@ -111,5 +116,29 @@ public class DashboardServicesImpl implements DashboardServices {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
         return wishlistRepository.existsByServiceAndUser(service, user);
+    }
+
+    /**
+     * Requests a service with the service ID.
+     * @param contractRequest The request object containing service ID and address.
+     * @param userId The ID of the user requesting the service.
+     * @return A ResponseBody object containing a success message if the service is requested successfully.
+     * @throws UserNotFoundException if the user is not found in the repository.
+     * @throws ServiceNotFoundException if the service is not found in the repository.
+     */
+    public ResponseBody<String> requestService(ContractRequest contractRequest,Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
+        ServiceModel service = serviceRepository.findById(contractRequest.getServiceId())
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + contractRequest.getServiceId()));
+
+        ContractModel contract = new ContractModel();
+        contract.setUser(user);
+        contract.setService(service);
+        contract.setAddress(contractRequest.getAddress());
+        contract.setStatus(ContractStatus.Pending);
+        contractRepository.save(contract);
+
+        return new ResponseBody<>(SUCCESS, "Service requested successfully", null);
     }
 }

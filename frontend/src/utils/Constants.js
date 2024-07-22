@@ -14,6 +14,7 @@ export const ENDPOINTS = {
   GET_HISTORY_CONTRACTS: "/api/contract/get-history-contracts",
   ADD_WISHLIST: "/api/wishlist/add-wishlist",
   GET_WISHLISTED_SERVICES:"/api/wishlist/get-wishlist",
+  DELETE_WISHLIST:"/api/wishlist/delete-wishlist",
   PROVIDER_DETAILS: "/api/dashboard/provider-details",
   GET_SEARCH_SERVICES:"api/dashboard/search-services",
   ACCEPT_CONTRACT: "/api/contract/accept-contract",
@@ -26,7 +27,8 @@ export const ENDPOINTS = {
   UPDATE_SERVICE: "/api/service/update-service",
   DELETE_SERVICE: "/api/service/delete-service",
   NEW_PASSWORD: "/api/user-profile/new-password",
-  UPLOAD_FILE: "/api/upload"
+  UPLOAD_FILE: "/api/upload",
+  REQUEST_SERVICE: "api/dashboard/request-service"
   // Add other endpoints here
 };
 
