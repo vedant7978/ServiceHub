@@ -58,13 +58,13 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ResponseBody<GetHistoryContractsResponse> getHistoryContracts(Long userId) {
-        if (!userRepository.existsById(userId))
-            throw new UserNotFoundException("User not found for id: " + userId);
+        UserModel userModel = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
         List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userId);
         List<ContractModel> contracts = contractRepository.findHistoryContractsByServiceIds(userServicesIds, userId);
         List<HistoryContractDto> historyContracts = contracts.stream()
-                .map(contract -> getHistoryContractDto(contract, userId))
+                .map(contract -> getHistoryContractDto(contract, userModel))
                 .filter(historyContractDto -> {
                     if (historyContractDto.getHistoryType() == Completed)
                         return historyContractDto.getStatus() != Pending;
@@ -106,17 +106,18 @@ public class ContractServiceImpl implements ContractService {
                 .build();
     }
 
-    private HistoryContractDto getHistoryContractDto(ContractModel contractModel, long loggedInUserId) {
+    private HistoryContractDto getHistoryContractDto(ContractModel contractModel, UserModel loggedInUser) {
         ServiceModel service = contractModel.getService();
         UserModel serviceProviderUser = getUser(service.getProviderId());
         UserModel user = contractModel.getUser();
-        HistoryType historyType = Objects.equals(user.getId(), loggedInUserId) ? Requested : Completed;
+        HistoryType historyType = Objects.equals(user.getId(), loggedInUser.getId()) ? Requested : Completed;
         return HistoryContractDto.builder()
                 .id(contractModel.getId())
                 .serviceName(service.getName())
                 .serviceType(service.getType())
                 .historyType(historyType)
                 .serviceProviderName(serviceProviderUser.getName())
+                .serviceRequesterName(user.getName())
                 .perHourRate(service.getPerHourRate())
                 .serviceDescription(service.getDescription())
                 .userImageUrl(historyType == Completed ? user.getImage() : serviceProviderUser.getImage())

@@ -19,6 +19,7 @@ public class HistoryContractDto {
     private ServiceType serviceType;
     private HistoryType historyType;
     private String serviceProviderName;
+    private String serviceRequesterName;
     private Double perHourRate;
     private String serviceDescription;
     private String userImageUrl;
