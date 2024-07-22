@@ -152,7 +152,7 @@ public class ContractServiceTest {
         long userId = 10;
 
         // When
-        when(userRepository.existsById(userId)).thenReturn(false);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         logger.info("Inputting non registered user id: {}", userId);
 
         UserNotFoundException exception1 = assertThrows(UserNotFoundException.class,
@@ -169,7 +169,7 @@ public class ContractServiceTest {
         // Given
         logger.info("Starting test: No services completed/requested by user and called get history contracts");
         long userId = 10;
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
         when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
 
         // When
@@ -198,8 +198,8 @@ public class ContractServiceTest {
         // Services offered and not pending -> contractModel3 and contractModel4
         List<ContractModel> expectedContracts = List.of(contractModel3, contractModel4, contractModel5, contractModel6);
 
-        logger.info("Return true when existsById called for user id: {}", userId);
-        when(userRepository.existsById(userId)).thenReturn(true);
+        logger.info("Return userModel when findById called for user id: {}", userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
 
         logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
         when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);

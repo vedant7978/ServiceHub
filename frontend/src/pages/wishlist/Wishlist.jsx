@@ -76,6 +76,7 @@ export default function Wishlist() {
         setToastMessage('Removed from wishlist successfully');
         setToastTitle('Success');
         setShowToast(true);
+        setSelectedService(null)
         fetchWishlistedServices(); 
       } else {
         setToastMessage('Error while removing from wishlist');

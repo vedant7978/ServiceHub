@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, ListGroup, Button, Container, OverlayTrigger, Tooltip, FormControl } from 'react-bootstrap';
-import Loader from '../../components/Loader';
+import { HttpStatusCode } from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Col, Container, FormControl, ListGroup, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
+import {
+  FaCheckCircle,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaPlusCircle,
+  FaTimesCircle,
+  FaUser
+} from 'react-icons/fa';
 import default_profile_pic from '../../assets/default_profile_pic.png';
-import { FaPlusCircle, FaTimesCircle, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUser, FaCheckCircle } from 'react-icons/fa';
+import Loader from '../../components/Loader';
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
-import { HttpStatusCode } from 'axios';
 
 export default function ServiceDetailsCard({ selectedService, providerLoading, providerInfo, rightIconOnclick, currentPage, wishlistServiceIds, showToastMessage }) {
   const [icon, setIcon] = useState(null);
@@ -79,7 +87,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
               >
                 <Button
                   variant="light"
-                  onClick={() => rightIconOnclick(currentPage === 'dashboard' ? selectedService.id : selectedService.serviceId)}
+                  onClick={() => rightIconOnclick(selectedService.id)}
                 >
                   {icon}
                 </Button>
