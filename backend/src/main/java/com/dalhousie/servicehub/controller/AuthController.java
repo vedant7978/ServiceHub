@@ -72,12 +72,10 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ResponseBody<String>> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest resetPasswordRequest
-    ) {
+    public ResponseEntity<ResponseBody<String>> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
         try {
             ResponseBody<String> body = userService.resetPassword(resetPasswordRequest);
-            logger.info("Successfully resetted password for {}", resetPasswordRequest.getEmail());
+            logger.info("Successfully resetted password");
             return ResponseEntity.ok(body);
         } catch (UsernameNotFoundException exception) {
             logger.error("Field to reset password due to user not found: {}", exception.getMessage());
@@ -96,7 +94,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseBody<String>> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest request,
+            @RequestBody ForgotPasswordRequest request,
             HttpServletRequest servletRequest
     ) {
         try {

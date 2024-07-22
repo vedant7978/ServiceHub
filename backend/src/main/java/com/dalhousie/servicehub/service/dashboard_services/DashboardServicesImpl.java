@@ -83,6 +83,23 @@ public class DashboardServicesImpl implements DashboardServices {
         return new ResponseBody<>(SUCCESS, response, "Fetched provider details successfully");
     }
 
+    @Override
+    public ResponseBody<String> requestService(ContractRequest contractRequest,Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
+        ServiceModel service = serviceRepository.findById(contractRequest.getServiceId())
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + contractRequest.getServiceId()));
+
+        ContractModel contract = ContractModel.builder()
+                .address(contractRequest.getAddress())
+                .service(service)
+                .user(user)
+                .status(ContractStatus.Pending)
+                .build();
+        contractRepository.save(contract);
+        return new ResponseBody<>(SUCCESS, "Service requested successfully", null);
+    }
+
     /**
      * Provides processed list of serviceDto from list of serviceModel
      * @param serviceModelList List of ServiceModel to process
@@ -116,29 +133,5 @@ public class DashboardServicesImpl implements DashboardServices {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
         return wishlistRepository.existsByServiceAndUser(service, user);
-    }
-
-    /**
-     * Requests a service with the service ID.
-     * @param contractRequest The request object containing service ID and address.
-     * @param userId The ID of the user requesting the service.
-     * @return A ResponseBody object containing a success message if the service is requested successfully.
-     * @throws UserNotFoundException if the user is not found in the repository.
-     * @throws ServiceNotFoundException if the service is not found in the repository.
-     */
-    public ResponseBody<String> requestService(ContractRequest contractRequest,Long userId) {
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
-        ServiceModel service = serviceRepository.findById(contractRequest.getServiceId())
-                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + contractRequest.getServiceId()));
-
-        ContractModel contract = new ContractModel();
-        contract.setUser(user);
-        contract.setService(service);
-        contract.setAddress(contractRequest.getAddress());
-        contract.setStatus(ContractStatus.Pending);
-        contractRepository.save(contract);
-
-        return new ResponseBody<>(SUCCESS, "Service requested successfully", null);
     }
 }

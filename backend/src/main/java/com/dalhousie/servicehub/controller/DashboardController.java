@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/dashboard")

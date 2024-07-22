@@ -27,6 +27,7 @@ public class ResetPasswordTokenModel {
     @Column(name = "expiry_date")
     private Instant expiryDate;
 
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserModel user;
 }
