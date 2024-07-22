@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
@@ -24,13 +24,7 @@ export default function RegisterPage() {
     image: "",
   });
   const { postRequest } = useAxios();
-  const { isUserLoggedIn, setUserLoggedIn } = useAuth();
-
-  useEffect(() => {
-    if (isUserLoggedIn) {
-      navigate(AppRoutes.Dashboard);
-    }
-  }, []);
+  const { setUserLoggedIn } = useAuth();
 
   const validate = () => {
     let errors = {};

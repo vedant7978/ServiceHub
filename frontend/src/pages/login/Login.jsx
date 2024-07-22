@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "axios";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import './LoginPage.css';
 import { Link, useNavigate } from "react-router-dom";
@@ -15,14 +15,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
   const { postRequest } = useAxios();
-  const { isUserLoggedIn, setUserLoggedIn } = useAuth();
+  const { setUserLoggedIn } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isUserLoggedIn) {
-      navigate(AppRoutes.Dashboard);
-    }
-  }, []);
 
   const validate = () => {
     let errors = {};
