@@ -7,10 +7,13 @@ import FeedbackCard from "../../feedback_card/FeedbackCard";
 export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDialog, onSelectContract }) => {
 
   const [imageUrl, setImageUrl] = useState(ImagePlaceholder);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
 
   useEffect(() => {
-    if (contract !== null)
+    if (contract !== null) {
       setImageUrl(contract.userImageUrl)
+      setFilteredFeedbacks(contract.feedbacks.filter(feedback => feedback.type === "ServiceRequester"))
+    }
   }, [contract]);
 
   const handleAcceptContract = () => {
@@ -51,8 +54,8 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
               <div className="contract-card-sub-title">Feedbacks</div>
               <div className="feedback">
                 {
-                  contract.feedbacks.length > 0 ? (
-                    contract.feedbacks.map((feedback, index) => (
+                  filteredFeedbacks.length > 0 ? (
+                    filteredFeedbacks.map((feedback, index) => (
                       <FeedbackCard key={index} feedback={feedback}/>
                     ))
                   ) : (

@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.service.contract_feedback;
 
 import com.dalhousie.servicehub.dto.ContractFeedbackDto;
+import com.dalhousie.servicehub.enums.FeedbackType;
 import com.dalhousie.servicehub.exceptions.ContractNotFoundException;
 import com.dalhousie.servicehub.model.ContractFeedbackModel;
 import com.dalhousie.servicehub.model.ContractModel;
@@ -57,6 +58,11 @@ public class ContractFeedbackServiceImpl implements ContractFeedbackService {
                     )
                     .rating(contractFeedbackDto.getRating())
                     .description(contractFeedbackDto.getDescription())
+                    .type(
+                            Objects.equals(contractModel.getService().getProviderId(), userId)
+                                    ? FeedbackType.ServiceProvider
+                                    : FeedbackType.ServiceRequester
+                    )
                     .build();
             FeedbackModel savedFeedbackModel = feedbackService.addFeedbackModel(feedbackModel);
             contractFeedbackModel = ContractFeedbackModel.builder()
