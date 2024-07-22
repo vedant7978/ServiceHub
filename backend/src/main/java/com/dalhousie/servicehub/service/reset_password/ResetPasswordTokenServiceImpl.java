@@ -1,7 +1,10 @@
 package com.dalhousie.servicehub.service.reset_password;
 
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.ResetPasswordTokenModel;
+import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ResetPasswordTokenRepository;
+import com.dalhousie.servicehub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +17,16 @@ import java.util.UUID;
 public class ResetPasswordTokenServiceImpl implements ResetPasswordTokenService {
 
     private final ResetPasswordTokenRepository resetPasswordTokenRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ResetPasswordTokenModel createResetPasswordToken(Long userId) {
         resetPasswordTokenRepository.findByUserId(userId)
                 .ifPresent(resetPasswordTokenRepository::delete);
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
         ResetPasswordTokenModel resetPasswordTokenModel = ResetPasswordTokenModel.builder()
-                .userId(userId)
+                .user(user)
                 .token(UUID.randomUUID().toString())
                 .expiryDate(Instant.now().plusMillis(1000L * 60 * 10)) // 10 Minutes
                 .build();

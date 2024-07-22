@@ -35,5 +35,11 @@ public interface DashboardServices {
      */
     ResponseBody<GetProviderResponse> getProviderDetailsById(Long providerId);
 
+    /**
+     * Requests a service with the service ID.
+     * @param contractRequest The request object containing service ID and address.
+     * @param userId The ID of the user requesting the service.
+     * @return A ResponseBody object containing a success message if the service is requested successfully.
+     */
     ResponseBody<String> requestService(ContractRequest contractRequest, Long userId);
 }
