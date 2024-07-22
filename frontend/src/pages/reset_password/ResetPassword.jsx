@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAxios } from "../../context/AxiosContext";
@@ -7,26 +7,26 @@ import { AppRoutes } from "../../utils/AppRoutes";
 import { ENDPOINTS } from "../../utils/Constants";
 import './ResetPassword.css'
 
-const ResetPassword = (props) => {
+const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { postRequest } = useAxios();
 
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
-  const queryToken = queryParams.get('token');
-  const queryEmail = queryParams.get('email');
-
-  // Use props if available, otherwise use query parameters
-  const token = props.token || queryToken;
-  const email = props.email || queryEmail;
-  const navigateTo = props.navigateTo || AppRoutes.Login;
+  const token = queryParams.get('token');
+  const email = queryParams.get('email');
 
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: ""
   });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!token || !email)
+      navigate(AppRoutes.Landing)
+  }, []);
 
   const handleInputChange = (e) => {
     const {name, value} = e.target;
@@ -51,17 +51,17 @@ const ResetPassword = (props) => {
 
     setError("");
     try {
-      const userData = {email: email, password: formData.password, token: token}
+      const userData = {email: email, password: password, token: token}
       const response = await postRequest(ENDPOINTS.RESET_PASSWORD, false, userData);
-      const message = response.data.message;
+      const message = response.data.data.message;
 
       if (response.status === HttpStatusCode.Ok) {
-        navigate(navigateTo)
+        navigate(AppRoutes.Landing)
       } else {
         setError(message);
       }
     } catch (error) {
-      setError(error);
+      setError(error.response.data.message);
       console.error("Reset failed:", error);
     }
   };
