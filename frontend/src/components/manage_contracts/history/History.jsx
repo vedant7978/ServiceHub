@@ -29,8 +29,8 @@ export const History = () => {
   }, [searchText]);
 
   useEffect(() => {
-    if (filteredContracts.every(contract => contract.id !== selectedContractId)) {
-      setSelectedContractId(null);
+    if (filteredContracts.length > 0) {
+      setSelectedContractId(filteredContracts[0].id);
     }
   }, [filteredContracts]);
 
@@ -132,7 +132,7 @@ export const History = () => {
   };
 
   return (
-    <Container className="history-contracts-container h-auto pt-4 pb-4 justify-content-start">
+    <Container className="history-contracts-container h-auto pt-4 pb-3 justify-content-start">
       <Stack direction="horizontal" className="search-box w-75 align-items-stretch">
         <input
           className="search-input w-75 pt-2 pb-2 ps-4 pe-4"
@@ -159,7 +159,7 @@ export const History = () => {
         className="d-flex justify-content-between align-items-center pt-3 flex-md-row align-items-md-start flex-column"
         gap={5}
       >
-        <div>
+        <div className="w-100">
           <Stack direction="vertical" className="contracts-list-view p-3">
             {
               filteredContracts.length > 0 ? (

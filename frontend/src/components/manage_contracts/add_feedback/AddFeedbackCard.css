@@ -23,7 +23,7 @@
   color: black;
   font-family: "Franklin Gothic Book", sans-serif;
   font-weight: 500;
-  min-width: 250px;
+  min-width: 300px;
   min-height: 200px;
 }
 
@@ -54,4 +54,35 @@
   background-color: #0C0059 !important;
   border-radius: 8px !important;
   border: 1px solid #0C0059 !important;
+}
+
+.add-feedback-contract-document-button {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+  color: #0C0059;
+  cursor: pointer;
+}
+
+.add-feedback-contract-document-button:hover {
+  background-color: white;
+  color: #0C0059;
+  border-radius: 8px;
+  border: 1px solid #0C0059;
+}
+
+.add-feedback-contract-document-button:active,
+.add-feedback-contract-document-button.active {
+  background-color: white !important;
+  color: #0C0059;
+  border-radius: 8px !important;
+  border: 1px solid #0C0059 !important;
+}
+
+.error-message-text {
+  color: red;
+  font-weight: 500;
+  max-width: 300px;
+  font-family: "Franklin Gothic Book", sans-serif;
+  font-size: large;
 }

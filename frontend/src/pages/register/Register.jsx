@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Button, Container, Form, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
@@ -24,14 +24,7 @@ export default function RegisterPage() {
     image: "",
   });
   const { postRequest } = useAxios();
-  const { loggedInUserEmail, storeAuthToken } = useAuth();
-
-  // [TODO]: Use private routes
-  useEffect(() => {
-    if (loggedInUserEmail) {
-      navigate(AppRoutes.Dashboard);
-    }
-  }, []);
+  const { setUserLoggedIn } = useAuth();
 
   const validate = () => {
     let errors = {};
@@ -62,11 +55,6 @@ export default function RegisterPage() {
         [name]: value.trim() ? "" : capitalize(name) + " is required",
       });
     }
-  };
-
-  const handleImageChange = (e) => {
-    // [TODO]: Upload image to firebase and set image url in user data request
-    // This will be a separate task in itself so not adding in this PR.
   };
 
   const handlePhoneChange = (e) => {
@@ -108,11 +96,11 @@ export default function RegisterPage() {
       setApiError(null);
       setLoading(true);
       const response = await postRequest(ENDPOINTS.REGISTER, false, formData);
-      const result = response.data;
+      const result = response.data.data;
       const message = result.message;
 
       if (response.status === HttpStatusCode.Created) {
-        storeAuthToken(result.token);
+        setUserLoggedIn(result.token);
         navigate(AppRoutes.Dashboard);
       } else {
         setApiError(
@@ -136,7 +124,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Container fluid className="registration-page">
+    <Container fluid className="registration-page py-5">
       <Stack
         direction="vertical"
         gap={3}
@@ -219,15 +207,6 @@ export default function RegisterPage() {
             <Form.Control.Feedback type="invalid">
               {errors.address}
             </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group controlId="formImage" className="mb-3">
-            <Form.Label>Profile Image</Form.Label>
-            <Form.Control
-              type="file"
-              name="image"
-              onChange={handleImageChange}
-            />
           </Form.Group>
 
           {loading && <Loader />}

@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "axios";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import './LoginPage.css';
 import { Link, useNavigate } from "react-router-dom";
@@ -15,15 +15,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
   const { postRequest } = useAxios();
-  const { loggedInUserEmail, storeAuthToken } = useAuth();
+  const { setUserLoggedIn } = useAuth();
   const navigate = useNavigate();
-
-  // [TODO]: Use private routes
-  useEffect(() => {
-    if (loggedInUserEmail) {
-      navigate(AppRoutes.Dashboard);
-    }
-  }, []);
 
   const validate = () => {
     let errors = {};
@@ -52,8 +45,8 @@ const Login = () => {
       };
       try {
         const response = await postRequest(ENDPOINTS.LOGIN, false, req); 
-        const token = response.data.token;
-        storeAuthToken(token);
+        const token = response.data.data.token;
+        setUserLoggedIn(token);
         navigate(AppRoutes.Dashboard);
       } catch (error) {
         if (error.response && error.response.status === HttpStatusCode.BadRequest) {

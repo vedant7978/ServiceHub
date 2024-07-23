@@ -6,23 +6,25 @@ import com.dalhousie.servicehub.model.BlackListTokenModel;
 import com.dalhousie.servicehub.repository.BlackListRepository;
 import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenServiceImpl;
 import com.dalhousie.servicehub.service.user.UserService;
+import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
+import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @ExtendWith(MockitoExtension.class)
 class BlackListTokenServiceTest {
 
@@ -36,30 +38,29 @@ class BlackListTokenServiceTest {
     private BlackListRepository blackListRepository;
 
     @InjectMocks
+    @Autowired
     private AuthController authController;
 
     @InjectMocks
+    @Autowired
     private BlackListTokenServiceImpl blackListTokenService;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     @DisplayName("Should sign out successfully")
-    void signOutHandler_ShouldSignOutSuccessfully() throws Exception {
+    void signOutHandler_ShouldSignOutSuccessfully() {
         // Given
         String token = "validToken";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(userService.signOut(token)).thenReturn(new ResponseBody<>(SUCCESS, "", "User signed out successfully."));
 
         // When
-        ResponseEntity<Object> response = authController.signOutHandler(request);
+        ResponseEntity<ResponseBody<String>> response = authController.signOut(request);
 
         // Then
         verify(userService, times(1)).signOut(token);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("User signed out successfully.", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("User signed out successfully.", response.getBody().message());
     }
 
     @Test
@@ -71,12 +72,13 @@ class BlackListTokenServiceTest {
         doThrow(new BlackListTokenAlreadyExistsException("Token is already blacklisted")).when(userService).signOut(token);
 
         // When
-        ResponseEntity<Object> response = authController.signOutHandler(request);
+        ResponseEntity<ResponseBody<String>> response = authController.signOut(request);
 
         // Then
         verify(userService, times(1)).signOut(token);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Token is already blacklisted", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("Token is already blacklisted", response.getBody().message());
     }
 
     @Test
@@ -88,13 +90,15 @@ class BlackListTokenServiceTest {
         doThrow(new RuntimeException("Unexpected error")).when(userService).signOut(token);
 
         // When
-        ResponseEntity<Object> response = authController.signOutHandler(request);
+        ResponseEntity<ResponseBody<String>> response = authController.signOut(request);
 
         // Then
         verify(userService, times(1)).signOut(token);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Unexpected error", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("Unexpected error", response.getBody().message());
     }
+
     @Test
     @DisplayName("Should add token to blacklist successfully")
     void addBlackListToken_ShouldAddTokenSuccessfully() {
@@ -117,9 +121,8 @@ class BlackListTokenServiceTest {
         when(blackListRepository.findByToken(token)).thenReturn(Optional.of(new BlackListTokenModel()));
 
         // When & Then
-        BlackListTokenAlreadyExistsException exception = assertThrows(BlackListTokenAlreadyExistsException.class, () -> {
-            blackListTokenService.addBlackListToken(token);
-        });
+        BlackListTokenAlreadyExistsException exception = assertThrows(BlackListTokenAlreadyExistsException.class,
+                () -> blackListTokenService.addBlackListToken(token));
 
         assertEquals("BlackList Token already exists", exception.getMessage());
         verify(blackListRepository, times(0)).save(any(BlackListTokenModel.class));

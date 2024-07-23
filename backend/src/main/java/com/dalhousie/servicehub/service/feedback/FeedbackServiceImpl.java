@@ -30,12 +30,10 @@ public class FeedbackServiceImpl implements FeedbackService {
     public ResponseBody<String> addFeedback(AddFeedbackRequest addFeedbackRequest) {
         long providerId = addFeedbackRequest.getProviderId();
         long consumerId = addFeedbackRequest.getConsumerId();
-        boolean doesProviderIdExists = userRepository.existsById(providerId);
-        boolean doesConsumerIdExists = userRepository.existsById(consumerId);
 
-        if (!doesProviderIdExists) {
+        if (!userRepository.existsById(providerId)) {
             throw new UserNotFoundException("User not found for id: " + providerId);
-        } else if (!doesConsumerIdExists) {
+        } else if (!userRepository.existsById(consumerId)) {
             throw new UserNotFoundException("User not found for id: " + consumerId);
         }
 
@@ -54,14 +52,14 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (!userRepository.existsById(userId))
             throw new UserNotFoundException("User not found for id: " + userId);
 
-        List<FeedbackDto> consumerIds = feedbackRepository
+        List<FeedbackDto> feedbacks = feedbackRepository
                 .findAllByConsumerId(userId)
                 .orElse(List.of())
                 .stream()
                 .map(this::toFeedbackDto)
                 .toList();
         GetFeedbackResponse getFeedbackResponse = GetFeedbackResponse.builder()
-                .feedbacks(consumerIds)
+                .feedbacks(feedbacks)
                 .build();
         return new ResponseBody<>(SUCCESS, getFeedbackResponse, "Get feedbacks successful");
     }
@@ -92,12 +90,18 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.save(feedbackModel);
     }
 
+    /**
+     * Converts the FeedbackModel into FeedbackDto
+     * @param feedbackModel FeedbackModel to be converted
+     * @return FeedbackDto instance
+     */
     private FeedbackDto toFeedbackDto(FeedbackModel feedbackModel) {
         UserModel user = userRepository.findById(feedbackModel.getProviderId()).orElse(null);
         return user == null ? feedbackMapper.toDto(feedbackModel) : FeedbackDto.builder()
                 .providerName(user.getName())
                 .rating(feedbackModel.getRating())
                 .description(feedbackModel.getDescription())
+                .type(feedbackModel.getType())
                 .build();
     }
 }

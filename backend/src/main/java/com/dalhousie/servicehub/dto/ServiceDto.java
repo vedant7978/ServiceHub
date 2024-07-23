@@ -6,10 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class ServiceDto {
     private Long id;
     private String description;
@@ -17,4 +19,9 @@ public class ServiceDto {
     private Double perHourRate;
     private ServiceType type;
     private Long providerId;
+    private String providerImage;
+    private boolean isAddedToWishlist;
+    private boolean isRequested;
+    private Double averageRating;
+    private List<FeedbackDto> feedbacks;
 }

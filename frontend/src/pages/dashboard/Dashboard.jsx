@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, FormControl, Dropdown, Spinner } from 'react-bootstrap';
-import { ENDPOINTS } from '../../utils/Constants';
-import { useAxios } from '../../context/AxiosContext';
+import { HttpStatusCode } from "axios";
+import debounce from 'lodash/debounce';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Container, Dropdown, FormControl, Spinner, Stack } from 'react-bootstrap';
+import EmptyListView from "../../assets/EmptyListView.png";
 import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
-import debounce from 'lodash/debounce';
+import { useAxios } from '../../context/AxiosContext';
+import { ENDPOINTS } from '../../utils/Constants';
 import "./Dashboard.css";
-import { HttpStatusCode } from "axios";
 
 export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastTitle, setToastTitle] = useState("");
-  const [feedbacks, setFeedbacks] = useState([]);
   const [providerInfo, setProviderInfo] = useState({});
   const [providerLoading, setProviderInfoLoading] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
@@ -23,11 +23,10 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [serviceTypes, setServiceTypes] = useState([]);
   const [sortCriteria, setSortCriteria] = useState("");
-
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
-    fetchServices('');
+    debouncedFetchServices('')
   }, []);
 
   const extractServiceTypes = (services) => {
@@ -35,15 +34,23 @@ export default function Dashboard() {
     setServiceTypes(types);
   };
 
-  const addToWishlist = async (serviceId) => {
+  const addToWishlist = async (service) => {
+    if (service.addedToWishlist) {
+      setToastMessage('Service is already in the wishlist');
+      setToastTitle('Info');
+      setShowToast(true);
+      return;
+    }
+
     setProviderInfoLoading(true);
     try {
-      const requestData = { serviceId: serviceId }
+      const requestData = { serviceId: service.id };
       const Response = await postRequest(ENDPOINTS.ADD_WISHLIST, true, requestData);
       if (Response.status === HttpStatusCode.Ok) {
         setToastMessage('Added to wishlist');
-        setToastTitle('success');
+        setToastTitle('Success');
         setShowToast(true);
+        setSelectedService({...service, addedToWishlist: true });
       } else {
         setToastMessage('Error while adding to wishlist');
         setToastTitle('Error');
@@ -61,14 +68,13 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const response = await getRequest(`${ENDPOINTS.GET_SEARCH_SERVICES}?name=${query}`, true);
-      console.log(response.status)
       if (response.status === HttpStatusCode.Ok) {
         const fetchedServices = response.data.data.services;
         setServices(fetchedServices);
         extractServiceTypes(fetchedServices);
         filterAndSortServices(fetchedServices, sortCriteria);
         if (fetchedServices.length > 0) {
-          handleServiceClick(fetchedServices[0]);
+          await handleServiceClick(fetchedServices[0]);
         }
       } else {
         setToastMessage('Error fetching services.');
@@ -87,18 +93,16 @@ export default function Dashboard() {
     setSelectedService(service);
     setProviderInfoLoading(true);
     try {
-      const providerInforesponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId });
-      const feedbackResponse = await getRequest(ENDPOINTS.GET_FEEDBACK, true, { userId: service.providerId });
-      if (providerInforesponse.status && feedbackResponse.status === HttpStatusCode.Ok) {
-        setFeedbacks(feedbackResponse.data.data.feedbacks);
-        setProviderInfo(providerInforesponse.data.data.provider);
+      const providerInfoResponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId });
+      if (providerInfoResponse.status === HttpStatusCode.Ok) {
+        setProviderInfo(providerInfoResponse.data.data);
       } else {
-        setToastMessage('Error fetching feedbacks.');
+        setToastMessage('Error fetching user Details.');
         setToastTitle('Error');
         setShowToast(true);
       }
     } catch (error) {
-      setToastMessage('Error fetching feedbacks.');
+      setToastMessage('Error fetching user Details.');
       setToastTitle('Error');
       setShowToast(true);
     }
@@ -133,44 +137,77 @@ export default function Dashboard() {
           value={searchQuery}
           onChange={handleSearchChange}
         />
-        <Dropdown className="mb-3">
-          <Dropdown.Toggle variant="outline-secondary">
-            Sort By
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            {serviceTypes.map((type, idx) => (
-              <Dropdown.Item key={idx} onClick={() => handleSortChange(type)}>
-                {type}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
-      </Container>
-      <Container className='d-flex result-body'>
-        <Container fluid className='child1 flex-column'>
-          {loading ? (
+        {loading ? (
+          <div className='d-flex align-items-center justify-content-center' style={{ minHeight: "72vh" }}>
             <Spinner animation="border" role="status">
-              <span className="sr-only">Loading...</span>
             </Spinner>
-          ) : (
-            filteredServices.map((service, idx) => (
-              <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
-            ))
-          )}
-        </Container>
-
-        <Container fluid className='child2'>
-          {selectedService && (
-            <ServiceDetailsCard
-              selectedService={selectedService}
-              providerLoading={providerLoading}
-              feedbacks={feedbacks}
-              providerInfo={providerInfo}
-              rightIconOnclick={addToWishlist}
-              currentPage="dashboard"
-            />
-          )}
-        </Container>
+          </div>
+        ) : (
+          <>
+            {serviceTypes.length > 0 ? (
+              <>
+                <Dropdown className="mb-3">
+                  <Dropdown.Toggle variant="outline-secondary">
+                    Sort By
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={() => handleSortChange('')}>
+                      All services
+                    </Dropdown.Item>
+                    {serviceTypes.map((type, idx) => (
+                      <Dropdown.Item key={idx} onClick={() => handleSortChange(type)}>
+                        {type}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+                <Container className='d-flex result-body' style={{ padding: '0px' }}>
+                  <Container fluid className='child1 flex-column'>
+                    {filteredServices.map((service, idx) => (
+                      <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
+                    ))}
+                  </Container>
+                  <Container fluid className='child2' style={{ padding: '0px' }}>
+                    {selectedService && (
+                      <ServiceDetailsCard
+                        selectedService={selectedService}
+                        providerLoading={providerLoading}
+                        providerInfo={providerInfo}
+                        rightIconOnclick={addToWishlist}
+                        currentPage="dashboard"
+                        showToastMessage={(message,title) => {
+                          setToastMessage(message);
+                          setToastTitle(title);
+                          setShowToast(true);
+                        }}
+                        refreshOnRequested={() => {
+                          setFilteredServices(filteredServices.map((service) => {
+                            if (service.id === selectedService.id)
+                              return {...service, requested: true }
+                            return service;
+                          }))
+                        }}
+                        key={selectedService.id}
+                      />
+                    )}
+                  </Container>
+                </Container>
+              </>
+            ) : (
+              <Container
+                fluid
+                className="empty-services-view d-flex align-items-center justify-content-center pb-5"
+              >
+                <div>
+                  <Stack className="align-items-center" gap={3}>
+                    <img src={EmptyListView} alt="NavigateLeft" width="200px" height="200px" />
+                    <div className="empty-services-text">No Services Added</div>
+                  </Stack>
+                </div>
+              </Container>
+            )}
+          </>
+        )}
       </Container>
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>

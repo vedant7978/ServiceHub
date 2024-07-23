@@ -27,7 +27,7 @@ const ForgotPassword = () => {
     try {
       const userData = {email: email}
       const response = await postRequest(ENDPOINTS.FORGOT_PASSWORD, false, userData);
-      const message = response.message;
+      const message = response.data.message;
 
       if (response.status === HttpStatusCode.Ok) {
         setForgotPasswordSuccessMessage(message);
@@ -84,7 +84,7 @@ const ForgotPassword = () => {
               </Form.Group>
             </Form>
           </div>
-          <AppToast show={showToast} setShow={setShowToast} title={"Success"} message={forgotPasswordSuccessMessage}/>
+          <AppToast show={showToast} setShow={setShowToast} title={"Email sent successfully"} message={forgotPasswordSuccessMessage}/>
 
         </Container>
 

@@ -6,12 +6,13 @@ import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
 import AppToast from "../../app_toast/AppToast";
 import { ConfirmationPopup } from "../../ConfirmationPopup";
+import { ESignatureForm } from "../ESignatureForm";
 import { PendingContractCard } from "../pending_contract_card/PendingContractCard";
 
 export const PendingContracts = () => {
-  const [isAcceptContractConfirmationVisible, setIsAcceptContractConfirmationVisible] = useState(false);
+  const [showESignatureForm, setShowESignatureForm] = useState(false);
   const [isRejectContractConfirmationVisible, setIsRejectContractConfirmationVisible] = useState(false);
-  const [selectedContractId, setSelectedContractId] = useState(null);
+  const [selectedContract, setSelectedContract] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastTitle, setToastTitle] = useState("");
   const [toastMessage, setToastMessage] = useState("");
@@ -33,7 +34,7 @@ export const PendingContracts = () => {
 
   const acceptSelectedContract = async () => {
     try {
-      const requestData = { contractId: selectedContractId }
+      const requestData = { contractId: selectedContract.id }
       const response = await postRequest(ENDPOINTS.ACCEPT_CONTRACT, true, requestData);
       const data = response.data.data;
       if (data) {
@@ -48,13 +49,14 @@ export const PendingContracts = () => {
       setToastMessage(`Failed to accept contract: ${error}`)
     } finally {
       setShowToast(true)
+      setShowESignatureForm(false)
       await loadContracts()
     }
   }
 
   const rejectSelectedContract = async () => {
     try {
-      const requestData = { contractId: selectedContractId }
+      const requestData = { contractId: selectedContract.id }
       const response = await postRequest(ENDPOINTS.REJECT_CONTRACT, true, requestData);
       const data = response.data.data;
       if (data) {
@@ -73,27 +75,27 @@ export const PendingContracts = () => {
     }
   }
 
-  const handleAcceptContract = (shouldShow, contractId) => {
-    setIsAcceptContractConfirmationVisible(shouldShow);
-    setSelectedContractId(contractId)
+  const handleAcceptContract = (shouldShow, contract) => {
+    setShowESignatureForm(shouldShow);
+    setSelectedContract(contract)
   }
 
-  const handleRejectContract = (shouldShow, contractId) => {
+  const handleRejectContract = (shouldShow, contract) => {
     setIsRejectContractConfirmationVisible(shouldShow);
-    setSelectedContractId(contractId)
+    setSelectedContract(contract)
   }
 
   return (
     <Container className="pending-contracts-container pt-4 pb-4 d-flex justify-content-start">
-      <Stack direction="horizontal">
+      <Stack direction="horizontal" className="align-items-start">
         {
           contracts.length > 0 ? (
             contracts.map(contract => (
               <PendingContractCard
                 contract={contract}
-                showAcceptDialog={() => setIsAcceptContractConfirmationVisible(true)}
+                showAcceptDialog={() => setShowESignatureForm(true)}
                 showRejectDialog={() => setIsRejectContractConfirmationVisible(true)}
-                onSelectContract={(contractId) => setSelectedContractId(contractId)}
+                onSelectContract={(contract) => setSelectedContract(contract)}
                 key={contract.id}
               />
             ))
@@ -110,14 +112,15 @@ export const PendingContracts = () => {
         }
       </Stack>
 
-      {isAcceptContractConfirmationVisible && (
-        <ConfirmationPopup
-          message="Are you sure you accept the contract?"
-          onConfirm={async () => {
+      {showESignatureForm && (
+        <ESignatureForm
+          show={showESignatureForm}
+          onHide={() => handleAcceptContract(false, null)}
+          onSubmit={async () => {
             await acceptSelectedContract()
             handleAcceptContract(false, null)
           }}
-          onCancel={() => handleAcceptContract(false, null)}
+          contract={selectedContract}
         />
       )}
 

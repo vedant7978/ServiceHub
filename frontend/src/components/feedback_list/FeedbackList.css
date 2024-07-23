@@ -11,3 +11,13 @@
     height: 400px;
     overflow-y: auto;
 }
+.no-feedbacks-message {
+    text-align: center;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #808080;
+    font-size: 18px;
+    font-family: "Franklin Gothic Book", sans-serif;
+}

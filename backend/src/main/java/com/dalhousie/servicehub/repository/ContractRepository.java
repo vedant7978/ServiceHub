@@ -15,4 +15,6 @@ public interface ContractRepository extends JpaRepository<ContractModel, Long> {
 
     @Query("SELECT c FROM ContractModel c WHERE c.service.id IN :serviceIds OR c.user.id = :userId ORDER BY c.createdAt DESC")
     List<ContractModel> findHistoryContractsByServiceIds(List<Long> serviceIds, Long userId);
+
+    boolean existsByServiceIdAndUserId(Long serviceId, Long userId);
 }

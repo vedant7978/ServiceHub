@@ -1,10 +1,14 @@
 package com.dalhousie.servicehub.service.wishlist;
 
+import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.exceptions.WishlistNotFoundException;
+import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.model.WishlistModel;
+import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
@@ -12,11 +16,9 @@ import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
@@ -24,60 +26,66 @@ import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 @RequiredArgsConstructor
 public class WishlistServiceImpl implements WishlistService {
 
-    @Autowired
     private final WishlistRepository wishlistRepository;
-
-    @Autowired
     private final ServiceRepository serviceRepository;
-
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final FeedbackService feedbackService;
+    private final ServiceMapper serviceMapper;
+    private final ContractRepository contractRepository;
 
     @Override
     public ResponseBody<String> addWishlist(Long serviceId, UserModel userModel) {
-        if (!serviceRepository.existsById(serviceId)) {
-            throw new ServiceNotFoundException("Service not found with ID: " + serviceId);
-        }
-        WishlistModel wishlistModel = WishlistModel.builder()
-                .serviceId(serviceId)
-                .userId(userModel.getId())
-                .build();
+        ServiceModel service_ID = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + serviceId));
 
+        WishlistModel wishlistModel = WishlistModel.builder()
+                .service(service_ID)
+                .user(userModel)
+                .build();
         wishlistRepository.save(wishlistModel);
         return new ResponseBody<>(SUCCESS, "Wishlist added successfully", "Wishlist added successfully");
     }
 
     @Override
-    public ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("User not found for id: " + userId);
-        }
+    public ResponseBody<GetWishlistResponse> getWishlists(Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
-        List<GetWishlistResponse> wishlists = wishlistRepository.findAllByUserId(userId)
+        List<ServiceDto> services = wishlistRepository.findAllByUser(user)
                 .stream()
-                .map(wishlist -> {
-                    ServiceModel serviceModel = serviceRepository.findById(wishlist.getServiceId())
-                            .orElseThrow(() -> new ServiceNotFoundException("Service not found with ID: " + wishlist.getServiceId()));
-                    UserModel userModel = userRepository.findById(serviceModel.getProviderId())
-                            .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
-                    Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
+                .map(wishlistModel -> getServiceSto(wishlistModel, userId))
+                .toList();
+        GetWishlistResponse response = GetWishlistResponse.builder().services(services).build();
+        return new ResponseBody<>(SUCCESS, response, "Get wishlists successful");
+    }
 
-                    return GetWishlistResponse.builder()
-                            .id(serviceModel.getId())
-                            .providerId(serviceModel.getProviderId())
-                            .serviceProviderImage(userModel.getImage())
-                            .name(serviceModel.getName())
-                            .type(serviceModel.getType())
-                            .description(serviceModel.getDescription())
-                            .serviceProviderRating(serviceProviderRating)
-                            .perHourRate(serviceModel.getPerHourRate())
-                            .build();
-                })
-                .collect(Collectors.toList());
+    @Override
+    public ResponseBody<String> deleteWishlist(Long wishlistId) {
+        WishlistModel wishlist = wishlistRepository.findById(wishlistId)
+                .orElseThrow(() -> new WishlistNotFoundException("Wishlist not found with ID: " + wishlistId));
 
-        return new ResponseBody<>(SUCCESS, wishlists, "Get wishlists successful");
+        wishlistRepository.delete(wishlist);
+        return new ResponseBody<>(SUCCESS, "", "Wishlist deleted successfully");
+    }
+
+    /**
+     * Convert WishlistModel to GetWishlistResponse
+     * @param wishlistModel WishlistModel to convert
+     * @param loggedInUserId ID of the logged-in user
+     * @return GetWishlistResponse instance
+     */
+    private ServiceDto getServiceSto(WishlistModel wishlistModel, Long loggedInUserId) {
+        ServiceModel serviceModel = wishlistModel.getService();
+        UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
+
+        ServiceDto serviceDto = serviceMapper.toDto(serviceModel);
+        serviceDto.setId(wishlistModel.getId());
+        serviceDto.setAddedToWishlist(true);
+        serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+        serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
+        serviceDto.setProviderImage(serviceProvider.getImage());
+        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceDto.getId(), loggedInUserId));
+        return serviceDto;
     }
 }

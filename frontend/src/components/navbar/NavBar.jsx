@@ -15,7 +15,7 @@ const NavBar = () => {
   const [underlineStyle, setUnderlineStyle] = useState({});
   const [confirmLogout, setConfirmLogout] = useState(false);
   const navRefs = useRef({});
-  const { deleteAuthToken } = useAuth();
+  const { setUserLoggedOut } = useAuth();
   const { postRequest } = useAxios();
   const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ const NavBar = () => {
     try {
       const response = await postRequest(ENDPOINTS.SIGN_OUT, true);
       if (response.status === HttpStatusCode.Ok) {
-        deleteAuthToken();
+        setUserLoggedOut();
         navigate(AppRoutes.Login);
       }
     } catch (error) {
@@ -71,7 +71,7 @@ const NavBar = () => {
   };
 
   return (
-    <Navbar expand="lg" className="top-nav-bar">
+    <Navbar expand="lg" className="top-nav-bar" sticky="top">
       <Container>
         <Navbar.Brand href={AppRoutes.Dashboard}>
           <img

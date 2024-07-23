@@ -9,11 +9,10 @@ import { AppRoutes } from "../../utils/AppRoutes";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { loggedInUserEmail } = useAuth();
+  const { isUserLoggedIn } = useAuth();
 
-  // [TODO]: Use private routes
   useEffect(() => {
-    if (loggedInUserEmail) {
+    if (isUserLoggedIn) {
       navigate(AppRoutes.Dashboard);
     }
   }, []);

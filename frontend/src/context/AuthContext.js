@@ -1,4 +1,3 @@
-import { jwtDecode } from "jwt-decode";
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AUTH_TOKEN_KEY } from '../utils/Constants';
 
@@ -6,18 +5,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [authToken, setAuthToken] = useState(null);
-    const [loggedInUserEmail, setLoggedInUserEmail] = useState(null);
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-    const storeAuthToken = (token) => {
+    const setUserLoggedIn = (token) => {
         setAuthToken(token);
         localStorage.setItem(AUTH_TOKEN_KEY, token);
-        const decodedToken = jwtDecode(token);
-        setLoggedInUserEmail(decodedToken.sub);
+        setIsUserLoggedIn(true);
     };
 
-    const deleteAuthToken = () => {
+    const setUserLoggedOut = () => {
         setAuthToken(null);
-        setLoggedInUserEmail(null);
+        setIsUserLoggedIn(false);
         localStorage.removeItem(AUTH_TOKEN_KEY);
     };
 
@@ -25,8 +23,7 @@ export const AuthProvider = ({ children }) => {
         let authToken = localStorage.getItem(AUTH_TOKEN_KEY);
         if (authToken) {
             setAuthToken(authToken);
-            const decodedToken = jwtDecode(authToken);
-            setLoggedInUserEmail(decodedToken.sub);
+            setIsUserLoggedIn(true);
         }
     }, [])
 
@@ -34,9 +31,9 @@ export const AuthProvider = ({ children }) => {
       <AuthContext.Provider
         value={{
             authToken,
-            storeAuthToken,
-            deleteAuthToken,
-            loggedInUserEmail,
+            setUserLoggedIn,
+            setUserLoggedOut,
+            isUserLoggedIn,
         }}>
           {children}
       </AuthContext.Provider>

@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.model;
 
+import com.dalhousie.servicehub.enums.FeedbackType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -37,4 +38,8 @@ public class FeedbackModel {
     @Column(name = "provider_id")
     @NotNull(message = "Provider ID is required")
     private Long providerId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "type")
+    private FeedbackType type;
 }

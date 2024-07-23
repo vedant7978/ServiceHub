@@ -2,34 +2,46 @@ package com.dalhousie.servicehub.service.user;
 
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
+import com.dalhousie.servicehub.request.ResetPasswordRequest;
 import com.dalhousie.servicehub.response.AuthenticationResponse;
+import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService {
+
     /**
      * Register the user into the database
      * @param registerRequest Request body for the registration
-     * @return Authentication response object on successful registration
+     * @return Response body object for Authentication response object on successful registration
      */
-    AuthenticationResponse registerUser(RegisterRequest registerRequest);
+    ResponseBody<AuthenticationResponse> registerUser(RegisterRequest registerRequest);
 
     /**
      * Authenticates the user based on the credentials provided
      * @param authenticationRequest Request body for the authentication
-     * @return Authentication response object on successful authentication
+     * @return Response body object for Authentication response object on successful authentication
      */
-    AuthenticationResponse authenticateUser(AuthenticationRequest authenticationRequest);
+    ResponseBody<AuthenticationResponse> authenticateUser(AuthenticationRequest authenticationRequest);
 
     /**
      * Resets the password for the requesting email
-     * @param email Email address to update password
-     * @param password New password to update
+     * @param resetPasswordRequest Request body for resetting password
+     * @return Response body object for String representing api result
      */
-    void resetPassword(String email, String password, String token);
+    ResponseBody<String> resetPassword(ResetPasswordRequest resetPasswordRequest);
 
-    void forgotPassword(String email, String resetUrl);
+    /**
+     * Called when user forgets the password and want to receive a reset password link
+     * @param email Email of the registered user
+     * @param servletRequest HttpServletRequest instance
+     * @return Response body object for String representing api result
+     */
+    ResponseBody<String> forgotPassword(String email, HttpServletRequest servletRequest);
 
-    String getURL(HttpServletRequest request);
-
-    void signOut(String token);
+    /**
+     * Signs out user from the application
+     * @param token Jwt token of the currently logged-in user
+     * @return Response body object for String representing api result
+     */
+    ResponseBody<String> signOut(String token);
 }

@@ -101,7 +101,7 @@ export default function ManageServices() {
             </Stack>
           </div>
 
-          <div>
+          <div className="pb-3">
             <Container fluid className="d-flex align-items-center mt-2">
               <AddUpdateServiceCard
                 service={selectedServiceToEdit}
@@ -117,7 +117,7 @@ export default function ManageServices() {
 
       {isDeleteServiceDialogVisible && (
         <ConfirmationPopup
-          message="Are you sure you delete the contract?"
+          message="Are you sure you delete the service?"
           onConfirm={async () => {
             setIsDeleteServiceDialogVisible(false)
             await deleteService()

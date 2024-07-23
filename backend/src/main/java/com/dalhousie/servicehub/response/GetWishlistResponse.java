@@ -1,18 +1,13 @@
 package com.dalhousie.servicehub.response;
 
+import com.dalhousie.servicehub.dto.ServiceDto;
 import lombok.Builder;
 import lombok.Data;
-import com.dalhousie.servicehub.enums.ServiceType;
+
+import java.util.List;
 
 @Data
 @Builder
 public class GetWishlistResponse {
-    private Long id;
-    private Long providerId;
-    private String serviceProviderImage;
-    private String name;
-    private ServiceType type;
-    private String description;
-    private Double serviceProviderRating;
-    private Double perHourRate;
+    private List<ServiceDto> services;
 }
