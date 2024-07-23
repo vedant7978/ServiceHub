@@ -30,7 +30,6 @@ export default function Wishlist() {
     try {
       const response = await getRequest(`${ENDPOINTS.GET_WISHLISTED_SERVICES}`, true);
       if (response.status === HttpStatusCode.Ok) {
-        console.log(response)
         setServices(response.data.data.services);
       } else {
         setToastMessage('Error fetching services.');
@@ -51,7 +50,6 @@ export default function Wishlist() {
     try {
       const providerInfoResponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId })
       const feedbackResponse = await getRequest(ENDPOINTS.GET_FEEDBACK, true, { userId: service.providerId });
-      console.log(providerInfoResponse);
       if (providerInfoResponse.status === HttpStatusCode.Ok && feedbackResponse.status === HttpStatusCode.Ok) {
         setProviderInfo(providerInfoResponse.data.data);
       } else {
@@ -75,7 +73,7 @@ export default function Wishlist() {
         setToastTitle('Success');
         setShowToast(true);
         setSelectedService(null)
-        fetchWishlistedServices(); 
+        fetchWishlistedServices();
       } else {
         setToastMessage('Error while removing from wishlist');
         setToastTitle('Error');

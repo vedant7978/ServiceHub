@@ -101,6 +101,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .providerName(user.getName())
                 .rating(feedbackModel.getRating())
                 .description(feedbackModel.getDescription())
+                .type(feedbackModel.getType())
                 .build();
     }
 }
