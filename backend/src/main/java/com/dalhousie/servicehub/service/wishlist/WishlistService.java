@@ -4,8 +4,6 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
 
-import java.util.List;
-
 public interface WishlistService {
 
     /**
@@ -19,9 +17,9 @@ public interface WishlistService {
     /**
      * Provides list of all services added to wishlist by requesting user id
      * @param userId ID of the user
-     * @return ResponseBody object for List of GetWishlistResponse
+     * @return ResponseBody object for GetWishlistResponse
      */
-    ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId);
+    ResponseBody<GetWishlistResponse> getWishlists(Long userId);
 
     /**
      * Delete a wishlist by its ID.

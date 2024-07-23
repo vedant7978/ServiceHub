@@ -1,13 +1,13 @@
+import { HttpStatusCode } from "axios";
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Container, Dropdown, Stack, FormControl, Spinner } from 'react-bootstrap';
-import AppToast from "../../components/app_toast/AppToast";
+import { Container, Dropdown, FormControl, Spinner, Stack } from 'react-bootstrap';
 import EmptyListView from "../../assets/EmptyListView.png";
+import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
-import debounce from 'lodash/debounce';
-import { HttpStatusCode } from "axios";
 import "./Dashboard.css";
 
 export default function Dashboard() {
@@ -23,29 +23,19 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [serviceTypes, setServiceTypes] = useState([]);
   const [sortCriteria, setSortCriteria] = useState("");
-  const [wishlistServiceIds, setWishlistServiceIds] = useState([]);
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
     debouncedFetchServices('')
   }, []);
 
-  useEffect(() => {
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistServiceIds')) || [];
-    setWishlistServiceIds(storedWishlist);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('wishlistServiceIds', JSON.stringify(wishlistServiceIds));
-  }, [wishlistServiceIds]);
-
   const extractServiceTypes = (services) => {
     const types = [...new Set(services.map(service => service.type))];
     setServiceTypes(types);
   };
 
-  const addToWishlist = async (serviceId) => {
-    if (wishlistServiceIds.includes(serviceId)) {
+  const addToWishlist = async (service) => {
+    if (service.addedToWishlist) {
       setToastMessage('Service is already in the wishlist');
       setToastTitle('Info');
       setShowToast(true);
@@ -54,13 +44,13 @@ export default function Dashboard() {
 
     setProviderInfoLoading(true);
     try {
-      const requestData = { serviceId: serviceId };
+      const requestData = { serviceId: service.id };
       const Response = await postRequest(ENDPOINTS.ADD_WISHLIST, true, requestData);
       if (Response.status === HttpStatusCode.Ok) {
-        setWishlistServiceIds([...wishlistServiceIds, serviceId]);
         setToastMessage('Added to wishlist');
         setToastTitle('Success');
         setShowToast(true);
+        setSelectedService({...service, addedToWishlist: true });
       } else {
         setToastMessage('Error while adding to wishlist');
         setToastTitle('Error');
@@ -84,7 +74,7 @@ export default function Dashboard() {
         extractServiceTypes(fetchedServices);
         filterAndSortServices(fetchedServices, sortCriteria);
         if (fetchedServices.length > 0) {
-          handleServiceClick(fetchedServices[0]);
+          await handleServiceClick(fetchedServices[0]);
         }
       } else {
         setToastMessage('Error fetching services.');
@@ -103,9 +93,9 @@ export default function Dashboard() {
     setSelectedService(service);
     setProviderInfoLoading(true);
     try {
-      const providerInforesponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId });
-      if (providerInforesponse.status === HttpStatusCode.Ok) {
-        setProviderInfo(providerInforesponse.data.data.provider);
+      const providerInfoResponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId });
+      if (providerInfoResponse.status === HttpStatusCode.Ok) {
+        setProviderInfo(providerInfoResponse.data.data);
       } else {
         setToastMessage('Error fetching user Details.');
         setToastTitle('Error');
@@ -185,12 +175,19 @@ export default function Dashboard() {
                         providerInfo={providerInfo}
                         rightIconOnclick={addToWishlist}
                         currentPage="dashboard"
-                        wishlistServiceIds={wishlistServiceIds}
                         showToastMessage={(message,title) => {
                           setToastMessage(message);
                           setToastTitle(title);
                           setShowToast(true);
                         }}
+                        refreshOnRequested={() => {
+                          setFilteredServices(filteredServices.map((service) => {
+                            if (service.id === selectedService.id)
+                              return {...service, requested: true }
+                            return service;
+                          }))
+                        }}
+                        key={selectedService.id}
                       />
                     )}
                   </Container>

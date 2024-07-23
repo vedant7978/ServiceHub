@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
-import default_profile_pic from "../../assets/default_profile_pic.png";
 import { FaDollarSign, FaStar } from 'react-icons/fa';
+import default_profile_pic from "../../assets/default_profile_pic.png";
 import './ServiceCard.css';
 
 export default function ServiceCard({ service, onClick }) {
   const roundedRating = service.averageRating ? service.averageRating.toFixed(1) : '0.0';
+  const [imageUrl, setImageUrl] = useState(default_profile_pic);
+
+  useEffect(() => {
+    if (service !== null && service.providerImage)
+      setImageUrl(service.providerImage)
+  }, [service]);
 
   return (
     <Card className="mb-3 service-card">
@@ -13,7 +19,7 @@ export default function ServiceCard({ service, onClick }) {
         <div className="card-flex-container">
           <div className="d-flex">
             <a href="#" onClick={() => onClick(service)} className='me-3'>
-              <Card.Img variant="top" src={default_profile_pic} className="service-image" />
+              <Card.Img variant="top" src={imageUrl} className="service-image" onError={() => setImageUrl(default_profile_pic)} />
             </a>
             <div className='d-flex flex-row justify-content-between align-items-center w-100'>
 

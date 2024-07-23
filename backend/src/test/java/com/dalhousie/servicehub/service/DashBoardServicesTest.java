@@ -1,7 +1,6 @@
 package com.dalhousie.servicehub.service;
 
 import com.dalhousie.servicehub.dto.ServiceDto;
-import com.dalhousie.servicehub.dto.UserDto;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
@@ -88,8 +87,8 @@ public class DashBoardServicesTest {
                     ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
             );
             List<ServiceDto> serviceDtos = Arrays.asList(
-                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false, 4.5, List.of()),
-                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false, 4.0, List.of())
+                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
+                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, "", false, false, 4.0, List.of())
             );
 
             // Mock the behavior of serviceRepository.findAll()
@@ -99,7 +98,7 @@ public class DashBoardServicesTest {
             when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                     invocation -> {
                         ServiceModel model = invocation.getArgument(0);
-                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
+                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
                     }
             );
 
@@ -144,8 +143,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, false, 4.5, List.of()),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, false, 4.0, List.of())
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, "", false, false, 4.5, List.of()),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, "", false, false, 4.0, List.of())
         );
 
         // When
@@ -153,7 +152,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
                 }
         );
 
@@ -194,8 +193,8 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, false, 4.5, List.of()),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, false, 4.0, List.of())
+                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
+                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, "", false, false, 4.0, List.of())
         );
 
         // When
@@ -203,7 +202,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), false, null, List.of());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
                 }
         );
         // Mock the behavior of serviceRepository.findById()
@@ -238,19 +237,21 @@ public class DashBoardServicesTest {
         // Given
         Long providerId = 1L;
         UserModel userModel = UserModel.builder().id(providerId).name("vedant patel").email("vedant@example.com").build();
-        UserDto userDto = UserDto.builder().id(providerId).name("vedant patel").email("vedant@example.com").build();
+        GetProviderResponse getProviderResponse = GetProviderResponse.builder()
+                .id(providerId)
+                .name(userModel.getName())
+                .email(userModel.getEmail())
+                .build();
 
         // When
         when(userRepository.findById(providerId)).thenReturn(Optional.of(userModel));
-        when(userMapper.toDto(userModel)).thenReturn(userDto);
 
         ResponseBody<GetProviderResponse> responseBody = dashboardServices.getProviderDetailsById(providerId);
 
         // Then
         assertEquals(SUCCESS, responseBody.resultType());
-        assertEquals(userDto, responseBody.data().getProvider());
+        assertEquals(getProviderResponse, responseBody.data());
         verify(userRepository, times(1)).findById(providerId);
-        verify(userMapper, times(1)).toDto(userModel);
     }
 
     @Test

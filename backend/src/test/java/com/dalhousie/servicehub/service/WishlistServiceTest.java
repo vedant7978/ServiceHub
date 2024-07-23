@@ -1,16 +1,20 @@
 package com.dalhousie.servicehub.service;
 
+import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.exceptions.WishlistNotFoundException;
+import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.mapper.WishlistMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.model.WishlistModel;
+import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
+import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.service.wishlist.WishlistServiceImpl;
@@ -27,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,7 +50,13 @@ class WishlistServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private ContractRepository contractRepository;
+
+    @Mock
     private WishlistMapper wishlistMapper;
+
+    @Mock
+    private ServiceMapper serviceMapper;
 
     @Mock
     private FeedbackService feedbackService;
@@ -104,10 +115,19 @@ class WishlistServiceTest {
     void getWishlists_Success() {
         // Given
         Long userId = userModel.getId();
+        ServiceModel serviceModel = ServiceModel.builder()
+                .id(1L)
+                .providerId(2L)
+                .name("Test Service")
+                .type(ServiceType.Electrician)
+                .description("Test Description")
+                .perHourRate(50.0)
+                .build();
+        ServiceDto serviceDto = ServiceDto.builder().providerId(2L).build();
 
         WishlistModel wishlistModel = WishlistModel.builder()
                 .id(1L)
-                .service(ServiceModel.builder().id(1L).providerId(2L).name("Test Service").type(ServiceType.Electrician).description("Test Description").perHourRate(50.0).build())
+                .service(serviceModel)
                 .user(userModel)
                 .build();
 
@@ -124,14 +144,20 @@ class WishlistServiceTest {
         when(wishlistRepository.findAllByUser(userModel)).thenReturn(wishlistModels);
         when(userRepository.findById(2L)).thenReturn(Optional.of(providerModel));
         when(feedbackService.getAverageRatingForUser(2L)).thenReturn(4.5);
+        when(serviceMapper.toDto(serviceModel)).thenReturn(serviceDto);
+        when(contractRepository.existsByServiceIdAndUserId(anyLong(), anyLong())).thenReturn(false);
+        ResponseBody<GetFeedbackResponse> feedbackResponseResponseBody = new ResponseBody<>(
+                SUCCESS, GetFeedbackResponse.builder().build(), ""
+        );
+        when(feedbackService.getFeedbacks(anyLong())).thenReturn(feedbackResponseResponseBody);
 
         // When
-        ResponseBody<List<GetWishlistResponse>> response = wishlistService.getWishlists(userId);
+        ResponseBody<GetWishlistResponse> response = wishlistService.getWishlists(userId);
 
         // Then
         assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
         assertEquals("Get wishlists successful", response.message());
-        assertEquals(1, response.data().size());
+        assertEquals(1, response.data().getServices().size());
         verify(userRepository, times(1)).findById(userId);
         verify(wishlistRepository, times(1)).findAllByUser(userModel);
         verify(userRepository, times(1)).findById(2L);
