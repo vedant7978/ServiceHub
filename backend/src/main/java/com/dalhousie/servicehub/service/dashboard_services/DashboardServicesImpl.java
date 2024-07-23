@@ -6,7 +6,6 @@ import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
-import com.dalhousie.servicehub.mapper.UserMapper;
 import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -37,7 +36,6 @@ public class DashboardServicesImpl implements DashboardServices {
     private final ContractRepository contractRepository;
 
     private final ServiceMapper serviceMapper;
-    private final UserMapper userMapper;
     private final FeedbackService feedbackService;
 
     @Override
@@ -78,7 +76,10 @@ public class DashboardServicesImpl implements DashboardServices {
         UserModel user = userRepository.findById(providerId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + providerId));
         GetProviderResponse response = GetProviderResponse.builder()
-                .provider(userMapper.toDto(user))
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
                 .build();
         return new ResponseBody<>(SUCCESS, response, "Fetched provider details successfully");
     }
@@ -117,6 +118,10 @@ public class DashboardServicesImpl implements DashboardServices {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));
                     serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
                     serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
+                    serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceDto.getId(), loggedInUserId));
+                    userRepository.findById(serviceDto.getProviderId()).ifPresent(
+                            (provider) -> serviceDto.setProviderImage(provider.getImage())
+                    );
                 })
                 .toList();
     }

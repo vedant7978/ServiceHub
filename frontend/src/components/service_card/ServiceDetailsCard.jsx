@@ -15,23 +15,26 @@ import Loader from '../../components/Loader';
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
 
-export default function ServiceDetailsCard({ selectedService, providerLoading, providerInfo, rightIconOnclick, currentPage, wishlistServiceIds, showToastMessage }) {
+export default function ServiceDetailsCard({ selectedService, providerLoading, providerInfo, rightIconOnclick, currentPage, showToastMessage, refreshOnRequested }) {
   const [icon, setIcon] = useState(null);
   const [userAddress, setUserAddress] = useState('');
   const [error, setError] = useState('');
+  const [imageUrl, setImageUrl] = useState(default_profile_pic);
+  const [requested, setRequested] = useState(false);
   const { postRequest } = useAxios();
 
   useEffect(() => {
-    if (currentPage === 'dashboard') {
-      if (wishlistServiceIds.includes(selectedService?.id)) {
-        setIcon(<FaCheckCircle />);
-      } else {
-        setIcon(<FaPlusCircle />);
-      }
-    } else if (currentPage === 'wishlist') {
+    if (selectedService === null) return;
+    if (selectedService.providerImage)
+      setImageUrl(selectedService.providerImage)
+    setIcon(selectedService.addedToWishlist ? <FaCheckCircle /> : <FaPlusCircle />)
+    setRequested(selectedService.requested)
+  }, [selectedService]);
+
+  useEffect(() => {
+    if (currentPage === 'wishlist')
       setIcon(<FaTimesCircle />);
-    }
-  }, [currentPage, wishlistServiceIds, selectedService?.id]);
+  }, [currentPage]);
 
   const handleAddressChange = (event) => {
     setUserAddress(event.target.value);
@@ -56,6 +59,8 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
 
       if (response.status === HttpStatusCode.Ok) {
         showToastMessage('Success', 'Service requested successfully');
+        setRequested(true);
+        refreshOnRequested();
       } else {
         showToastMessage('Info', 'Failed to request service');
       }
@@ -75,7 +80,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <Row className='w-100'>
                 <Col md={2} className="d-flex justify-content-center">
-                  <Card.Img variant="top" src={default_profile_pic} className="service-image" />
+                  <Card.Img variant="top" src={imageUrl} className="service-image" onError={() => setImageUrl(default_profile_pic)} />
                 </Col>
                 <Col className="d-flex flex-column justify-content-center">
                   <Card.Title>{selectedService?.name}</Card.Title>
@@ -83,11 +88,17 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
               </Row>
               <OverlayTrigger
                 placement="top"
-                overlay={<Tooltip>{currentPage === 'dashboard' ? 'Add to wishlist' : 'Remove from wishlist'}</Tooltip>}
+                overlay={
+                  (selectedService.addedToWishlist) ? (
+                    (currentPage === 'dashboard') ? <></> : <Tooltip>Remove from wishlist</Tooltip>
+                  ) : (
+                    (currentPage === 'dashboard') ? <Tooltip>Add to wishlist</Tooltip> : <></>
+                  )
+                }
               >
                 <Button
                   variant="light"
-                  onClick={() => rightIconOnclick(selectedService.id)}
+                  onClick={() => rightIconOnclick(selectedService)}
                 >
                   {icon}
                 </Button>
@@ -128,7 +139,9 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
             </div>
           </Card.Body>
           <Card.Footer style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderTop: 'none', marginBottom: '15px', backgroundColor: 'white' }}>
-            <Button variant="danger" onClick={handleRequestService}>Request Service</Button>
+            <Button variant="danger" onClick={handleRequestService} disabled={requested}>
+              {requested ? "Already requested" : "Request Service"}
+            </Button>
           </Card.Footer>
         </>
       )}

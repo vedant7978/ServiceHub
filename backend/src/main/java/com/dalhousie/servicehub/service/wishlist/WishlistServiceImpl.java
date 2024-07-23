@@ -1,11 +1,14 @@
 package com.dalhousie.servicehub.service.wishlist;
 
+import com.dalhousie.servicehub.dto.ServiceDto;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.exceptions.WishlistNotFoundException;
+import com.dalhousie.servicehub.mapper.ServiceMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.model.WishlistModel;
+import com.dalhousie.servicehub.repository.ContractRepository;
 import com.dalhousie.servicehub.repository.ServiceRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.repository.WishlistRepository;
@@ -27,6 +30,8 @@ public class WishlistServiceImpl implements WishlistService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final FeedbackService feedbackService;
+    private final ServiceMapper serviceMapper;
+    private final ContractRepository contractRepository;
 
     @Override
     public ResponseBody<String> addWishlist(Long serviceId, UserModel userModel) {
@@ -42,15 +47,16 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public ResponseBody<List<GetWishlistResponse>> getWishlists(Long userId) {
+    public ResponseBody<GetWishlistResponse> getWishlists(Long userId) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
-        List<GetWishlistResponse> wishlists = wishlistRepository.findAllByUser(user)
+        List<ServiceDto> services = wishlistRepository.findAllByUser(user)
                 .stream()
-                .map(this::getWishlistResponse)
+                .map(wishlistModel -> getServiceSto(wishlistModel, userId))
                 .toList();
-        return new ResponseBody<>(SUCCESS, wishlists, "Get wishlists successful");
+        GetWishlistResponse response = GetWishlistResponse.builder().services(services).build();
+        return new ResponseBody<>(SUCCESS, response, "Get wishlists successful");
     }
 
     @Override
@@ -65,24 +71,21 @@ public class WishlistServiceImpl implements WishlistService {
     /**
      * Convert WishlistModel to GetWishlistResponse
      * @param wishlistModel WishlistModel to convert
+     * @param loggedInUserId ID of the logged-in user
      * @return GetWishlistResponse instance
      */
-    private GetWishlistResponse getWishlistResponse(WishlistModel wishlistModel) {
+    private ServiceDto getServiceSto(WishlistModel wishlistModel, Long loggedInUserId) {
         ServiceModel serviceModel = wishlistModel.getService();
         UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
-        Double serviceProviderRating = feedbackService.getAverageRatingForUser(serviceModel.getProviderId());
 
-        return GetWishlistResponse.builder()
-                .id(wishlistModel.getId())
-                .serviceId(serviceModel.getId())
-                .providerId(serviceModel.getProviderId())
-                .serviceProviderImage(serviceProvider.getImage())
-                .name(serviceModel.getName())
-                .type(serviceModel.getType())
-                .description(serviceModel.getDescription())
-                .serviceProviderRating(serviceProviderRating)
-                .perHourRate(serviceModel.getPerHourRate())
-                .build();
+        ServiceDto serviceDto = serviceMapper.toDto(serviceModel);
+        serviceDto.setId(wishlistModel.getId());
+        serviceDto.setAddedToWishlist(true);
+        serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
+        serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
+        serviceDto.setProviderImage(serviceProvider.getImage());
+        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceDto.getId(), loggedInUserId));
+        return serviceDto;
     }
 }

@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Container, FormControl, Dropdown, Spinner, Stack } from 'react-bootstrap';
 import { HttpStatusCode } from "axios";
-import { ENDPOINTS } from '../../utils/Constants';
-import { useAxios } from '../../context/AxiosContext';
+import React, { useEffect, useState } from 'react';
+import { Container, Spinner, Stack } from 'react-bootstrap';
+import EmptyListView from "../../assets/EmptyListView.png";
 import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
 import "./Wishlist.css";
-import EmptyListView from "../../assets/EmptyListView.png";
+import { useAxios } from '../../context/AxiosContext';
+import { ENDPOINTS } from '../../utils/Constants';
 
 export default function Wishlist() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastTitle, setToastTitle] = useState("");
-  const [feedbacks, setFeedbacks] = useState([]);
   const [providerInfo, setProviderInfo] = useState({});
   const [providerLoading, setProviderInfoLoading] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
@@ -32,7 +31,7 @@ export default function Wishlist() {
       const response = await getRequest(`${ENDPOINTS.GET_WISHLISTED_SERVICES}`, true);
       if (response.status === HttpStatusCode.Ok) {
         console.log(response)
-        setServices(response.data.data);
+        setServices(response.data.data.services);
       } else {
         setToastMessage('Error fetching services.');
         setToastTitle('Error');
@@ -50,12 +49,11 @@ export default function Wishlist() {
     setSelectedService(service);
     setProviderInfoLoading(true);
     try {
-      const providerInforesponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId })
+      const providerInfoResponse = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: service.providerId })
       const feedbackResponse = await getRequest(ENDPOINTS.GET_FEEDBACK, true, { userId: service.providerId });
-      console.log(providerInforesponse);
-      if (providerInforesponse.status === HttpStatusCode.Ok && feedbackResponse.status === HttpStatusCode.Ok) {
-        setFeedbacks(feedbackResponse.data.data.feedbacks);
-        setProviderInfo(providerInforesponse.data.data.provider);
+      console.log(providerInfoResponse);
+      if (providerInfoResponse.status === HttpStatusCode.Ok && feedbackResponse.status === HttpStatusCode.Ok) {
+        setProviderInfo(providerInfoResponse.data.data);
       } else {
         setToastMessage('Error fetching feedbacks.');
         setToastTitle('Error');
@@ -69,9 +67,9 @@ export default function Wishlist() {
     setProviderInfoLoading(false);
   };
 
-  const removeFromWishlist = async (wishlistId) => {
+  const removeFromWishlist = async (wishlist) => {
     try {
-      const response = await deleteRequest(ENDPOINTS.DELETE_WISHLIST, true, { wishlistId });
+      const response = await deleteRequest(ENDPOINTS.DELETE_WISHLIST, true, { wishlistId: wishlist.id });
       if (response.status === HttpStatusCode.Ok) {
         setToastMessage('Removed from wishlist successfully');
         setToastTitle('Success');
@@ -134,6 +132,7 @@ export default function Wishlist() {
                   setToastTitle(title);
                   setShowToast(true);
                 }}
+                key={selectedService.id}
               />
             )}
           </Container>

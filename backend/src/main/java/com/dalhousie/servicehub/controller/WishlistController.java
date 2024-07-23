@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
@@ -46,21 +44,21 @@ public class WishlistController {
     }
 
     @GetMapping("/get-wishlist")
-    public ResponseEntity<ResponseBody<List<GetWishlistResponse>>> getWishlists(
+    public ResponseEntity<ResponseBody<GetWishlistResponse>> getWishlists(
             @AuthenticationPrincipal UserModel userModel
     ) {
         try {
             logger.info("Get wishlists request received for user {}", userModel.getId());
-            ResponseBody<List<GetWishlistResponse>> responseBody = wishlistService.getWishlists(userModel.getId());
+            ResponseBody<GetWishlistResponse> responseBody = wishlistService.getWishlists(userModel.getId());
             logger.info("Get wishlists request success");
             return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         } catch (UserNotFoundException exception) {
             logger.error("User not found, {}", exception.getMessage());
-            ResponseBody<List<GetWishlistResponse>> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            ResponseBody<GetWishlistResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         } catch (Exception exception) {
             logger.error("Unexpected error occurred while getting contract feedback, {}", exception.getMessage());
-            ResponseBody<List<GetWishlistResponse>> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
+            ResponseBody<GetWishlistResponse> body = new ResponseBody<>(FAILURE, null, exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
     }
