@@ -116,6 +116,7 @@ public class ContractServiceImpl implements ContractService {
                 .serviceName(service.getName())
                 .serviceType(service.getType())
                 .historyType(historyType)
+                .serviceProviderId(historyType == Completed ? user.getId() : serviceProviderUser.getId())
                 .serviceProviderName(serviceProviderUser.getName())
                 .serviceRequesterName(user.getName())
                 .perHourRate(service.getPerHourRate())

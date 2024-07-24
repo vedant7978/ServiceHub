@@ -1,0 +1,34 @@
+.user-modal {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.user-modal-header {
+  background-color: #EF5366;
+  color: white;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.user-modal-title {
+  font-size: 1.5rem;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.close-btn {
+  background-color: #EF5366;
+  color: white;
+}
+
+.close-btn:hover {
+  background-color: #EF5366;
+}

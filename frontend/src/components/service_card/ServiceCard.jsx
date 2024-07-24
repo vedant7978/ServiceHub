@@ -4,7 +4,7 @@ import { FaDollarSign, FaStar } from 'react-icons/fa';
 import default_profile_pic from "../../assets/default_profile_pic.png";
 import './ServiceCard.css';
 
-export default function ServiceCard({ service, onClick }) {
+export default function ServiceCard({ service, onProfileImageClick, onClick }) {
   const roundedRating = service.averageRating ? service.averageRating.toFixed(1) : '0.0';
   const [imageUrl, setImageUrl] = useState(default_profile_pic);
 
@@ -18,7 +18,7 @@ export default function ServiceCard({ service, onClick }) {
       <Card.Body>
         <div className="card-flex-container">
           <div className="d-flex">
-            <a href="#" onClick={() => onClick(service)} className='me-3'>
+            <a href="#" onClick={() => onProfileImageClick(service.providerId)} className='me-3'>
               <Card.Img variant="top" src={imageUrl} className="service-image" onError={() => setImageUrl(default_profile_pic)} />
             </a>
             <div className='d-flex flex-row justify-content-between align-items-center w-100'>
