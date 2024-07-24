@@ -50,4 +50,4 @@ export const ServiceType = {
 
 // const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
 // Comment above URL and uncomment this when running backend locally
-export const BASE_URL = "http://csci5308-vm8.research.cs.dal.ca:8080";
+export const BASE_URL = "http://localhost:8080"; 

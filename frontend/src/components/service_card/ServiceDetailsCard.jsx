@@ -21,6 +21,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
   const [error, setError] = useState('');
   const [imageUrl, setImageUrl] = useState(default_profile_pic);
   const [requested, setRequested] = useState(false);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const { postRequest } = useAxios();
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
       setImageUrl(selectedService.providerImage)
     setIcon(selectedService.addedToWishlist ? <FaCheckCircle /> : <FaPlusCircle />)
     setRequested(selectedService.requested)
+    setFilteredFeedbacks(selectedService.feedbacks.filter(feedback => feedback.type === "ServiceRequester"))
   }, [selectedService]);
 
   useEffect(() => {
@@ -125,8 +127,8 @@ export default function ServiceDetailsCard({ selectedService, providerLoading, p
             </Card.Text>
             <div style={{ maxHeight: '120px', overflowY: 'auto', scrollbarWidth: 'thin' }}>
               <ListGroup variant="flush">
-                {selectedService?.feedbacks?.length ? (
-                  selectedService.feedbacks.map((feedback, idx) => (
+                {filteredFeedbacks.length > 0 ? (
+                  filteredFeedbacks.map((feedback, idx) => (
                     <ListGroup.Item key={idx}>
                       <strong>{feedback.username}</strong><b>{feedback.rating}/5.0 </b><br />
                       {feedback.description}

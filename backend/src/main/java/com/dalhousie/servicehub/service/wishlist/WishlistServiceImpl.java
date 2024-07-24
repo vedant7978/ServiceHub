@@ -85,7 +85,7 @@ public class WishlistServiceImpl implements WishlistService {
         serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
         serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
         serviceDto.setProviderImage(serviceProvider.getImage());
-        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceDto.getId(), loggedInUserId));
+        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceModel.getId(), loggedInUserId));
         return serviceDto;
     }
 }

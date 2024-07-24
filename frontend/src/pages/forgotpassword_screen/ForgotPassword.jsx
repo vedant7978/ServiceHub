@@ -37,7 +37,7 @@ const ForgotPassword = () => {
         setError(message);
       }
     } catch (error) {
-      setError(error);
+      setError(error.response.data.message);
       console.error("Failed to send mail:", error);
     }
   }
