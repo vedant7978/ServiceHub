@@ -6,6 +6,7 @@ import EmptyListView from "../../assets/EmptyListView.png";
 import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
+import { UserModal } from "../../components/user_modal/UserModal";
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
 import "./Dashboard.css";
@@ -23,6 +24,8 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [serviceTypes, setServiceTypes] = useState([]);
   const [sortCriteria, setSortCriteria] = useState("");
+  const [userToView, setUserToView] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
   const { getRequest, postRequest } = useAxios();
 
   useEffect(() => {
@@ -127,6 +130,30 @@ export default function Dashboard() {
     setFilteredServices(filtered);
   };
 
+  const handleViewProfileClicked = async (userId) => {
+    try {
+      console.log(userId)
+      const response = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: userId });
+      if (response.status === HttpStatusCode.Ok) {
+        setUserToView(response.data.data);
+        setShowUserModal(true);
+      } else {
+        setToastTitle('Error');
+        setToastMessage('Error fetching user Details.');
+        setShowToast(true);
+      }
+    } catch (error) {
+      setToastTitle('Error');
+      setToastMessage('Error fetching user Details.');
+      setShowToast(true);
+    }
+  }
+
+  const handleCloseModal = () => {
+    setShowUserModal(false);
+    setUserToView(null);
+  };
+
   return (
     <Container fluid className="dashboard">
       <Container style={{ padding: '24px' }}>
@@ -164,7 +191,12 @@ export default function Dashboard() {
                 <Container className='d-flex result-body' style={{ padding: '0px' }}>
                   <Container fluid className='child1 flex-column'>
                     {filteredServices.map((service, idx) => (
-                      <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
+                      <ServiceCard
+                        key={idx}
+                        service={service}
+                        onProfileImageClick={handleViewProfileClicked}
+                        onClick={() => handleServiceClick(service)}
+                      />
                     ))}
                   </Container>
                   <Container fluid className='child2' style={{ padding: '0px' }}>
@@ -209,6 +241,11 @@ export default function Dashboard() {
           </>
         )}
       </Container>
+
+      {userToView && (
+        <UserModal show={showUserModal} handleClose={handleCloseModal} user={userToView} />
+      )}
+
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
   );

@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { Container, Dropdown, Stack } from "react-bootstrap";
@@ -5,6 +6,8 @@ import "./History.css";
 import EmptyListView from "../../../assets/EmptyListView.png";
 import { useAxios } from "../../../context/AxiosContext";
 import { ENDPOINTS } from "../../../utils/Constants";
+import AppToast from "../../app_toast/AppToast";
+import { UserModal } from "../../user_modal/UserModal";
 import { AddFeedbackCard } from "../add_feedback/AddFeedbackCard";
 import { HistoryContractCard } from "../history_contract_card/HistoryContractCard";
 
@@ -14,6 +17,11 @@ export const History = () => {
   const [filteredContracts, setFilteredContracts] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [selectedContractId, setSelectedContractId] = useState(null);
+  const [userToView, setUserToView] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastTitle, setToastTitle] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const { getRequest } = useAxios();
 
   useEffect(() => {
@@ -80,9 +88,23 @@ export const History = () => {
     setFilteredContracts(filtered);
   };
 
-
-  const handleViewProfileClicked = (userId) => {
-    // [TODO]: View profile of the user with user id as {userId}
+  const handleViewProfileClicked = async (userId) => {
+    try {
+      console.log(userId)
+      const response = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: userId });
+      if (response.status === HttpStatusCode.Ok) {
+        setUserToView(response.data.data);
+        setShowUserModal(true);
+      } else {
+        setToastTitle('Error');
+        setToastMessage('Error fetching user Details.');
+        setShowToast(true);
+      }
+    } catch (error) {
+      setToastTitle('Error');
+      setToastMessage('Error fetching user Details.');
+      setShowToast(true);
+    }
   }
 
   const getSelectedContract = () => {
@@ -129,6 +151,11 @@ export const History = () => {
 
   const handleSearchInputChange = (event) => {
     debouncedSetSearchText(event.target.value);
+  };
+
+  const handleCloseModal = () => {
+    setShowUserModal(false);
+    setUserToView(null);
   };
 
   return (
@@ -205,6 +232,12 @@ export const History = () => {
           }
         </div>
       </Stack>
+
+      {userToView && (
+        <UserModal show={showUserModal} handleClose={handleCloseModal} user={userToView} />
+      )}
+
+      <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
   );
 }

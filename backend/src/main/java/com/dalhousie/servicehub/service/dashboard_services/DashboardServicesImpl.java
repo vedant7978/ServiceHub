@@ -78,6 +78,7 @@ public class DashboardServicesImpl implements DashboardServices {
         GetProviderResponse response = GetProviderResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .image(user.getImage())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .build();

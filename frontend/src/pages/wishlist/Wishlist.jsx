@@ -6,6 +6,7 @@ import AppToast from "../../components/app_toast/AppToast";
 import ServiceCard from "../../components/service_card/ServiceCard";
 import ServiceDetailsCard from "../../components/service_card/ServiceDetailsCard";
 import "./Wishlist.css";
+import { UserModal } from "../../components/user_modal/UserModal";
 import { useAxios } from '../../context/AxiosContext';
 import { ENDPOINTS } from '../../utils/Constants';
 
@@ -18,6 +19,8 @@ export default function Wishlist() {
   const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userToView, setUserToView] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   const { getRequest, deleteRequest } = useAxios();
 
@@ -86,6 +89,30 @@ export default function Wishlist() {
     }
   };
 
+  const handleViewProfileClicked = async (userId) => {
+    try {
+      console.log(userId)
+      const response = await getRequest(ENDPOINTS.PROVIDER_DETAILS, true, { providerId: userId });
+      if (response.status === HttpStatusCode.Ok) {
+        setUserToView(response.data.data);
+        setShowUserModal(true);
+      } else {
+        setToastTitle('Error');
+        setToastMessage('Error fetching user Details.');
+        setShowToast(true);
+      }
+    } catch (error) {
+      setToastTitle('Error');
+      setToastMessage('Error fetching user Details.');
+      setShowToast(true);
+    }
+  }
+
+  const handleCloseModal = () => {
+    setShowUserModal(false);
+    setUserToView(null);
+  };
+
   return (
     <Container fluid className="wishlist">
       {loading ? (
@@ -98,7 +125,12 @@ export default function Wishlist() {
           <Container fluid className='child1 flex-column'>
             {services.length > 0 ? (
               services.map((service, idx) => (
-                <ServiceCard key={idx} service={service} onClick={() => handleServiceClick(service)} />
+                <ServiceCard
+                  key={idx}
+                  service={service}
+                  onProfileImageClick={handleViewProfileClicked}
+                  onClick={() => handleServiceClick(service)}
+                />
               ))
             ) : (
               <Container
@@ -136,6 +168,11 @@ export default function Wishlist() {
           </Container>
         </Container>)
       }
+
+      {userToView && (
+        <UserModal show={showUserModal} handleClose={handleCloseModal} user={userToView} />
+      )}
+
       <AppToast show={showToast} setShow={setShowToast} title={toastTitle} message={toastMessage} />
     </Container>
   );
