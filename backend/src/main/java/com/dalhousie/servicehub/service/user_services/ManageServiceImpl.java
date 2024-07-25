@@ -27,15 +27,15 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public ResponseBody<String> addService(AddServiceRequest addServiceRequest, Long providerId) {
-        if (!userRepository.existsById(providerId))
-            throw new UserNotFoundException("User not found for id: " + providerId);
+        UserModel provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + providerId));
 
         ServiceModel serviceModel = ServiceModel.builder()
                 .description(addServiceRequest.getDescription())
                 .name(addServiceRequest.getName())
                 .perHourRate(addServiceRequest.getPerHourRate())
                 .type(addServiceRequest.getType())
-                .providerId(providerId)
+                .provider(provider)
                 .build();
         serviceRepository.save(serviceModel);
         return new ResponseBody<>(SUCCESS, "", "Add service successful");

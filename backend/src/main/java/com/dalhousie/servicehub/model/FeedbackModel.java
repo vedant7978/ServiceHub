@@ -31,15 +31,18 @@ public class FeedbackModel {
     @DecimalMax(value = "5.00", message = "Rating must be at most 5.00")
     private Double rating;
 
-    @Column(name = "consumer_id")
-    @NotNull(message = "Consumer ID is required")
-    private Long consumerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "consumer_id", nullable = false)
+    private UserModel consumer;
 
-    @Column(name = "provider_id")
-    @NotNull(message = "Provider ID is required")
-    private Long providerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "provider_id", nullable = false)
+    private UserModel provider;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "type")
     private FeedbackType type;
+
+    @OneToOne(mappedBy = "feedback", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ContractFeedbackModel contractFeedbackModel;
 }
