@@ -1,7 +1,7 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.service.public_uploads.PublicUploadsService;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.FileNotFoundException;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/public")
 public class PublicUploadsController {
 
     private static final Logger logger = LogManager.getLogger(PublicUploadsController.class);
     private final PublicUploadsService publicUploadsService;
+
+    public PublicUploadsController(ServiceFactory serviceFactory) {
+        publicUploadsService = serviceFactory.getPublicUploadsService();
+    }
 
     @GetMapping("/uploads/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {

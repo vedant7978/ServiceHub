@@ -6,7 +6,7 @@ import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
 
-public interface DashboardServices {
+public interface DashboardService {
 
     /**
      * Provides all services created by all users other than logged-in user

@@ -20,15 +20,13 @@ import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
-public class DashboardServicesImpl implements DashboardServices {
+public class DashboardServiceImpl implements DashboardService {
 
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;

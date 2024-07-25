@@ -1,6 +1,7 @@
 package com.dalhousie.servicehub.controller;
 
 import com.dalhousie.servicehub.exceptions.PasswordNotMatchingException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.request.NewPasswordRequest;
 import com.dalhousie.servicehub.request.UpdateUserRequest;
@@ -8,7 +9,6 @@ import com.dalhousie.servicehub.response.UserDetailsResponse;
 import com.dalhousie.servicehub.service.profile.ProfileService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -20,12 +20,15 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/user-profile")
 public class ProfileController {
 
     private static final Logger logger = LogManager.getLogger(ProfileController.class);
     private final ProfileService profileService;
+
+    public ProfileController(ServiceFactory serviceFactory) {
+        profileService = serviceFactory.getProfileService();
+    }
 
     @GetMapping("/get-user-details")
     public ResponseEntity<ResponseBody<UserDetailsResponse>> getUserDetails(

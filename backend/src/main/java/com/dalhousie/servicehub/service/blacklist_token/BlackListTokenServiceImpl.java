@@ -6,11 +6,9 @@ import com.dalhousie.servicehub.repository.BlackListRepository;
 import com.dalhousie.servicehub.util.Constants;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class BlackListTokenServiceImpl implements BlackListTokenService {
 

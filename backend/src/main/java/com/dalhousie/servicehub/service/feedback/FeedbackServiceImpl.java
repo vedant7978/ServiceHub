@@ -12,13 +12,11 @@ import com.dalhousie.servicehub.request.AddFeedbackRequest;
 import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
 

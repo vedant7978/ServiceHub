@@ -17,7 +17,6 @@ import com.dalhousie.servicehub.response.GetPendingContractsResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +27,6 @@ import static com.dalhousie.servicehub.enums.HistoryType.Completed;
 import static com.dalhousie.servicehub.enums.HistoryType.Requested;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
 

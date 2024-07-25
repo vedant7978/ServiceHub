@@ -26,6 +26,4 @@ public interface ServiceRepository extends JpaRepository<ServiceModel, Long> {
     List<ServiceModel> findByType(ServiceType type);
 
     List<ServiceModel> findByNameContainingIgnoreCase(String name);
-
-
 }
