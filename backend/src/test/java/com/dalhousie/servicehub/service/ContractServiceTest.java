@@ -101,7 +101,7 @@ public class ContractServiceTest {
         logger.info("Starting test: No services registered for user and called get pending contracts");
         long userId = 10;
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(List.of());
 
         // When
         ResponseBody<GetPendingContractsResponse> response = contractService.getPendingContracts(userId);
@@ -126,7 +126,7 @@ public class ContractServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
 
         logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(servicesIds);
 
         logger.info("Returned array when findPendingContractsByServiceIds called for above serviceIds: {}", contracts);
         when(contractRepository.findPendingContractsByServiceIds(servicesIds)).thenReturn(contracts);
@@ -167,7 +167,7 @@ public class ContractServiceTest {
         logger.info("Starting test: No services completed/requested by user and called get history contracts");
         long userId = 10;
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(List.of());
 
         // When
         ResponseBody<GetHistoryContractsResponse> response = contractService.getHistoryContracts(userId);
@@ -199,7 +199,7 @@ public class ContractServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
 
         logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);
+        when(serviceRepository.getServiceIdsByProviderId(userModel2)).thenReturn(servicesIds);
 
         logger.info("Returned array when findHistoryContractsByServiceIds called for above serviceIds: {}", contracts);
         when(contractRepository.findHistoryContractsByServiceIds(servicesIds, userId)).thenReturn(contracts);

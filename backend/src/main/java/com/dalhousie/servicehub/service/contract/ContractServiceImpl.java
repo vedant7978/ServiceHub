@@ -41,7 +41,7 @@ public class ContractServiceImpl implements ContractService {
                 () -> new UserNotFoundException("User not found for id: " + userId)
         );
 
-        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userId);
+        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userModel);
         List<ContractModel> contracts = contractRepository.findPendingContractsByServiceIds(userServicesIds);
         List<PendingContractDto> pendingContracts = contracts.stream()
                 .map(this::getPendingContractDto)
@@ -59,7 +59,7 @@ public class ContractServiceImpl implements ContractService {
         UserModel userModel = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
-        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userId);
+        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userModel);
         List<ContractModel> contracts = contractRepository.findHistoryContractsByServiceIds(userServicesIds, userId);
         List<HistoryContractDto> historyContracts = contracts.stream()
                 .map(contract -> getHistoryContractDto(contract, userModel))

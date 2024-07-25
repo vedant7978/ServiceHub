@@ -69,6 +69,8 @@ public class ManageServiceImpl implements ManageService {
     public ResponseBody<String> updateService(UpdateServiceRequest updateServiceRequest, Long providerId) {
         if (!serviceRepository.existsById(updateServiceRequest.getId()))
             throw new ServiceNotFoundException("Service not found for id: " + updateServiceRequest.getId());
+        UserModel provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + providerId));
 
         serviceRepository.updateService(
                 updateServiceRequest.getId(),
@@ -76,7 +78,7 @@ public class ManageServiceImpl implements ManageService {
                 updateServiceRequest.getName(),
                 updateServiceRequest.getPerHourRate(),
                 updateServiceRequest.getType(),
-                providerId
+                provider
         );
         return new ResponseBody<>(SUCCESS, "", "Update service successful");
     }
