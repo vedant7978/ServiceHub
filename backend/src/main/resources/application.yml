@@ -21,8 +21,8 @@ spring:
           starttls:
             enable: true
   datasource:
-    url: jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_8_DEVINT?useSSL=false&allowPublicKeyRetrieval=true
-    username: CSCI5308_8_DEVINT_USER
+    url: PROD - jdbc:mysql://db-5308.cs.dal.ca/CSCI5308_8_PRODUCTION?useSSL=false&allowPublicKeyRetrieval=true
+    username: CSCI5308_8_PRODUCTION_USER
     password: Aneisiru6b
     driver-class-name: com.mysql.cj.jdbc.Driver
   application:
