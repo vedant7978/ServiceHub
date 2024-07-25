@@ -17,10 +17,10 @@ public interface ServiceRepository extends JpaRepository<ServiceModel, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE ServiceModel s SET s.description = :description, s.name = :name, s.perHourRate = :perHourRate, s.type = :type WHERE s.id = :id AND s.providerId = :providerId")
+    @Query("UPDATE ServiceModel s SET s.description = :description, s.name = :name, s.perHourRate = :perHourRate, s.type = :type WHERE s.id = :id AND s.provider = :providerId")
     void updateService(Long id, String description, String name, Double perHourRate, ServiceType type, Long providerId);
 
-    @Query("SELECT s.id FROM ServiceModel s WHERE s.providerId = :providerId")
+    @Query("SELECT s.id FROM ServiceModel s WHERE s.provider = :providerId")
     List<Long> getServiceIdsByProviderId(Long providerId);
 
     List<ServiceModel> findByType(ServiceType type);
