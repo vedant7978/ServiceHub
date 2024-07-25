@@ -3,28 +3,30 @@ package com.dalhousie.servicehub.service.contract_feedback;
 import com.dalhousie.servicehub.dto.ContractFeedbackDto;
 import com.dalhousie.servicehub.enums.FeedbackType;
 import com.dalhousie.servicehub.exceptions.ContractNotFoundException;
+import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.model.ContractFeedbackModel;
 import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.FeedbackModel;
+import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ContractFeedbackRepository;
 import com.dalhousie.servicehub.repository.ContractRepository;
+import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.response.GetContractFeedbackResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class ContractFeedbackServiceImpl implements ContractFeedbackService {
 
     private final ContractFeedbackRepository repository;
     private final ContractRepository contractRepository;
+    private final UserRepository userRepository;
     private final FeedbackService feedbackService;
 
     @Override
@@ -45,21 +47,23 @@ public class ContractFeedbackServiceImpl implements ContractFeedbackService {
         Long contractId = contractFeedbackDto.getContractId();
         ContractModel contractModel = contractRepository.findById(contractId)
                 .orElseThrow(() -> new ContractNotFoundException("Contract not found for id: " + contractId));
+        UserModel provider = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
         ContractFeedbackModel contractFeedbackModel = getContractFeedbackModel(contractId, userId);
         if (contractFeedbackModel == null) {
             // Add feedback if no contract feedback available
             FeedbackModel feedbackModel = FeedbackModel.builder()
-                    .providerId(userId)
-                    .consumerId(
-                            Objects.equals(contractModel.getService().getProviderId(), userId)
-                                    ? contractModel.getUser().getId()
-                                    : contractModel.getService().getProviderId()
+                    .provider(provider)
+                    .consumer(
+                            Objects.equals(contractModel.getService().getProvider().getId(), userId)
+                                    ? contractModel.getUser()
+                                    : contractModel.getService().getProvider()
                     )
                     .rating(contractFeedbackDto.getRating())
                     .description(contractFeedbackDto.getDescription())
                     .type(
-                            Objects.equals(contractModel.getService().getProviderId(), userId)
+                            Objects.equals(contractModel.getService().getProvider().getId(), userId)
                                     ? FeedbackType.ServiceProvider
                                     : FeedbackType.ServiceRequester
                     )
@@ -84,7 +88,7 @@ public class ContractFeedbackServiceImpl implements ContractFeedbackService {
         return repository.findAllByContractId(contractId)
                 .orElse(List.of())
                 .stream()
-                .filter(model -> model.getFeedback().getProviderId() == userId)
+                .filter(model -> model.getFeedback().getProvider().getId() == userId)
                 .findFirst()
                 .orElse(null);
     }

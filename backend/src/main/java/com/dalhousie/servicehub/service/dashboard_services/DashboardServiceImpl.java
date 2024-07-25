@@ -20,15 +20,13 @@ import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
-public class DashboardServicesImpl implements DashboardServices {
+public class DashboardServiceImpl implements DashboardService {
 
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
@@ -78,6 +76,7 @@ public class DashboardServicesImpl implements DashboardServices {
         GetProviderResponse response = GetProviderResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .image(user.getImage())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .build();
@@ -112,7 +111,7 @@ public class DashboardServicesImpl implements DashboardServices {
      */
     private List<ServiceDto> getProcessedServiceDtoList(List<ServiceModel> serviceModelList, Long loggedInUserId) {
         return serviceModelList.stream()
-                .filter(service -> !service.getProviderId().equals(loggedInUserId))
+                .filter(service -> !service.getProvider().getId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
                 .peek(serviceDto -> {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));

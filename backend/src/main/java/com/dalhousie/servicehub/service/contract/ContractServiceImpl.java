@@ -17,7 +17,6 @@ import com.dalhousie.servicehub.response.GetPendingContractsResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +27,6 @@ import static com.dalhousie.servicehub.enums.HistoryType.Completed;
 import static com.dalhousie.servicehub.enums.HistoryType.Requested;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
 
@@ -43,7 +41,7 @@ public class ContractServiceImpl implements ContractService {
                 () -> new UserNotFoundException("User not found for id: " + userId)
         );
 
-        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userId);
+        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userModel);
         List<ContractModel> contracts = contractRepository.findPendingContractsByServiceIds(userServicesIds);
         List<PendingContractDto> pendingContracts = contracts.stream()
                 .map(this::getPendingContractDto)
@@ -61,7 +59,7 @@ public class ContractServiceImpl implements ContractService {
         UserModel userModel = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
 
-        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userId);
+        List<Long> userServicesIds = serviceRepository.getServiceIdsByProviderId(userModel);
         List<ContractModel> contracts = contractRepository.findHistoryContractsByServiceIds(userServicesIds, userId);
         List<HistoryContractDto> historyContracts = contracts.stream()
                 .map(contract -> getHistoryContractDto(contract, userModel))
@@ -108,7 +106,7 @@ public class ContractServiceImpl implements ContractService {
 
     private HistoryContractDto getHistoryContractDto(ContractModel contractModel, UserModel loggedInUser) {
         ServiceModel service = contractModel.getService();
-        UserModel serviceProviderUser = getUser(service.getProviderId());
+        UserModel serviceProviderUser = service.getProvider();
         UserModel user = contractModel.getUser();
         HistoryType historyType = Objects.equals(user.getId(), loggedInUser.getId()) ? Requested : Completed;
         return HistoryContractDto.builder()
@@ -116,6 +114,7 @@ public class ContractServiceImpl implements ContractService {
                 .serviceName(service.getName())
                 .serviceType(service.getType())
                 .historyType(historyType)
+                .serviceProviderId(historyType == Completed ? user.getId() : serviceProviderUser.getId())
                 .serviceProviderName(serviceProviderUser.getName())
                 .serviceRequesterName(user.getName())
                 .perHourRate(service.getPerHourRate())
@@ -125,10 +124,6 @@ public class ContractServiceImpl implements ContractService {
                 .status(contractModel.getStatus())
                 .createdAt(contractModel.getCreatedAt())
                 .build();
-    }
-
-    private UserModel getUser(long userId) {
-        return userRepository.findById(userId).orElse(UserModel.builder().build());
     }
 
     private void updateContractStatus(ContractStatus status, long contractId) {

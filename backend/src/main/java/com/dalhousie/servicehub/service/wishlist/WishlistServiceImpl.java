@@ -16,13 +16,11 @@ import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class WishlistServiceImpl implements WishlistService {
 
@@ -76,8 +74,7 @@ public class WishlistServiceImpl implements WishlistService {
      */
     private ServiceDto getServiceSto(WishlistModel wishlistModel, Long loggedInUserId) {
         ServiceModel serviceModel = wishlistModel.getService();
-        UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
+        UserModel serviceProvider = serviceModel.getProvider();
 
         ServiceDto serviceDto = serviceMapper.toDto(serviceModel);
         serviceDto.setId(wishlistModel.getId());
@@ -85,7 +82,7 @@ public class WishlistServiceImpl implements WishlistService {
         serviceDto.setAverageRating(feedbackService.getAverageRatingForUser(serviceDto.getProviderId()));
         serviceDto.setFeedbacks(feedbackService.getFeedbacks(serviceDto.getProviderId()).data().getFeedbacks());
         serviceDto.setProviderImage(serviceProvider.getImage());
-        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceDto.getId(), loggedInUserId));
+        serviceDto.setRequested(contractRepository.existsByServiceIdAndUserId(serviceModel.getId(), loggedInUserId));
         return serviceDto;
     }
 }

@@ -1,12 +1,12 @@
 package com.dalhousie.servicehub.controller;
 
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.request.AddWishlistRequest;
 import com.dalhousie.servicehub.response.GetWishlistResponse;
 import com.dalhousie.servicehub.service.wishlist.WishlistService;
 import com.dalhousie.servicehub.util.ResponseBody;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -17,12 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/wishlist")
 public class WishlistController {
 
     private static final Logger logger = LogManager.getLogger(WishlistController.class);
     private final WishlistService wishlistService;
+
+    public WishlistController(ServiceFactory serviceFactory) {
+        wishlistService = serviceFactory.getWishlistService();
+    }
 
     @PostMapping("/add-wishlist")
     public ResponseEntity<ResponseBody<String>> addWishlist(

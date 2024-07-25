@@ -1,13 +1,13 @@
 package com.dalhousie.servicehub.controller;
 
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.response.AcceptRejectContractRequest;
 import com.dalhousie.servicehub.response.GetHistoryContractsResponse;
 import com.dalhousie.servicehub.response.GetPendingContractsResponse;
 import com.dalhousie.servicehub.service.contract.ContractService;
 import com.dalhousie.servicehub.util.ResponseBody;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/contract")
 public class ContractController {
 
     private static final Logger logger = LogManager.getLogger(ContractController.class);
     private final ContractService contractService;
+
+    public ContractController(ServiceFactory serviceFactory) {
+        contractService = serviceFactory.getContractService();
+    }
 
     @GetMapping("/get-pending-contracts")
     public ResponseEntity<ResponseBody<GetPendingContractsResponse>> getPendingContracts(

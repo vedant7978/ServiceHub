@@ -40,6 +40,9 @@ public class ContractModel {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @OneToOne(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ContractFeedbackModel contractFeedbackModel;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

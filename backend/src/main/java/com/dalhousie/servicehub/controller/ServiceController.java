@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.controller;
 
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.request.AddServiceRequest;
 import com.dalhousie.servicehub.request.UpdateServiceRequest;
@@ -7,7 +8,6 @@ import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.service.user_services.ManageService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/service")
 public class ServiceController {
 
     private static final Logger logger = LogManager.getLogger(ServiceController.class);
     private final ManageService manageServices;
+
+    public ServiceController(ServiceFactory serviceFactory) {
+        manageServices = serviceFactory.getManageService();
+    }
 
     @PostMapping("/add-service")
     public ResponseEntity<ResponseBody<String>> addService(

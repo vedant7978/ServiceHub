@@ -62,7 +62,7 @@ public class ManageServiceTest {
         logger.info("Starting test: Unregistered provider id provided to add service");
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(false);
+        when(userRepository.findById(providerId)).thenReturn(Optional.empty());
         logger.info("Inputting non-registered providerId: {}", addServiceRequest);
 
         // Then
@@ -78,7 +78,7 @@ public class ManageServiceTest {
     @Test
     public void shouldAddService_WhenInputIsValid_AndAddServiceIsCalled() {
         // Given
-        long providerId = 10;
+        UserModel provider = UserModel.builder().id(10L).build();
         AddServiceRequest addServiceRequest = AddServiceRequest.builder()
                 .name("Test Service")
                 .description("Test Description")
@@ -88,11 +88,11 @@ public class ManageServiceTest {
         logger.info("Starting test: Valid input provided to add service");
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(true);
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.of(provider));
         when(serviceRepository.save(any(ServiceModel.class))).thenReturn(new ServiceModel());
         logger.info("Providing valid input to add service: {}", addServiceRequest);
 
-        ResponseBody<String> responseBody = manageService.addService(addServiceRequest, providerId);
+        ResponseBody<String> responseBody = manageService.addService(addServiceRequest, provider.getId());
 
         // Then
         logger.info("Response body after providing valid input: {}", responseBody);
@@ -198,7 +198,7 @@ public class ManageServiceTest {
     public void shouldUpdateService_WhenInputIsValid_AndUpdateServiceIsCalled() {
         // Given
         long serviceId = 1L;
-        long providerId = 10L;
+        UserModel provider = UserModel.builder().id(10L).build();
         UpdateServiceRequest updateServiceRequest = UpdateServiceRequest.builder()
                 .id(serviceId)
                 .name("Updated Service")
@@ -207,12 +207,17 @@ public class ManageServiceTest {
                 .type(ServiceType.HomeServices)
                 .build();
         logger.info("Starting test: Valid input provided to update service");
-
-        // When
         when(serviceRepository.existsById(serviceId)).thenReturn(true);
+
+        // When user not found
+        assertThrows(UserNotFoundException.class,
+                () -> manageService.updateService(updateServiceRequest, provider.getId()));
+
+        // When user found
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.of(provider));
         logger.info("Providing valid input to update service: {}", updateServiceRequest);
 
-        ResponseBody<String> responseBody = manageService.updateService(updateServiceRequest, providerId);
+        ResponseBody<String> responseBody = manageService.updateService(updateServiceRequest, provider.getId());
 
         // Then
         logger.info("Response body after updating service: {}", responseBody);
@@ -221,7 +226,7 @@ public class ManageServiceTest {
                 updateServiceRequest.getName(),
                 updateServiceRequest.getPerHourRate(),
                 updateServiceRequest.getType(),
-                providerId);
+                provider);
         assertEquals(ResponseBody.ResultType.SUCCESS, responseBody.resultType());
         assertEquals("Update service successful", responseBody.message());
         logger.info("Test completed: Valid input provided to update service");
@@ -251,7 +256,7 @@ public class ManageServiceTest {
         );
 
         // Verify repository method was never called
-        verify(serviceRepository, never()).updateService(anyLong(), anyString(), anyString(), anyDouble(), any(), anyLong());
+        verify(serviceRepository, never()).updateService(anyLong(), anyString(), anyString(), anyDouble(), any(), any());
 
         // Assertions
         assertEquals("Service not found for id: " + serviceId, exception.getMessage());

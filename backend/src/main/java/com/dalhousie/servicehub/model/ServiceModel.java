@@ -34,12 +34,13 @@ public class ServiceModel {
     @Column(nullable = false)
     private ServiceType type;
 
-    @Column(name = "provider_id", nullable = false)
-    private Long providerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "provider_id", nullable = false)
+    private UserModel provider;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WishlistModel> wishlists;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ContractModel> contracts;
 }

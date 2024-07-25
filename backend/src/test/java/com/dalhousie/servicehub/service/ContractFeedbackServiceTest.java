@@ -5,6 +5,7 @@ import com.dalhousie.servicehub.exceptions.ContractNotFoundException;
 import com.dalhousie.servicehub.model.*;
 import com.dalhousie.servicehub.repository.ContractFeedbackRepository;
 import com.dalhousie.servicehub.repository.ContractRepository;
+import com.dalhousie.servicehub.repository.UserRepository;
 import com.dalhousie.servicehub.response.GetContractFeedbackResponse;
 import com.dalhousie.servicehub.service.contract_feedback.ContractFeedbackServiceImpl;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
@@ -17,7 +18,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,10 +40,11 @@ public class ContractFeedbackServiceTest {
     private ContractRepository contractRepository;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private FeedbackService feedbackService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @Autowired
     @InjectMocks
     private ContractFeedbackServiceImpl service;
 
@@ -52,16 +53,19 @@ public class ContractFeedbackServiceTest {
             .build();
     private final ContractModel dummyContractModel = ContractModel.builder()
             .id(2L)
-            .service(ServiceModel.builder().build())
+            .service(ServiceModel.builder().provider(UserModel.builder().build()).build())
+            .build();
+    private final UserModel dummyUserModel = UserModel.builder()
+            .id(10L)
             .build();
     private final ContractModel dummyContractModel2 = ContractModel.builder()
             .id(4L)
             .user(UserModel.builder().build())
-            .service(ServiceModel.builder().providerId(10L).build())
+            .service(ServiceModel.builder().provider(dummyUserModel).build())
             .build();
     private final FeedbackModel dummyFeedbackModel = FeedbackModel.builder()
             .id(3L)
-            .providerId(10L)
+            .provider(dummyUserModel)
             .rating(4.5)
             .description("description")
             .build();
@@ -94,7 +98,7 @@ public class ContractFeedbackServiceTest {
     public void shouldGetEmptyContractFeedback_WhenGetContractFeedbackIsCalled_AndNoContractFeedbackFound() {
         // Given
         logger.info("Starting test: Get empty contract feedback");
-        long userId = dummyFeedbackModel.getProviderId();
+        long userId = dummyFeedbackModel.getProvider().getId();
 
         logger.info("Will return true when contract exists by id: {} is called", dummyContractModel.getId());
         when(contractRepository.existsById(dummyContractModel.getId())).thenReturn(true);
@@ -116,7 +120,7 @@ public class ContractFeedbackServiceTest {
     public void shouldGetContractFeedback_WhenGetContractFeedbackIsCalled() {
         // Given
         logger.info("Starting test: Get Contract Feedback");
-        long userId = dummyFeedbackModel.getProviderId();
+        long userId = dummyFeedbackModel.getProvider().getId();
 
         logger.info("Will return true when contract exists by id: {} is called", dummyContractModel.getId());
         when(contractRepository.existsById(dummyContractModel.getId())).thenReturn(true);
@@ -154,7 +158,7 @@ public class ContractFeedbackServiceTest {
     public void shouldAddContractFeedback_WhenAddContractFeedbackIsCalled() {
         // Given
         logger.info("Starting test: Add Contract Feedback");
-        long userId = 10;
+        UserModel userModel = UserModel.builder().id(10L).build();
         ArgumentCaptor<ContractFeedbackModel> captor = ArgumentCaptor.forClass(ContractFeedbackModel.class);
 
         logger.info("Will return dummy contract model with id: {} when findContractById is called", dummyContractModel.getId());
@@ -163,8 +167,11 @@ public class ContractFeedbackServiceTest {
         logger.info("Will return dummy feedback model with id: {} when addFeedbackModel called", dummyFeedbackModel.getId());
         when(feedbackService.addFeedbackModel(any())).thenReturn(dummyFeedbackModel);
 
+        logger.info("Will return user with id: {} when findById called", userModel.getId());
+        when(userRepository.findById(userModel.getId())).thenReturn(Optional.of(userModel));
+
         // When trying to add feedback for service provided by other
-        ResponseBody<String> body = service.addContractFeedback(dummyContractFeedbackDto, userId);
+        ResponseBody<String> body = service.addContractFeedback(dummyContractFeedbackDto, userModel.getId());
 
         // Then
         verify(repository).save(captor.capture());
@@ -175,13 +182,13 @@ public class ContractFeedbackServiceTest {
         // When trying to add feedback for service provided by user
         logger.info("Will return dummy contract model with id: {} when findContractById is called", dummyContractModel2.getId());
         when(contractRepository.findById(dummyContractFeedbackDto.getContractId())).thenReturn(Optional.of(dummyContractModel2));
-        ResponseBody<String> body2 = service.addContractFeedback(dummyContractFeedbackDto, userId);
+        ResponseBody<String> body2 = service.addContractFeedback(dummyContractFeedbackDto, userModel.getId());
 
         // Then
         verify(repository, times(2)).save(captor.capture());
         assertEquals(dummyContractModel2.getId(), captor.getValue().getContract().getId());
         assertEquals(dummyFeedbackModel.getId(), captor.getValue().getFeedback().getId());
-        assertEquals(SUCCESS, body.resultType());
+        assertEquals(SUCCESS, body2.resultType());
         logger.info("Test completed: Add Contract Feedback");
     }
 
@@ -189,7 +196,7 @@ public class ContractFeedbackServiceTest {
     public void shouldUpdateFeedback_WhenAddContractFeedbackIsCalled_AndFeedbackAlreadyGiven() {
         // Given
         logger.info("Starting test: Update Contract Feedback");
-        long userId = 10;
+        UserModel userModel = UserModel.builder().id(10L).build();
         ArgumentCaptor<ContractFeedbackModel> captor = ArgumentCaptor.forClass(ContractFeedbackModel.class);
 
         logger.info("Will return dummy contract model with id: {} when findContractById is called", dummyContractModel.getId());
@@ -201,8 +208,11 @@ public class ContractFeedbackServiceTest {
         logger.info("Will return dummy feedback model with id: {} when addFeedbackModel called", dummyFeedbackModel.getId());
         when(feedbackService.updateFeedbackModel(dummyFeedbackModel.getId(), 0.0, null)).thenReturn(dummyFeedbackModel);
 
+        logger.info("Will return user with id: {} when findById called", userModel.getId());
+        when(userRepository.findById(userModel.getId())).thenReturn(Optional.of(userModel));
+
         // When trying to add feedback for service provided by other
-        ResponseBody<String> body = service.addContractFeedback(dummyContractFeedbackDto, userId);
+        ResponseBody<String> body = service.addContractFeedback(dummyContractFeedbackDto, userModel.getId());
 
         // Then
         verify(repository).save(captor.capture());

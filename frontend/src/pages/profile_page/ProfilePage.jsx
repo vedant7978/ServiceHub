@@ -69,13 +69,13 @@ const ProfilePage = () => {
         setToastMessage("Password updated successfully")
       } else {
         setToastTitle("Error")
-        setToastMessage(response.data)
+        setToastMessage(response.data.message)
       }
       setShowToast(true)
       closePasswordModal()
     } catch (error) {
       setToastTitle("Error")
-      setToastMessage(error.response.data)
+      setToastMessage(error.response.data.message)
       setShowToast(true)
       console.error("Failed to update password:", error.response.data);
     }

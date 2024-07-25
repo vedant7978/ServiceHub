@@ -22,7 +22,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,19 +51,17 @@ public class ContractServiceTest {
     @Mock
     private FeedbackService feedbackService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
-    @Autowired
-    ContractServiceImpl contractService;
+    private ContractServiceImpl contractService;
 
     private final UserModel userModel1 = UserModel.builder().id(1L).name("One").build();
     private final UserModel userModel2 = UserModel.builder().id(2L).name("Two").build();
 
-    private final ServiceModel serviceModel1 = ServiceModel.builder().id(3L).name("Service3").providerId(2L).build();
-    private final ServiceModel serviceModel2 = ServiceModel.builder().id(4L).name("Service4").providerId(2L).build();
-    private final ServiceModel serviceModel3 = ServiceModel.builder().id(5L).name("Service5").providerId(2L).build();
-    private final ServiceModel serviceModel4 = ServiceModel.builder().id(6L).name("Service5").providerId(1L).build();
-    private final ServiceModel serviceModel5 = ServiceModel.builder().id(7L).name("Service5").providerId(1L).build();
+    private final ServiceModel serviceModel1 = ServiceModel.builder().id(3L).name("Service3").provider(userModel2).build();
+    private final ServiceModel serviceModel2 = ServiceModel.builder().id(4L).name("Service4").provider(userModel2).build();
+    private final ServiceModel serviceModel3 = ServiceModel.builder().id(5L).name("Service5").provider(userModel2).build();
+    private final ServiceModel serviceModel4 = ServiceModel.builder().id(6L).name("Service5").provider(userModel1).build();
+    private final ServiceModel serviceModel5 = ServiceModel.builder().id(7L).name("Service5").provider(userModel1).build();
 
     private final ContractModel contractModel1 = ContractModel.builder()
             .id(3L).service(serviceModel1).user(userModel1).status(Pending).createdAt(LocalDateTime.now()).build();
@@ -104,7 +101,7 @@ public class ContractServiceTest {
         logger.info("Starting test: No services registered for user and called get pending contracts");
         long userId = 10;
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(List.of());
 
         // When
         ResponseBody<GetPendingContractsResponse> response = contractService.getPendingContracts(userId);
@@ -129,7 +126,7 @@ public class ContractServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
 
         logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(servicesIds);
 
         logger.info("Returned array when findPendingContractsByServiceIds called for above serviceIds: {}", contracts);
         when(contractRepository.findPendingContractsByServiceIds(servicesIds)).thenReturn(contracts);
@@ -170,7 +167,7 @@ public class ContractServiceTest {
         logger.info("Starting test: No services completed/requested by user and called get history contracts");
         long userId = 10;
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(List.of());
+        when(serviceRepository.getServiceIdsByProviderId(userModel1)).thenReturn(List.of());
 
         // When
         ResponseBody<GetHistoryContractsResponse> response = contractService.getHistoryContracts(userId);
@@ -202,7 +199,7 @@ public class ContractServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel1));
 
         logger.info("Returned array when getServiceIdsByProviderId called for user id {}: ", servicesIds);
-        when(serviceRepository.getServiceIdsByProviderId(userId)).thenReturn(servicesIds);
+        when(serviceRepository.getServiceIdsByProviderId(userModel2)).thenReturn(servicesIds);
 
         logger.info("Returned array when findHistoryContractsByServiceIds called for above serviceIds: {}", contracts);
         when(contractRepository.findHistoryContractsByServiceIds(servicesIds, userId)).thenReturn(contracts);

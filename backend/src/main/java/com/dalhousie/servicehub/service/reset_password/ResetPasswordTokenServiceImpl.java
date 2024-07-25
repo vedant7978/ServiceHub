@@ -6,13 +6,11 @@ import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.ResetPasswordTokenRepository;
 import com.dalhousie.servicehub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 public class ResetPasswordTokenServiceImpl implements ResetPasswordTokenService {
 

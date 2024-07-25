@@ -13,13 +13,11 @@ import com.dalhousie.servicehub.request.UpdateServiceRequest;
 import com.dalhousie.servicehub.response.GetServicesResponse;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class ManageServiceImpl implements ManageService {
 
@@ -29,15 +27,15 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public ResponseBody<String> addService(AddServiceRequest addServiceRequest, Long providerId) {
-        if (!userRepository.existsById(providerId))
-            throw new UserNotFoundException("User not found for id: " + providerId);
+        UserModel provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + providerId));
 
         ServiceModel serviceModel = ServiceModel.builder()
                 .description(addServiceRequest.getDescription())
                 .name(addServiceRequest.getName())
                 .perHourRate(addServiceRequest.getPerHourRate())
                 .type(addServiceRequest.getType())
-                .providerId(providerId)
+                .provider(provider)
                 .build();
         serviceRepository.save(serviceModel);
         return new ResponseBody<>(SUCCESS, "", "Add service successful");
@@ -71,6 +69,8 @@ public class ManageServiceImpl implements ManageService {
     public ResponseBody<String> updateService(UpdateServiceRequest updateServiceRequest, Long providerId) {
         if (!serviceRepository.existsById(updateServiceRequest.getId()))
             throw new ServiceNotFoundException("Service not found for id: " + updateServiceRequest.getId());
+        UserModel provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + providerId));
 
         serviceRepository.updateService(
                 updateServiceRequest.getId(),
@@ -78,7 +78,7 @@ public class ManageServiceImpl implements ManageService {
                 updateServiceRequest.getName(),
                 updateServiceRequest.getPerHourRate(),
                 updateServiceRequest.getType(),
-                providerId
+                provider
         );
         return new ResponseBody<>(SUCCESS, "", "Update service successful");
     }

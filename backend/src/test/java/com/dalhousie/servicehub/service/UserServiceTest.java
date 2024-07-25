@@ -24,16 +24,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Optional;
@@ -69,9 +66,6 @@ class UserServiceTest {
     @Mock
     private EmailSender emailSender;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @InjectMocks
-    @Autowired
     private UserServiceImpl userService;
 
     private UserModel userModel;
@@ -97,7 +91,14 @@ class UserServiceTest {
                 .address("1881 Brunswick Street")
                 .image("image.jpg")
                 .build();
-        ReflectionTestUtils.setField(userService, "frontendPort", 3000);
+        userService = new UserServiceImpl(3000,
+                userRepository,
+                passwordEncoder,
+                jwtService,
+                emailSender,
+                resetPasswordTokenService,
+                authenticationManager,
+                blackListTokenService);
     }
 
     @Test
