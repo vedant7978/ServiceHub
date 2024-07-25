@@ -14,7 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -34,9 +33,7 @@ public class ResetPasswordTokenServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
-    @Autowired
     private ResetPasswordTokenServiceImpl resetPasswordTokenService;
 
     private final UserModel userModel = UserModel.builder()

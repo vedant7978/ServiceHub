@@ -22,7 +22,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,19 +51,17 @@ public class ContractServiceTest {
     @Mock
     private FeedbackService feedbackService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
-    @Autowired
-    ContractServiceImpl contractService;
+    private ContractServiceImpl contractService;
 
     private final UserModel userModel1 = UserModel.builder().id(1L).name("One").build();
     private final UserModel userModel2 = UserModel.builder().id(2L).name("Two").build();
 
-    private final ServiceModel serviceModel1 = ServiceModel.builder().id(3L).name("Service3").providerId(2L).build();
-    private final ServiceModel serviceModel2 = ServiceModel.builder().id(4L).name("Service4").providerId(2L).build();
-    private final ServiceModel serviceModel3 = ServiceModel.builder().id(5L).name("Service5").providerId(2L).build();
-    private final ServiceModel serviceModel4 = ServiceModel.builder().id(6L).name("Service5").providerId(1L).build();
-    private final ServiceModel serviceModel5 = ServiceModel.builder().id(7L).name("Service5").providerId(1L).build();
+    private final ServiceModel serviceModel1 = ServiceModel.builder().id(3L).name("Service3").provider(userModel2).build();
+    private final ServiceModel serviceModel2 = ServiceModel.builder().id(4L).name("Service4").provider(userModel2).build();
+    private final ServiceModel serviceModel3 = ServiceModel.builder().id(5L).name("Service5").provider(userModel2).build();
+    private final ServiceModel serviceModel4 = ServiceModel.builder().id(6L).name("Service5").provider(userModel1).build();
+    private final ServiceModel serviceModel5 = ServiceModel.builder().id(7L).name("Service5").provider(userModel1).build();
 
     private final ContractModel contractModel1 = ContractModel.builder()
             .id(3L).service(serviceModel1).user(userModel1).status(Pending).createdAt(LocalDateTime.now()).build();

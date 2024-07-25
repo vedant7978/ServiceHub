@@ -62,7 +62,7 @@ public class ManageServiceTest {
         logger.info("Starting test: Unregistered provider id provided to add service");
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(false);
+        when(userRepository.findById(providerId)).thenReturn(Optional.empty());
         logger.info("Inputting non-registered providerId: {}", addServiceRequest);
 
         // Then
@@ -78,7 +78,7 @@ public class ManageServiceTest {
     @Test
     public void shouldAddService_WhenInputIsValid_AndAddServiceIsCalled() {
         // Given
-        long providerId = 10;
+        UserModel provider = UserModel.builder().id(10L).build();
         AddServiceRequest addServiceRequest = AddServiceRequest.builder()
                 .name("Test Service")
                 .description("Test Description")
@@ -88,11 +88,11 @@ public class ManageServiceTest {
         logger.info("Starting test: Valid input provided to add service");
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(true);
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.of(provider));
         when(serviceRepository.save(any(ServiceModel.class))).thenReturn(new ServiceModel());
         logger.info("Providing valid input to add service: {}", addServiceRequest);
 
-        ResponseBody<String> responseBody = manageService.addService(addServiceRequest, providerId);
+        ResponseBody<String> responseBody = manageService.addService(addServiceRequest, provider.getId());
 
         // Then
         logger.info("Response body after providing valid input: {}", responseBody);

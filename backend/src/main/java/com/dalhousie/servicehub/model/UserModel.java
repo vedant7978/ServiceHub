@@ -38,6 +38,24 @@ public class UserModel implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<ContractModel> contracts;
+
+    @OneToMany(mappedBy = "consumer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<FeedbackModel> consumedFeedbacks;
+
+    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<FeedbackModel> providedFeedbacks;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    ResetPasswordTokenModel resetPasswordTokenModel;
+
+    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<ServiceModel> providedServices;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<WishlistModel> wishlistedServices;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

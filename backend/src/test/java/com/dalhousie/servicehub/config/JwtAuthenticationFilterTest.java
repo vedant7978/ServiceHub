@@ -1,5 +1,6 @@
 package com.dalhousie.servicehub.config;
 
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenService;
 import com.dalhousie.servicehub.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
@@ -11,15 +12,16 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class JwtAuthenticationFilterTest {
     private static final Logger logger = LogManager.getLogger(JwtAuthenticationFilterTest.class);
 
@@ -41,12 +43,17 @@ public class JwtAuthenticationFilterTest {
     @Mock
     private FilterChain filterChain;
 
-    @InjectMocks
+    @Mock
+    private ServiceFactory serviceFactory;
+
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        when(serviceFactory.getJwtService()).thenReturn(jwtService);
+        when(serviceFactory.getBlackListTokenService()).thenReturn(blackListTokenService);
+        when(serviceFactory.getUserDetailsService()).thenReturn(userDetailsService);
+        jwtAuthenticationFilter = new JwtAuthenticationFilter(serviceFactory);
     }
 
     @Test
@@ -89,7 +96,6 @@ public class JwtAuthenticationFilterTest {
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
         when(jwtService.extractUsername(validToken)).thenReturn(validUser);
-        when(userDetailsService.loadUserByUsername(validUser)).thenReturn(null);
         when(blackListTokenService.doesBlackListTokenExists(validToken)).thenReturn(false);
 
         logger.info("Authorization header: Bearer {}", validToken);

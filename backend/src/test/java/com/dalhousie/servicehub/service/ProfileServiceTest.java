@@ -35,11 +35,12 @@ public class ProfileServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private ProfileServiceImpl userService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
     private UserModel userModel;
     private UpdateUserRequest updateUserRequest;
 

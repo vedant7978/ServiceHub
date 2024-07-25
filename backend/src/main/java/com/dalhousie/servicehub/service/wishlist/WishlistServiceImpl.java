@@ -74,8 +74,7 @@ public class WishlistServiceImpl implements WishlistService {
      */
     private ServiceDto getServiceSto(WishlistModel wishlistModel, Long loggedInUserId) {
         ServiceModel serviceModel = wishlistModel.getService();
-        UserModel serviceProvider = userRepository.findById(serviceModel.getProviderId())
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + serviceModel.getProviderId()));
+        UserModel serviceProvider = serviceModel.getProvider();
 
         ServiceDto serviceDto = serviceMapper.toDto(serviceModel);
         serviceDto.setId(wishlistModel.getId());

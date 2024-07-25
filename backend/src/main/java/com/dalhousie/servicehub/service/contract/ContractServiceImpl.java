@@ -106,7 +106,7 @@ public class ContractServiceImpl implements ContractService {
 
     private HistoryContractDto getHistoryContractDto(ContractModel contractModel, UserModel loggedInUser) {
         ServiceModel service = contractModel.getService();
-        UserModel serviceProviderUser = getUser(service.getProviderId());
+        UserModel serviceProviderUser = service.getProvider();
         UserModel user = contractModel.getUser();
         HistoryType historyType = Objects.equals(user.getId(), loggedInUser.getId()) ? Requested : Completed;
         return HistoryContractDto.builder()
@@ -124,10 +124,6 @@ public class ContractServiceImpl implements ContractService {
                 .status(contractModel.getStatus())
                 .createdAt(contractModel.getCreatedAt())
                 .build();
-    }
-
-    private UserModel getUser(long userId) {
-        return userRepository.findById(userId).orElse(UserModel.builder().build());
     }
 
     private void updateContractStatus(ContractStatus status, long contractId) {

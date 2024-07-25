@@ -69,6 +69,8 @@ public class DashBoardServicesTest {
     @InjectMocks
     private DashboardServiceImpl dashboardServices;
 
+    private final UserModel dummyUserModel = UserModel.builder().id(2L).build();
+
     @BeforeEach
     public void setUp() {
         mockSecurityContextWithAuthenticatedUser();
@@ -83,8 +85,8 @@ public class DashBoardServicesTest {
             mockedSecurityUtils.when(SecurityUtils::getLoggedInUserId).thenReturn(loggedInUserId);
 
             List<ServiceModel> serviceModels = Arrays.asList(
-                    ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
-                    ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
+                    ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).provider(dummyUserModel).build(),
+                    ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).provider(dummyUserModel).build()
             );
             List<ServiceDto> serviceDtos = Arrays.asList(
                     new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
@@ -98,7 +100,7 @@ public class DashBoardServicesTest {
             when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                     invocation -> {
                         ServiceModel model = invocation.getArgument(0);
-                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
+                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
                     }
             );
 
@@ -139,8 +141,8 @@ public class DashBoardServicesTest {
         // Given
         ServiceType type = ServiceType.Plumbing;
         List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(type).providerId(2L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).providerId(2L).build()
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(type).provider(dummyUserModel).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).provider(dummyUserModel).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
                 new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, "", false, false, 4.5, List.of()),
@@ -152,7 +154,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
                 }
         );
 
@@ -189,8 +191,8 @@ public class DashBoardServicesTest {
         // Given
         String name = "Service";
         List<ServiceModel> serviceModels = Arrays.asList(
-                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).providerId(2L).build(),
-                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).providerId(2L).build()
+                ServiceModel.builder().id(1L).name("Service 1").description("Description 1").perHourRate(50.0).type(ServiceType.Plumbing).provider(dummyUserModel).build(),
+                ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).provider(dummyUserModel).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
                 new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
@@ -202,7 +204,7 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProviderId(), "", false, false, null, List.of());
+                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
                 }
         );
         // Mock the behavior of serviceRepository.findById()

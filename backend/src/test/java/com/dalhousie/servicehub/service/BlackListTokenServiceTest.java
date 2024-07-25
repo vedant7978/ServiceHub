@@ -2,19 +2,20 @@ package com.dalhousie.servicehub.service;
 
 import com.dalhousie.servicehub.controller.AuthController;
 import com.dalhousie.servicehub.exceptions.BlackListTokenAlreadyExistsException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.BlackListTokenModel;
 import com.dalhousie.servicehub.repository.BlackListRepository;
 import com.dalhousie.servicehub.service.blacklist_token.BlackListTokenServiceImpl;
 import com.dalhousie.servicehub.service.user.UserService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -24,7 +25,6 @@ import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @ExtendWith(MockitoExtension.class)
 class BlackListTokenServiceTest {
 
@@ -37,13 +37,19 @@ class BlackListTokenServiceTest {
     @Mock
     private BlackListRepository blackListRepository;
 
-    @InjectMocks
-    @Autowired
-    private AuthController authController;
+    @Mock
+    private ServiceFactory serviceFactory;
 
     @InjectMocks
-    @Autowired
     private BlackListTokenServiceImpl blackListTokenService;
+
+    private AuthController authController;
+
+    @BeforeEach
+    public void setUp() {
+        when(serviceFactory.getUserService()).thenReturn(userService);
+        authController = new AuthController(serviceFactory);
+    }
 
     @Test
     @DisplayName("Should sign out successfully")

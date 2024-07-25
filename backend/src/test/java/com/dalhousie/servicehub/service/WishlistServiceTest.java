@@ -115,16 +115,20 @@ class WishlistServiceTest {
     void getWishlists_Success() {
         // Given
         Long userId = userModel.getId();
+        UserModel providerModel = UserModel.builder()
+                .id(2L)
+                .name("Provider User")
+                .image("provider_image.jpg")
+                .build();
         ServiceModel serviceModel = ServiceModel.builder()
                 .id(1L)
-                .providerId(2L)
+                .provider(providerModel)
                 .name("Test Service")
                 .type(ServiceType.Electrician)
                 .description("Test Description")
                 .perHourRate(50.0)
                 .build();
-        ServiceDto serviceDto = ServiceDto.builder().providerId(2L).build();
-
+        ServiceDto serviceDto = ServiceDto.builder().providerId(providerModel.getId()).build();
         WishlistModel wishlistModel = WishlistModel.builder()
                 .id(1L)
                 .service(serviceModel)
@@ -134,16 +138,9 @@ class WishlistServiceTest {
         List<WishlistModel> wishlistModels = new ArrayList<>();
         wishlistModels.add(wishlistModel);
 
-        UserModel providerModel = UserModel.builder()
-                .id(2L)
-                .name("Provider User")
-                .image("provider_image.jpg")
-                .build();
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(userModel));
         when(wishlistRepository.findAllByUser(userModel)).thenReturn(wishlistModels);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(providerModel));
-        when(feedbackService.getAverageRatingForUser(2L)).thenReturn(4.5);
+        when(feedbackService.getAverageRatingForUser(providerModel.getId())).thenReturn(4.5);
         when(serviceMapper.toDto(serviceModel)).thenReturn(serviceDto);
         when(contractRepository.existsByServiceIdAndUserId(anyLong(), anyLong())).thenReturn(false);
         ResponseBody<GetFeedbackResponse> feedbackResponseResponseBody = new ResponseBody<>(
@@ -158,10 +155,8 @@ class WishlistServiceTest {
         assertEquals(ResponseBody.ResultType.SUCCESS, response.resultType());
         assertEquals("Get wishlists successful", response.message());
         assertEquals(1, response.data().getServices().size());
-        verify(userRepository, times(1)).findById(userId);
         verify(wishlistRepository, times(1)).findAllByUser(userModel);
-        verify(userRepository, times(1)).findById(2L);
-        verify(feedbackService, times(1)).getAverageRatingForUser(2L);
+        verify(feedbackService, times(1)).getAverageRatingForUser(providerModel.getId());
     }
 
     @Test

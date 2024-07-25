@@ -89,6 +89,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
         if (contractFeedbackService == null) {
             contractFeedbackService = new ContractFeedbackServiceImpl(repositoryFactory.getContractFeedbackRepository(),
                     repositoryFactory.getContractRepository(),
+                    repositoryFactory.getUserRepository(),
                     getFeedbackService());
         }
         return contractFeedbackService;
@@ -111,8 +112,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
     public FeedbackService getFeedbackService() {
         if (feedbackService == null) {
             feedbackService = new FeedbackServiceImpl(repositoryFactory.getFeedbackRepository(),
-                    repositoryFactory.getUserRepository(),
-                    mapperFactory.getFeedbackMapper());
+                    repositoryFactory.getUserRepository());
         }
         return feedbackService;
     }

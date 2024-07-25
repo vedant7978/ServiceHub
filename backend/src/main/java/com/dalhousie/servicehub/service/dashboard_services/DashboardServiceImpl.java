@@ -111,7 +111,7 @@ public class DashboardServiceImpl implements DashboardService {
      */
     private List<ServiceDto> getProcessedServiceDtoList(List<ServiceModel> serviceModelList, Long loggedInUserId) {
         return serviceModelList.stream()
-                .filter(service -> !service.getProviderId().equals(loggedInUserId))
+                .filter(service -> !service.getProvider().getId().equals(loggedInUserId))
                 .map(serviceMapper::toDto)
                 .peek(serviceDto -> {
                     serviceDto.setAddedToWishlist(isAddedToWishlist(serviceDto.getId(), loggedInUserId));

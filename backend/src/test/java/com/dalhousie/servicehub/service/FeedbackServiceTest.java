@@ -3,7 +3,6 @@ package com.dalhousie.servicehub.service;
 import com.dalhousie.servicehub.dto.FeedbackDto;
 import com.dalhousie.servicehub.exceptions.FeedbackNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
-import com.dalhousie.servicehub.mapper.FeedbackMapper;
 import com.dalhousie.servicehub.model.FeedbackModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.repository.FeedbackRepository;
@@ -20,7 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,29 +39,22 @@ public class FeedbackServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private FeedbackMapper feedbackMapper;
-
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @InjectMocks
-    @Autowired
-    FeedbackServiceImpl feedbackService;
+    private FeedbackServiceImpl feedbackService;
 
-    private final FeedbackDto dummyFeedbackDto = FeedbackDto.builder()
-            .rating(3.5).description("DummyDescription").build();
     private final List<FeedbackDto> dummyFeedbackDtoList = List.of(
-            dummyFeedbackDto,
-            dummyFeedbackDto,
-            dummyFeedbackDto,
-            dummyFeedbackDto,
-            dummyFeedbackDto
+            FeedbackDto.builder().providerName("DummyName").rating(1.0).description("Description1").build(),
+            FeedbackDto.builder().providerName("DummyName").rating(2.0).description("Description2").build(),
+            FeedbackDto.builder().providerName("DummyName").rating(3.0).description("Description3").build(),
+            FeedbackDto.builder().providerName("DummyName").rating(4.0).description("Description4").build(),
+            FeedbackDto.builder().providerName("DummyName").rating(5.0).description("Description5").build()
     );
     private final List<FeedbackModel> dummyFeedbacks = List.of(
-            FeedbackModel.builder().id(1L).rating(1.0).description("Description1").build(),
-            FeedbackModel.builder().id(2L).rating(2.0).description("Description2").build(),
-            FeedbackModel.builder().id(3L).rating(3.0).description("Description3").build(),
-            FeedbackModel.builder().id(4L).rating(4.0).description("Description4").build(),
-            FeedbackModel.builder().id(5L).rating(5.0).description("Description5").build()
+            FeedbackModel.builder().id(1L).rating(1.0).description("Description1").provider(UserModel.builder().name("DummyName").build()).build(),
+            FeedbackModel.builder().id(2L).rating(2.0).description("Description2").provider(UserModel.builder().name("DummyName").build()).build(),
+            FeedbackModel.builder().id(3L).rating(3.0).description("Description3").provider(UserModel.builder().name("DummyName").build()).build(),
+            FeedbackModel.builder().id(4L).rating(4.0).description("Description4").provider(UserModel.builder().name("DummyName").build()).build(),
+            FeedbackModel.builder().id(5L).rating(5.0).description("Description5").provider(UserModel.builder().name("DummyName").build()).build()
     );
     private final FeedbackModel dummyFeedbackModel = FeedbackModel.builder().id(1L).build();
 
@@ -82,17 +73,17 @@ public class FeedbackServiceTest {
     @Test
     public void shouldThrowUserNotFoundException_WhenUserNotRegistered_AndAddFeedbackIsCalled() {
         // Given
-        long providerId = 10;
-        long consumerId = 12;
+        UserModel provider = UserModel.builder().id(10L).build();
+        UserModel consumer = UserModel.builder().id(12L).build();
         logger.info("Starting test: Unregistered id provided to add feedback");
         AddFeedbackRequest addFeedbackRequest = AddFeedbackRequest.builder()
-                .providerId(providerId)
-                .consumerId(consumerId)
+                .providerId(provider.getId())
+                .consumerId(consumer.getId())
                 .build();
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(false);
-        when(userRepository.existsById(consumerId)).thenReturn(true);
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.empty());
+        when(userRepository.findById(consumer.getId())).thenReturn(Optional.of(consumer));
         logger.info("Inputting non registered providerId: {}", addFeedbackRequest);
 
         UserNotFoundException exception1 = assertThrows(UserNotFoundException.class,
@@ -100,11 +91,11 @@ public class FeedbackServiceTest {
         );
 
         // Then
-        assertEquals(exception1.getMessage(), "User not found for id: " + providerId);
+        assertEquals(exception1.getMessage(), "User not found for id: " + provider.getId());
 
         // When
-        when(userRepository.existsById(providerId)).thenReturn(true);
-        when(userRepository.existsById(consumerId)).thenReturn(false);
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.of(provider));
+        when(userRepository.findById(consumer.getId())).thenReturn(Optional.empty());
         logger.info("Inputting non registered consumerId: {}", addFeedbackRequest);
 
         UserNotFoundException exception2 = assertThrows(UserNotFoundException.class,
@@ -112,7 +103,7 @@ public class FeedbackServiceTest {
         );
 
         // Then
-        assertEquals(exception2.getMessage(), "User not found for id: " + consumerId);
+        assertEquals(exception2.getMessage(), "User not found for id: " + consumer.getId());
         logger.info("Test completed: Unregistered id provided to add feedback");
     }
 
@@ -120,15 +111,15 @@ public class FeedbackServiceTest {
     public void shouldAddFeedback_WhenInputIsValid_AndAddFeedbackIsCalled() {
         // Given
         logger.info("Starting test: Valid input provided to add feedback");
-        long providerId = 10;
-        long consumerId = 12;
+        UserModel provider = UserModel.builder().id(10L).build();
+        UserModel consumer = UserModel.builder().id(12L).build();
         double rating = 5.0;
         String description = "Person works well";
-        when(userRepository.existsById(providerId)).thenReturn(true);
-        when(userRepository.existsById(consumerId)).thenReturn(true);
+        when(userRepository.findById(provider.getId())).thenReturn(Optional.of(provider));
+        when(userRepository.findById(consumer.getId())).thenReturn(Optional.of(consumer));
         AddFeedbackRequest addFeedbackRequest = AddFeedbackRequest.builder()
-                .providerId(providerId)
-                .consumerId(consumerId)
+                .providerId(provider.getId())
+                .consumerId(consumer.getId())
                 .rating(rating)
                 .description(description)
                 .build();
@@ -198,8 +189,6 @@ public class FeedbackServiceTest {
         // When
         logger.info("Passing registered user id (having some feedbacks) to getFeedbacks: {}", userId);
         logger.info("Provider userId is NOT registered into database: {}", providerUserModel);
-        when(userRepository.findById(any())).thenReturn(Optional.empty());
-        when(feedbackMapper.toDto(any())).thenReturn(dummyFeedbackDto);
         ResponseBody<GetFeedbackResponse> responseBody1 = feedbackService.getFeedbacks(userId);
 
         // Then
@@ -212,7 +201,6 @@ public class FeedbackServiceTest {
         // When
         logger.info("Passing registered user id (having some feedbacks) to getFeedbacks: {}", userId);
         logger.info("Provider userId is registered into database: {}", providerUserModel);
-        when(userRepository.findById(any())).thenReturn(Optional.of(providerUserModel));
         ResponseBody<GetFeedbackResponse> responseBody2 = feedbackService.getFeedbacks(userId);
 
         // Then
