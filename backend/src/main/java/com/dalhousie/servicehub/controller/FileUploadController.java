@@ -1,11 +1,11 @@
 package com.dalhousie.servicehub.controller;
 
 import com.dalhousie.servicehub.exceptions.FileUploadException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.response.FileUploadResponse;
 import com.dalhousie.servicehub.service.file_upload.FileUploadService;
 import com.dalhousie.servicehub.util.ResponseBody;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api")
 public class FileUploadController {
 
     private static final Logger logger = LogManager.getLogger(FileUploadController.class);
     private final FileUploadService fileUploadService;
+
+    public FileUploadController(ServiceFactory serviceFactory) {
+        fileUploadService = serviceFactory.getFileUploadService();
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<ResponseBody<FileUploadResponse>> handleFileUpload(

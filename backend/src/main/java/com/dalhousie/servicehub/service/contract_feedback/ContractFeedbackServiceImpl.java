@@ -12,14 +12,12 @@ import com.dalhousie.servicehub.response.GetContractFeedbackResponse;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
 @RequiredArgsConstructor
 public class ContractFeedbackServiceImpl implements ContractFeedbackService {
 

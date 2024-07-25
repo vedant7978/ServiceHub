@@ -1,7 +1,7 @@
 package com.dalhousie.servicehub.config;
 
+import com.dalhousie.servicehub.factory.repository.RepositoryFactory;
 import com.dalhousie.servicehub.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +16,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
-@RequiredArgsConstructor
 public class ApplicationConfig {
 
     private final UserRepository repository;
+
+    public ApplicationConfig(RepositoryFactory repositoryFactory) {
+        repository = repositoryFactory.getUserRepository();
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {

@@ -17,7 +17,7 @@ import com.dalhousie.servicehub.request.ContractRequest;
 import com.dalhousie.servicehub.response.GetFeedbackResponse;
 import com.dalhousie.servicehub.response.GetProviderResponse;
 import com.dalhousie.servicehub.response.GetServicesResponse;
-import com.dalhousie.servicehub.service.dashboard_services.DashboardServicesImpl;
+import com.dalhousie.servicehub.service.dashboard_services.DashboardServiceImpl;
 import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
@@ -67,7 +67,7 @@ public class DashBoardServicesTest {
     private FeedbackService feedbackService;
 
     @InjectMocks
-    private DashboardServicesImpl dashboardServices;
+    private DashboardServiceImpl dashboardServices;
 
     @BeforeEach
     public void setUp() {

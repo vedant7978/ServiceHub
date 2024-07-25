@@ -3,6 +3,7 @@ package com.dalhousie.servicehub.controller;
 import com.dalhousie.servicehub.exceptions.BlackListTokenAlreadyExistsException;
 import com.dalhousie.servicehub.exceptions.InvalidTokenException;
 import com.dalhousie.servicehub.exceptions.UserAlreadyExistException;
+import com.dalhousie.servicehub.factory.service.ServiceFactory;
 import com.dalhousie.servicehub.request.AuthenticationRequest;
 import com.dalhousie.servicehub.request.ForgotPasswordRequest;
 import com.dalhousie.servicehub.request.RegisterRequest;
@@ -12,7 +13,6 @@ import com.dalhousie.servicehub.service.user.UserService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -26,12 +26,15 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.FAILURE;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private static final Logger logger = LogManager.getLogger(AuthController.class);
     private final UserService userService;
+
+    public AuthController(ServiceFactory serviceFactory) {
+        userService = serviceFactory.getUserService();
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ResponseBody<AuthenticationResponse>> registerUser(

@@ -4,8 +4,7 @@ import com.dalhousie.servicehub.exceptions.FileUploadException;
 import com.dalhousie.servicehub.response.FileUploadResponse;
 import com.dalhousie.servicehub.util.FileHelper;
 import com.dalhousie.servicehub.util.ResponseBody;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -16,16 +15,11 @@ import java.nio.file.Paths;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
 
-@Service
+@RequiredArgsConstructor
 public class FileUploadServiceImpl implements FileUploadService {
 
     private final String uploadPath;
     private final FileHelper fileHelper;
-
-    public FileUploadServiceImpl(@Value("${upload.path}") String uploadPath, FileHelper fileHelper) {
-        this.uploadPath = uploadPath;
-        this.fileHelper = fileHelper;
-    }
 
     @Override
     public ResponseBody<FileUploadResponse> saveFile(Long userId, MultipartFile file) {
