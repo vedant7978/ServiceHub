@@ -8,6 +8,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation class for UtilFactory.
+ * This factory also follows singleton design pattern. Since Util classes are autowired,
+ * springboot by default provides singleton instance over here.
+ */
 @Component
 @RequiredArgsConstructor
 public class UtilFactoryImpl implements UtilFactory {

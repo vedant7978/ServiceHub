@@ -12,7 +12,7 @@ export const PendingContractCard = ({ contract, showAcceptDialog, showRejectDial
   useEffect(() => {
     if (contract !== null) {
       setImageUrl(contract.userImageUrl)
-      setFilteredFeedbacks(contract.feedbacks.filter(feedback => feedback.type === "ServiceRequester"))
+      setFilteredFeedbacks(contract.feedbacks.filter(feedback => feedback.type === "ServiceProvider"))
     }
   }, [contract]);
 

@@ -21,6 +21,7 @@ import com.dalhousie.servicehub.util.ResponseBody;
 import com.dalhousie.servicehub.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
@@ -122,6 +123,7 @@ public class DashboardServiceImpl implements DashboardService {
                             (provider) -> serviceDto.setProviderImage(provider.getImage())
                     );
                 })
+                .sorted(Comparator.comparing(ServiceDto::getCreatedAt).reversed())
                 .toList();
     }
 

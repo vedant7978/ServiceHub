@@ -5,7 +5,6 @@ import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
-import com.dalhousie.servicehub.mapper.UserMapper;
 import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -32,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,9 +61,6 @@ public class DashBoardServicesTest {
     private ContractRepository contractRepository;
 
     @Mock
-    private UserMapper userMapper;
-
-    @Mock
     private FeedbackService feedbackService;
 
     @InjectMocks
@@ -89,8 +86,26 @@ public class DashBoardServicesTest {
                     ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).provider(dummyUserModel).build()
             );
             List<ServiceDto> serviceDtos = Arrays.asList(
-                    new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
-                    new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, "", false, false, 4.0, List.of())
+                    ServiceDto.builder()
+                            .id(1L)
+                            .description("Description 1")
+                            .name("Service 1")
+                            .perHourRate(50.0)
+                            .type(ServiceType.Plumbing)
+                            .providerId(2L)
+                            .averageRating(4.5)
+                            .feedbacks(List.of())
+                            .build(),
+                    ServiceDto.builder()
+                            .id(2L)
+                            .description("Description 2")
+                            .name("Service 2")
+                            .perHourRate(60.0)
+                            .type(ServiceType.Electrician)
+                            .providerId(2L)
+                            .averageRating(4.0)
+                            .feedbacks(List.of())
+                            .build()
             );
 
             // Mock the behavior of serviceRepository.findAll()
@@ -100,7 +115,16 @@ public class DashBoardServicesTest {
             when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                     invocation -> {
                         ServiceModel model = invocation.getArgument(0);
-                        return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
+                        return ServiceDto.builder()
+                                .id(model.getId())
+                                .description(model.getDescription())
+                                .name(model.getName())
+                                .perHourRate(model.getPerHourRate())
+                                .type(model.getType())
+                                .providerId(model.getProvider().getId())
+                                .feedbacks(List.of())
+                                .createdAt(LocalDateTime.now())
+                                .build();
                     }
             );
 
@@ -145,8 +169,26 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(type).provider(dummyUserModel).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, type, 2L, "", false, false, 4.5, List.of()),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, type, 2L, "", false, false, 4.0, List.of())
+                ServiceDto.builder()
+                        .id(1L)
+                        .description("Description 1")
+                        .name("Service 1")
+                        .perHourRate(50.0)
+                        .type(ServiceType.Plumbing)
+                        .providerId(2L)
+                        .averageRating(4.5)
+                        .feedbacks(List.of())
+                        .build(),
+                ServiceDto.builder()
+                        .id(2L)
+                        .description("Description 2")
+                        .name("Service 2")
+                        .perHourRate(60.0)
+                        .type(ServiceType.Electrician)
+                        .providerId(2L)
+                        .averageRating(4.0)
+                        .feedbacks(List.of())
+                        .build()
         );
 
         // When
@@ -154,7 +196,16 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
+                    return ServiceDto.builder()
+                            .id(model.getId())
+                            .description(model.getDescription())
+                            .name(model.getName())
+                            .perHourRate(model.getPerHourRate())
+                            .type(model.getType())
+                            .providerId(model.getProvider().getId())
+                            .feedbacks(List.of())
+                            .createdAt(LocalDateTime.now())
+                            .build();
                 }
         );
 
@@ -195,8 +246,26 @@ public class DashBoardServicesTest {
                 ServiceModel.builder().id(2L).name("Service 2").description("Description 2").perHourRate(60.0).type(ServiceType.Electrician).provider(dummyUserModel).build()
         );
         List<ServiceDto> serviceDtos = Arrays.asList(
-                new ServiceDto(1L, "Description 1", "Service 1", 50.0, ServiceType.Plumbing, 2L, "", false, false, 4.5, List.of()),
-                new ServiceDto(2L, "Description 2", "Service 2", 60.0, ServiceType.Electrician, 2L, "", false, false, 4.0, List.of())
+                ServiceDto.builder()
+                        .id(1L)
+                        .description("Description 1")
+                        .name("Service 1")
+                        .perHourRate(50.0)
+                        .type(ServiceType.Plumbing)
+                        .providerId(2L)
+                        .averageRating(4.5)
+                        .feedbacks(List.of())
+                        .build(),
+                ServiceDto.builder()
+                        .id(2L)
+                        .description("Description 2")
+                        .name("Service 2")
+                        .perHourRate(60.0)
+                        .type(ServiceType.Electrician)
+                        .providerId(2L)
+                        .averageRating(4.0)
+                        .feedbacks(List.of())
+                        .build()
         );
 
         // When
@@ -204,7 +273,16 @@ public class DashBoardServicesTest {
         when(serviceMapper.toDto(any(ServiceModel.class))).thenAnswer(
                 invocation -> {
                     ServiceModel model = invocation.getArgument(0);
-                    return new ServiceDto(model.getId(), model.getDescription(), model.getName(), model.getPerHourRate(), model.getType(), model.getProvider().getId(), "", false, false, null, List.of());
+                    return ServiceDto.builder()
+                            .id(model.getId())
+                            .description(model.getDescription())
+                            .name(model.getName())
+                            .perHourRate(model.getPerHourRate())
+                            .type(model.getType())
+                            .providerId(model.getProvider().getId())
+                            .feedbacks(List.of())
+                            .createdAt(LocalDateTime.now())
+                            .build();
                 }
         );
         // Mock the behavior of serviceRepository.findById()
@@ -269,7 +347,6 @@ public class DashBoardServicesTest {
         // Then
         assertEquals("User not found with ID: " + providerId, userNotFoundException.getMessage());
         verify(userRepository, times(1)).findById(providerId);
-        verify(userMapper, never()).toDto(any(UserModel.class));
     }
 
     @Test

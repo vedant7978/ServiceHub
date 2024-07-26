@@ -34,6 +34,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation class for ServiceFactory.
+ * This factory also follows singleton design pattern. Here only the required sub factories are autowired,
+ * which will be singleton by default when provided by springboot but for the services we created,
+ * we have manually followed the singleton pattern. <br>
+ * <p><b>Note</b>: We have implemented these patterns for learning purpose only. Since springboot autowiring
+ * by default follows these patterns internally it has no extra advantage over following our own
+ * factory pattern over auto wiring. The only advantage we see is regarding the test cases where we
+ * can have more flexibility and control over services by avoiding object creation by springboot (@Autowired).</p>
+ */
 @Component
 @RequiredArgsConstructor
 public class ServiceFactoryImpl implements ServiceFactory {
