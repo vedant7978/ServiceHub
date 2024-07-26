@@ -5,7 +5,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [authToken, setAuthToken] = useState(null);
-    const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem(AUTH_TOKEN_KEY));
 
     const setUserLoggedIn = (token) => {
         setAuthToken(token);
