@@ -6,7 +6,6 @@ import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.exceptions.WishlistNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
-import com.dalhousie.servicehub.mapper.WishlistMapper;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
 import com.dalhousie.servicehub.model.WishlistModel;
@@ -51,9 +50,6 @@ class WishlistServiceTest {
 
     @Mock
     private ContractRepository contractRepository;
-
-    @Mock
-    private WishlistMapper wishlistMapper;
 
     @Mock
     private ServiceMapper serviceMapper;
@@ -170,7 +166,6 @@ class WishlistServiceTest {
         // When & Then
         assertThrows(UserNotFoundException.class, () -> wishlistService.getWishlists(userId));
         verify(wishlistRepository, never()).findAllByUser(any(UserModel.class));
-        verify(wishlistMapper, never()).toDto(any(WishlistModel.class));
     }
 
     @Test

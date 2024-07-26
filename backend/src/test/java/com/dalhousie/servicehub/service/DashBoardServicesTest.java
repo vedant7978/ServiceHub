@@ -5,7 +5,6 @@ import com.dalhousie.servicehub.enums.ServiceType;
 import com.dalhousie.servicehub.exceptions.ServiceNotFoundException;
 import com.dalhousie.servicehub.exceptions.UserNotFoundException;
 import com.dalhousie.servicehub.mapper.ServiceMapper;
-import com.dalhousie.servicehub.mapper.UserMapper;
 import com.dalhousie.servicehub.model.ContractModel;
 import com.dalhousie.servicehub.model.ServiceModel;
 import com.dalhousie.servicehub.model.UserModel;
@@ -60,9 +59,6 @@ public class DashBoardServicesTest {
 
     @Mock
     private ContractRepository contractRepository;
-
-    @Mock
-    private UserMapper userMapper;
 
     @Mock
     private FeedbackService feedbackService;
@@ -351,7 +347,6 @@ public class DashBoardServicesTest {
         // Then
         assertEquals("User not found with ID: " + providerId, userNotFoundException.getMessage());
         verify(userRepository, times(1)).findById(providerId);
-        verify(userMapper, never()).toDto(any(UserModel.class));
     }
 
     @Test

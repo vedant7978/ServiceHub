@@ -4,6 +4,11 @@ import com.dalhousie.servicehub.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation class for RepositoryFactory.
+ * This factory also follows singleton design pattern. Since Repositories are autowired,
+ * springboot by default provides singleton instance over here.
+ */
 @Component
 @RequiredArgsConstructor
 public class RepositoryFactoryImpl implements RepositoryFactory {
