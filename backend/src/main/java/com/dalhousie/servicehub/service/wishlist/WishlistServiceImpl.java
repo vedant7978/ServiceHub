@@ -17,6 +17,7 @@ import com.dalhousie.servicehub.service.feedback.FeedbackService;
 import com.dalhousie.servicehub.util.ResponseBody;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static com.dalhousie.servicehub.util.ResponseBody.ResultType.SUCCESS;
@@ -52,6 +53,7 @@ public class WishlistServiceImpl implements WishlistService {
         List<ServiceDto> services = wishlistRepository.findAllByUser(user)
                 .stream()
                 .map(wishlistModel -> getServiceSto(wishlistModel, userId))
+                .sorted(Comparator.comparing(ServiceDto::getCreatedAt).reversed())
                 .toList();
         GetWishlistResponse response = GetWishlistResponse.builder().services(services).build();
         return new ResponseBody<>(SUCCESS, response, "Get wishlists successful");
